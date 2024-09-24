@@ -9,6 +9,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private TileBase _highlightTile;
     [SerializeField] private TileBase _outlineTile;
     [SerializeField] private Tilemap _highlightTilemap;
+    [SerializeField] private Tilemap _outlineTilemap;
     private Vector3Int _previousHoverTilePosition; // Store the previously hovered tile position
 
     private Vector3Int _selectedTilePosition;
@@ -42,7 +43,7 @@ public class GridManager : MonoBehaviour
                 _previousHoverTilePosition = tilePosition;
 
                 // Highlight the current tile
-                HighlightTile(tilePosition);
+                _highlightTilemap.SetTile(tilePosition, _highlightTile);
             }
         }
         else
@@ -51,12 +52,6 @@ public class GridManager : MonoBehaviour
             _highlightTilemap.SetTile(_previousHoverTilePosition, null);
             _previousHoverTilePosition = tilePosition; // Reset previous hover position
         }
-    }
-
-    private void HighlightTile(Vector3Int tilePosition)
-    {
-        // Set the highlight tile on the Tilemap
-        _highlightTilemap.SetTile(tilePosition, _highlightTile);
     }
 
     private void HandleTileSelection()
@@ -70,10 +65,7 @@ public class GridManager : MonoBehaviour
             // Check if the tile is valid
             TileBase tile = GetTileAtPosition(tilePosition);
             if (tile != null)
-            {
-                // Select the tile
                 SelectTile(tilePosition);
-            }
         }
     }
 
@@ -81,14 +73,13 @@ public class GridManager : MonoBehaviour
     {
         // Deselect previous tile
         if (_selectedTilePosition != tilePosition)
-        {
-            _highlightTilemap.SetTile(tilePosition, null);
-        }
+            _outlineTilemap.SetTile(_selectedTilePosition, null);
 
         _selectedTilePosition = tilePosition;
 
         // Highlight the selected tile
-        _highlightTilemap.SetTile(_selectedTilePosition, _outlineTile);
+        _outlineTilemap.SetTile(_selectedTilePosition, _outlineTile);
+        _highlightTilemap.SetTile(_selectedTilePosition, null);
     }
 
 
