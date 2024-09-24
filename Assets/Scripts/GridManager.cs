@@ -7,6 +7,7 @@ public class GridManager : MonoBehaviour
 {
     [SerializeField] private Tilemap _tilemap;
     [SerializeField] private TileBase _highlightTile;
+    [SerializeField] private TileBase _outlineTile;
     [SerializeField] private Tilemap _highlightTilemap;
     private Vector3Int _previousHoverTilePosition; // Store the previously hovered tile position
 
@@ -81,27 +82,15 @@ public class GridManager : MonoBehaviour
         // Deselect previous tile
         if (_selectedTilePosition != tilePosition)
         {
-            DeselectTile(_selectedTilePosition);
+            _highlightTilemap.SetTile(tilePosition, null);
         }
 
         _selectedTilePosition = tilePosition;
 
         // Highlight the selected tile
-        _tilemap.SetTile(_selectedTilePosition, _highlightTile);
+        _highlightTilemap.SetTile(_selectedTilePosition, _outlineTile);
     }
 
-    private void DeselectTile(Vector3Int tilePosition)
-    {
-        // Restore the original tile if it was highlighted
-        if (_highlightTile != null && tilePosition != null)
-        {
-            TileBase originalTile = GetTileAtPosition(tilePosition); // Get the original tile
-            if (originalTile != null)
-            {
-                _tilemap.SetTile(tilePosition, originalTile); // Restore the original tile
-            }
-        }
-    }
 
 
     // Function to get a tile at a specific position
