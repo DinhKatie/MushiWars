@@ -5,17 +5,31 @@ using UnityEngine.Tilemaps;
 
 public class GridManager : MonoBehaviour
 {
-    [SerializeField] private Tilemap _tilemap;
-    [SerializeField] private TileBase _highlightTile;
-    [SerializeField] private TileBase _outlineTile;
+    [SerializeField] public Tilemap _tilemap;
+
     [SerializeField] private Tilemap _highlightTilemap;
     [SerializeField] private Tilemap _outlineTilemap;
-    
+    [SerializeField] private Tilemap _validMovesMap;
 
-    
+    [SerializeField] private TileBase _highlightTile;
+    [SerializeField] private TileBase _outlineTile;
+    [SerializeField] private TileBase _validMoveTile;
+
+
+
     private Vector3Int _previousHoverTilePosition;
 
     private Vector3Int _selectedTilePosition;
+
+    public static GridManager Instance;
+
+    private void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
+    }
 
     private void Start()
     {
@@ -99,6 +113,18 @@ public class GridManager : MonoBehaviour
         UnitManager.Instance.GetUnitAtTile(_selectedTilePosition);
     }
 
+    public void HighlightValidMoves(List<Vector3Int> moves)
+    {
+        foreach (var move in moves)
+        {
+            _validMovesMap.SetTile(move, _validMoveTile);
+        }
+    }
+
+    public void ClearValidMoves()
+    {
+        _validMovesMap.ClearAllTiles();
+    }
 
     // Get the tile at the specified grid position
     public TileBase GetTileAtPosition(Vector3Int position)

@@ -21,7 +21,7 @@ public class TurnManager : MonoBehaviour
     {
     }
 
-    private void Update()
+    void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
             EndTurn();
