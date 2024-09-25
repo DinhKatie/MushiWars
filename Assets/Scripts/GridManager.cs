@@ -70,6 +70,11 @@ public class GridManager : MonoBehaviour
             if (tile != null)
                 SelectTile(tilePosition);
         }
+        else if (Input.GetMouseButtonDown(1)) //Cancel selection on right mouse click
+        {
+            _outlineTilemap.SetTile(_selectedTilePosition, null);
+            _selectedTilePosition = new Vector3Int(-1, -1, -1);
+        }
     }
 
     private void SelectTile(Vector3Int tilePosition)
@@ -77,6 +82,13 @@ public class GridManager : MonoBehaviour
         // Deselect previous tile
         if (_selectedTilePosition != tilePosition)
             _outlineTilemap.SetTile(_selectedTilePosition, null);
+
+        BaseUnit unit = UnitManager.Instance.GetUnitAtTile(_selectedTilePosition);
+        //If a unit is selected, move the unit to the new position
+        if (unit != null)
+        {
+            UnitManager.Instance.MoveUnit(unit, tilePosition);
+        }
 
         _selectedTilePosition = tilePosition;
 
@@ -88,14 +100,13 @@ public class GridManager : MonoBehaviour
     }
 
 
-
-    // Function to get a tile at a specific position
+    // Get the tile at the specified grid position
     public TileBase GetTileAtPosition(Vector3Int position)
     {
-        return _tilemap.GetTile(position); // Get the tile at the specified grid position
+        return _tilemap.GetTile(position); 
     }
 
-    // Function to set a tile at a specific position
+    // Set a tile at a specific position
     public void SetTileAtPosition(Vector3Int position, TileBase tile)
     {
         _tilemap.SetTile(position, tile); // Set a tile at the specified position

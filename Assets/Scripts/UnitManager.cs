@@ -18,12 +18,22 @@ public class UnitManager : MonoBehaviour
         else
             Destroy(gameObject);
     }
-
+    
     void Start()
     {
         // Example: Spawning a unit on tile (0, 0) at the start
         Vector3Int startingTile = new Vector3Int(0, 0, 0);
         SpawnUnit(startingTile);
+        Vector3Int tile = new Vector3Int(1, 1, 0);
+        SpawnUnit(tile);
+    }
+
+    public void LogUnitsOnTiles()
+    {
+        foreach (var entry in _unitsOnTiles)
+        {
+            Debug.Log($"Tile: {entry.Key}, Unit: {entry.Value}");
+        }
     }
 
     private void SpawnUnit(Vector3Int spawnTile)
@@ -41,6 +51,7 @@ public class UnitManager : MonoBehaviour
             _unitsOnTiles[spawnTile] = newUnit;
 
             Debug.Log($"Unit spawned on tile {spawnTile}");
+            LogUnitsOnTiles();
         }
         else
         {
@@ -53,10 +64,29 @@ public class UnitManager : MonoBehaviour
     {
         if (_unitsOnTiles.TryGetValue(tilePosition, out BaseUnit unit))
         {
-            Debug.Log($"Unit at tile {tilePosition} retrieved");
+            Debug.Log($"Unit at {tilePosition} retrieved.");
             return unit;
-        }
-            
+        } 
         return null;
     }
+
+    public bool isTileValid(Vector3Int tile)
+    {
+        if (GetUnitAtTile(tile) != null)
+            return false;
+        return true;
+    }
+
+    public void MoveUnit(BaseUnit unit, Vector3Int newPosition)
+    {
+        if (!isTileValid(newPosition)) return;
+
+        _unitsOnTiles.Remove(unit.currPosition);
+
+        unit.transform.position = _tilemap.GetCellCenterWorld(newPosition);
+        unit.currPosition = newPosition;
+        _unitsOnTiles[newPosition] = unit;
+    }
+
+    
 }
