@@ -11,7 +11,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - Actor
   - Blocking
   - 
   - 
@@ -43,4 +43,7 @@ TagManager:
     locked: 0
   - name: Floor
     uniqueID: 1104620567
+    locked: 0
+  - name: Unit
+    uniqueID: 3150119437
     locked: 0

@@ -80,6 +80,7 @@ public class GridManager : MonoBehaviour
         // Highlight the selected tile
         _outlineTilemap.SetTile(_selectedTilePosition, _outlineTile);
         _highlightTilemap.SetTile(_selectedTilePosition, null);
+        Debug.Log("Selected tile: " +  _selectedTilePosition);
     }
 
 
