@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1084468247821877186}
   - component: {fileID: 8188384712561305602}
   - component: {fileID: 8493815707401489395}
-  - component: {fileID: 6731807211013646826}
+  - component: {fileID: 5886906280632838515}
   m_Layer: 6
   m_Name: Base Mushi
   m_TagString: Untagged
@@ -131,7 +131,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.16, y: 0.13734546}
   m_EdgeRadius: 0
---- !u!114 &6731807211013646826
+--- !u!114 &5886906280632838515
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -140,6 +140,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 8063396146840682836}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e5837cd33b48c4945b1fafafecf63cd4, type: 3}
+  m_Script: {fileID: 11500000, guid: 317fd3e4a665ecf4180a0470d73b4f8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currPosition: {x: 0, y: 0, z: 0}
+  movementRange: 2

@@ -10,7 +10,10 @@ public class GridManager : MonoBehaviour
     [SerializeField] private TileBase _outlineTile;
     [SerializeField] private Tilemap _highlightTilemap;
     [SerializeField] private Tilemap _outlineTilemap;
-    private Vector3Int _previousHoverTilePosition; // Store the previously hovered tile position
+    
+
+    
+    private Vector3Int _previousHoverTilePosition;
 
     private Vector3Int _selectedTilePosition;
 
@@ -80,7 +83,8 @@ public class GridManager : MonoBehaviour
         // Highlight the selected tile
         _outlineTilemap.SetTile(_selectedTilePosition, _outlineTile);
         _highlightTilemap.SetTile(_selectedTilePosition, null);
-        Debug.Log("Selected tile: " +  _selectedTilePosition);
+        //Debug.Log("Selected tile: " +  _selectedTilePosition);
+        UnitManager.Instance.GetUnitAtTile(_selectedTilePosition);
     }
 
 
