@@ -26,6 +26,7 @@ public class UnitManager : MonoBehaviour
         SpawnUnit(startingTile);
         Vector3Int tile = new Vector3Int(1, 1, 0);
         SpawnUnit(tile);
+        TurnManager.Instance.StartTurn();
     }
 
     public void LogUnitsOnTiles()
@@ -51,7 +52,7 @@ public class UnitManager : MonoBehaviour
             _unitsOnTiles[spawnTile] = newUnit;
 
             Debug.Log($"Unit spawned on tile {spawnTile}");
-            LogUnitsOnTiles();
+            TurnManager.Instance.AddUnitToTurnSystem(newUnit);
         }
         else
         {
@@ -64,7 +65,6 @@ public class UnitManager : MonoBehaviour
     {
         if (_unitsOnTiles.TryGetValue(tilePosition, out BaseUnit unit))
         {
-            Debug.Log($"Unit at {tilePosition} retrieved.");
             return unit;
         } 
         return null;
@@ -79,7 +79,7 @@ public class UnitManager : MonoBehaviour
 
     public void MoveUnit(BaseUnit unit, Vector3Int newPosition)
     {
-        if (!isTileValid(newPosition)) return;
+        if (!isTileValid(newPosition) || unit.IsTurn() == false) return;
 
         _unitsOnTiles.Remove(unit.currPosition);
 
