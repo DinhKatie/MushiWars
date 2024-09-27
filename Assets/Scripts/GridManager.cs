@@ -20,7 +20,7 @@ public class GridManager : MonoBehaviour
 
     private Vector3Int _previousHoverTilePosition;
 
-    private Vector3Int _selectedTilePosition;
+    private Vector3Int _previousTileSelection = new Vector3Int(-1, -1, -1);
 
     public static GridManager Instance;
 
@@ -80,38 +80,47 @@ public class GridManager : MonoBehaviour
             Vector3Int tilePosition = _tilemap.WorldToCell(mousePosition);
 
             // Check if the tile is valid
-            TileBase tile = GetTileAtPosition(tilePosition);
-            if (tile != null)
+            if (GetTileAtPosition(tilePosition) != null)
                 SelectTile(tilePosition);
         }
         else if (Input.GetMouseButtonDown(1)) //Cancel selection on right mouse click
-        {
-            _outlineTilemap.SetTile(_selectedTilePosition, null);
-            _selectedTilePosition = new Vector3Int(-1, -1, -1);
-        }
+            Deselect();
+    }
+
+    public void Deselect()
+    {
+        _outlineTilemap.ClearAllTiles();
+        _previousTileSelection = new Vector3Int(-1, -1, -1);
     }
 
     private void SelectTile(Vector3Int tilePosition)
     {
         // Deselect previous tile
-        if (_selectedTilePosition != tilePosition)
-            _outlineTilemap.SetTile(_selectedTilePosition, null);
+        if (_previousTileSelection != tilePosition)
+            _outlineTilemap.SetTile(_previousTileSelection, null);
 
-        BaseUnit unit = UnitManager.Instance.GetUnitAtTile(_selectedTilePosition);
-        Debug.Log($"Unit at {_selectedTilePosition} selected.");
+        BaseUnit unit = UnitManager.Instance.GetUnitAtTile(_previousTileSelection);
+        BaseUnit newUnit = UnitManager.Instance.GetUnitAtTile(tilePosition);
+        
+        //If the new position has a unit on it, attack it.
+        if (newUnit != null && unit != null)
+        {
+            UnitManager.Instance.AttackUnit(unit, tilePosition);
+            Debug.Log($"{unit.name} attacked {newUnit.name}!");
+        }
         //If a unit is selected, move the unit to the new position
-        if (unit != null)
+        else if (unit != null)
         {
             UnitManager.Instance.MoveUnit(unit, tilePosition);
         }
 
-        _selectedTilePosition = tilePosition;
+        _previousTileSelection = tilePosition;
 
         // Highlight the selected tile
-        _outlineTilemap.SetTile(_selectedTilePosition, _outlineTile);
-        _highlightTilemap.SetTile(_selectedTilePosition, null);
+        _outlineTilemap.SetTile(tilePosition, _outlineTile);
+        _highlightTilemap.SetTile(tilePosition, null);
         //Debug.Log("Selected tile: " +  _selectedTilePosition);
-        UnitManager.Instance.GetUnitAtTile(_selectedTilePosition);
+        UnitManager.Instance.GetUnitAtTile(tilePosition);
     }
 
     public void HighlightValidMoves(List<Vector3Int> moves)

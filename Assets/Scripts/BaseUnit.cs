@@ -32,9 +32,14 @@ public class BaseUnit : MonoBehaviour
         movementRange = 2;
         attackRange = 1;
         turn = true;
-        List<Vector3Int> validMoves = CalculateValidMoves();
-        GridManager.Instance.HighlightValidMoves(validMoves);
-        HighlightValidAttacks();
+        HighlightValidMoves();
+    }
+
+    public void EndTurn()
+    {
+        turn = false;
+        GridManager.Instance.ClearValidMoves();
+        GridManager.Instance.Deselect();
     }
 
     public void Move(Vector3Int newPosition)
@@ -46,20 +51,14 @@ public class BaseUnit : MonoBehaviour
 
         Debug.Log($"Unit Move Cost: {moveCost}");
 
-        GridManager.Instance.ClearValidMoves();
-        List<Vector3Int> validMoves = CalculateValidMoves();
-        GridManager.Instance.HighlightValidMoves(validMoves);
-        HighlightValidAttacks();
+        HighlightValidMoves();
     }
 
     public void Attack(Vector3Int enemy)
     {
-    }
-
-    public void EndTurn()
-    {
-        turn = false;
-        GridManager.Instance.ClearValidMoves();
+        UnitManager.Instance.RemoveUnit(enemy);
+        HighlightValidMoves();
+        GridManager.Instance.Deselect();
     }
 
     public int CalculateMoveCost(Vector3Int newPosition)
@@ -94,16 +93,27 @@ public class BaseUnit : MonoBehaviour
         return validMoves;
     }
 
-    protected virtual List<Vector3Int> CalculateAttackRange()
+    public List<Vector3Int> CalculateAttackRange()
     {
-        List<Vector3Int> attackableTiles = new List<Vector3Int>
+        List<Vector3Int> attackRanges = new List<Vector3Int>
         {
             currPosition + new Vector3Int(0, 1, 0),
             currPosition + new Vector3Int(0, -1, 0),
             currPosition + new Vector3Int(-1, 0, 0),
             currPosition + new Vector3Int(1, 0, 0)
         };
-        return attackableTiles;
+        List<Vector3Int> toRemove = new List<Vector3Int>();
+        foreach (var attack in attackRanges)
+        {
+            //If the tile doesn't have a unit on it, do not designate as an attackable tile (needa remove friendly fire later lmao)
+            if (UnitManager.Instance.GetUnitAtTile(attack) == null)
+                toRemove.Add(attack);
+        }
+        foreach (var attack in toRemove)
+        {
+            attackRanges.Remove(attack);
+        }
+        return attackRanges;
     }
 
     private void LogMoves(List<Vector3Int> validMoves)
@@ -117,25 +127,12 @@ public class BaseUnit : MonoBehaviour
     private void HighlightValidMoves()
     {
         GridManager.Instance.ClearValidMoves();
-        List<Vector3Int> validMoves = CalculateValidMoves();
-        GridManager.Instance.HighlightValidMoves(validMoves);
-    }
 
-    private void HighlightValidAttacks()
-    {
-        List<Vector3Int> attackRanges = CalculateAttackRange();
-        List<Vector3Int> toRemove = new List<Vector3Int>();
-        foreach (var attack in attackRanges)
-        {
-            //If the tile doesn't have a unit on it, do not designate as an attackable tile (needa remove friendly fire later lmao)
-            if (UnitManager.Instance.GetUnitAtTile(attack) == null)
-                toRemove.Add(attack);
-        }
-        foreach (var attack in toRemove)
-        {
-            attackRanges.Remove(attack);
-        }
-        GridManager.Instance.HighlightValidAttacks(attackRanges);
+        List<Vector3Int> validMoves = CalculateValidMoves();
+        List<Vector3Int> validAtt = CalculateAttackRange();
+
+        GridManager.Instance.HighlightValidMoves(validMoves);
+        GridManager.Instance.HighlightValidAttacks(validAtt);
     }
 
 }

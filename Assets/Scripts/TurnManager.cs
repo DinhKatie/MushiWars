@@ -48,4 +48,9 @@ public class TurnManager : MonoBehaviour
     {
         units.Add(unit);
     }
+
+    public void RemoveUnitFromTurnSystem(BaseUnit unit)
+    {
+        units.Remove(unit);
+    }
 }

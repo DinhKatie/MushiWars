@@ -11,6 +11,7 @@ public class UnitManager : MonoBehaviour
     [SerializeField] public BaseUnit unitPrefab;
 
     private Dictionary<Vector3Int, BaseUnit> _unitsOnTiles = new Dictionary<Vector3Int, BaseUnit>();
+
     private void Awake()
     {
         if (Instance == null)
@@ -52,11 +53,21 @@ public class UnitManager : MonoBehaviour
             _unitsOnTiles[spawnTile] = newUnit;
 
             Debug.Log($"Unit spawned on tile {spawnTile}");
+            newUnit.name = "Mushi " + _unitsOnTiles.Count;
             TurnManager.Instance.AddUnitToTurnSystem(newUnit);
         }
         else
         {
             Debug.LogWarning($"Tile {spawnTile} is either invalid or already has a unit.");
+        }
+    }
+
+    public void RemoveUnit(Vector3Int unitTile)
+    {
+        if (_unitsOnTiles.TryGetValue(unitTile, out BaseUnit unit))
+        {
+            _unitsOnTiles.Remove(unit.currPosition);
+            Destroy(unit.gameObject);
         }
     }
 
@@ -87,6 +98,14 @@ public class UnitManager : MonoBehaviour
         unit.Move(newPosition);
     }
 
+    public void AttackUnit(BaseUnit attacker, Vector3Int hitUnit)
+    {
+        _unitsOnTiles.TryGetValue(hitUnit, out BaseUnit unit);
 
+        List<Vector3Int> attackRanges = attacker.CalculateAttackRange();
+        if (attackRanges.Contains(hitUnit))
+            attacker.Attack(hitUnit);
+        TurnManager.Instance.RemoveUnitFromTurnSystem(unit);
+    }
 
 }
