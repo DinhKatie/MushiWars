@@ -14,6 +14,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private TileBase _highlightTile;
     [SerializeField] private TileBase _outlineTile;
     [SerializeField] private TileBase _validMoveTile;
+    [SerializeField] private TileBase _validAttackTile;
 
 
 
@@ -118,6 +119,14 @@ public class GridManager : MonoBehaviour
         foreach (var move in moves)
         {
             _validMovesMap.SetTile(move, _validMoveTile);
+        }
+    }
+
+    public void HighlightValidAttacks(List<Vector3Int> attacks)
+    {
+        foreach (var att in attacks)
+        {
+            _validMovesMap.SetTile(att, _validAttackTile);
         }
     }
 
