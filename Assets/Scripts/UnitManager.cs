@@ -79,14 +79,17 @@ public class UnitManager : MonoBehaviour
 
     public void MoveUnit(BaseUnit unit, Vector3Int newPosition)
     {
-        if (!isTileValid(newPosition) || unit.IsTurn() == false) return;
+        if (!isTileValid(newPosition) || unit.IsTurn() == false || unit.GetMoveRange() <= 0) return;
 
         _unitsOnTiles.Remove(unit.currPosition);
 
         unit.transform.position = _tilemap.GetCellCenterWorld(newPosition);
         unit.currPosition = newPosition;
         _unitsOnTiles[newPosition] = unit;
+
+        unit.Move(newPosition);
     }
 
-    
+
+
 }

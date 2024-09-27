@@ -73,7 +73,6 @@ public class GridManager : MonoBehaviour
 
     private void HandleTileSelection()
     {
-        // Perform a raycast from the mouse position to detect tiles
         if (Input.GetMouseButtonDown(0)) // Left mouse button
         {
             Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -98,6 +97,7 @@ public class GridManager : MonoBehaviour
             _outlineTilemap.SetTile(_selectedTilePosition, null);
 
         BaseUnit unit = UnitManager.Instance.GetUnitAtTile(_selectedTilePosition);
+        Debug.Log($"Unit at {_selectedTilePosition} selected.");
         //If a unit is selected, move the unit to the new position
         if (unit != null)
         {
