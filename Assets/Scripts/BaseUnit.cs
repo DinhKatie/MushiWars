@@ -25,27 +25,29 @@ public class BaseUnit : MonoBehaviour
         movementRange = 2;
         turn = true;
         List<Vector3Int> validMoves = CalculateValidMoves();
-        Debug.Log("Calculating Valid Moves...");
         GridManager.Instance.HighlightValidMoves(validMoves);
-        LogMoves(validMoves);
     }
 
     public void Move(Vector3Int newPosition)
     {
-        int x = Mathf.Abs(currPosition.x - newPosition.x);
-        int y = Mathf.Abs(currPosition.y - newPosition.y);
-
-        Debug.Log($"Curr Position = {currPosition}, New Position = {newPosition}, x = {x}, y = {y}");
-
-        int moveCost = x + y;
+        int moveCost = CalculateMoveCost(newPosition);
         movementRange -= moveCost;
         currPosition = newPosition;
+        transform.position = GridManager.Instance._tilemap.GetCellCenterWorld(newPosition);
 
-        Debug.Log($"Unit Movement Range: {movementRange}");
+        Debug.Log($"Unit Move Cost: {moveCost}");
 
         GridManager.Instance.ClearValidMoves();
         List<Vector3Int> validMoves = CalculateValidMoves();
         GridManager.Instance.HighlightValidMoves(validMoves);
+    }
+
+    public int CalculateMoveCost(Vector3Int newPosition)
+    {
+        int x = Mathf.Abs(currPosition.x - newPosition.x);
+        int y = Mathf.Abs(currPosition.y - newPosition.y);
+
+        return x + y;
     }
 
 
@@ -61,19 +63,6 @@ public class BaseUnit : MonoBehaviour
 
     public int GetAttackRange() => attackRange;
 
-
-    public int CalculateMoveCost(Vector3Int newPosition)
-    {
-        int x = Mathf.Abs(currPosition.x - newPosition.x);
-        int y = Mathf.Abs(currPosition.y - newPosition.y);
-
-        Debug.Log($"Curr Position = {currPosition}, New Position = {newPosition}, x = {x}, y = {y}");
-
-        int moveCost = x + y;
-
-        return moveCost;
-    }
-
     private List<Vector3Int> CalculateValidMoves()
     {
         List<Vector3Int> validMoves = new List<Vector3Int>();
@@ -83,6 +72,7 @@ public class BaseUnit : MonoBehaviour
         {
             for (int y = -movementRange; y <= movementRange; y++)
             {
+                //A diagonal move is 2 moves. Account for this.
                 if (Mathf.Abs(x) + Mathf.Abs(y) > movementRange)
                     continue;
 
