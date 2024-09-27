@@ -5,33 +5,37 @@ using UnityEngine.Tilemaps;
 
 public class BaseUnit : MonoBehaviour
 {
-    //Unit stats
-    public Vector3Int currPosition;
-    public int movementRange;
-    public int attackRange;
+    // Unit stats
+    private Vector3Int currPosition;
+    private int movementRange;
+    private int attackRange;
+    private bool turn;
 
-    //Unit turn information
-    public bool turn;
+    // Getters
+    public Vector3Int CurrentPosition => currPosition;
+    public int MovementRange => movementRange;
+    public int AttackRange => attackRange;
+    public bool IsTurn => turn;
 
-    //Getters
-    public bool IsTurn() => turn;
-
-    public int GetMoveRange() => movementRange;
-
-    public int GetAttackRange() => attackRange;
+    //Setters
+    public void SetCurrentPosition(Vector3Int pos)
+    { this.currPosition = pos; }
 
     // Start is called before the first frame update
-    void Start()
+    protected virtual void Start()
     {
-
+        movementRange = 2;
+        attackRange = 1;
     }
 
     public void StartTurn()
     {
         Debug.Log($"It's Mushi on {currPosition}'s turn");
+        //Reset Stats
         movementRange = 2;
         attackRange = 1;
         turn = true;
+
         HighlightValidMoves();
     }
 
@@ -45,13 +49,17 @@ public class BaseUnit : MonoBehaviour
     public void Move(Vector3Int newPosition)
     {
         int moveCost = CalculateMoveCost(newPosition);
-        movementRange -= moveCost;
-        currPosition = newPosition;
-        transform.position = GridManager.Instance._tilemap.GetCellCenterWorld(newPosition);
+        if (moveCost <= movementRange)
+        {
+            movementRange -= moveCost;
+            currPosition = newPosition;
+            transform.position = GridManager.Instance._tilemap.GetCellCenterWorld(newPosition);
 
-        Debug.Log($"Unit Move Cost: {moveCost}");
+            Debug.Log($"Unit Move Cost: {moveCost}");
 
-        HighlightValidMoves();
+            HighlightValidMoves();
+        }
+            
     }
 
     public void Attack(Vector3Int enemy)

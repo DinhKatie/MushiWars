@@ -32,8 +32,6 @@ public class TurnManager : MonoBehaviour
     {
         BaseUnit currentUnit = units[currentUnitIndex];
         currentUnit.StartTurn();
-
-        
     }
 
     // End the current unit's turn and move to the next
@@ -52,5 +50,10 @@ public class TurnManager : MonoBehaviour
     public void RemoveUnitFromTurnSystem(BaseUnit unit)
     {
         units.Remove(unit);
+        //Adjust unit index to match with new list size
+        if (units.Count > 0)
+            currentUnitIndex = currentUnitIndex % units.Count;
+        else
+            currentUnitIndex = 0;
     }
 }

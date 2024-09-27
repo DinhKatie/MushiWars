@@ -16,11 +16,9 @@ public class GridManager : MonoBehaviour
     [SerializeField] private TileBase _validMoveTile;
     [SerializeField] private TileBase _validAttackTile;
 
-
-
     private Vector3Int _previousHoverTilePosition;
 
-    private Vector3Int _previousTileSelection = new Vector3Int(-1, -1, -1);
+    private Vector3Int _previousTileSelection = new Vector3Int(-1, -1, -1); //Default if no tile is selected
 
     public static GridManager Instance;
 
@@ -102,7 +100,7 @@ public class GridManager : MonoBehaviour
         BaseUnit unit = UnitManager.Instance.GetUnitAtTile(_previousTileSelection);
         BaseUnit newUnit = UnitManager.Instance.GetUnitAtTile(tilePosition);
         
-        //If the new position has a unit on it, attack it.
+        //If the new position has a unit on it, try to attack it.
         if (newUnit != null && unit != null)
         {
             UnitManager.Instance.AttackUnit(unit, tilePosition);

@@ -46,8 +46,8 @@ public class UnitManager : MonoBehaviour
             // spawn Unit
             BaseUnit newUnit = Instantiate(unitPrefab);
             newUnit.transform.position = _tilemap.GetCellCenterWorld(spawnTile);
-            
-            newUnit.currPosition = spawnTile;
+
+            newUnit.SetCurrentPosition(spawnTile);
 
             // Add the unit to the dictionary to track its position
             _unitsOnTiles[spawnTile] = newUnit;
@@ -66,7 +66,7 @@ public class UnitManager : MonoBehaviour
     {
         if (_unitsOnTiles.TryGetValue(unitTile, out BaseUnit unit))
         {
-            _unitsOnTiles.Remove(unit.currPosition);
+            _unitsOnTiles.Remove(unit.CurrentPosition);
             Destroy(unit.gameObject);
         }
     }
@@ -90,9 +90,9 @@ public class UnitManager : MonoBehaviour
 
     public void MoveUnit(BaseUnit unit, Vector3Int newPosition)
     {
-        if (!isTileValid(newPosition) || unit.IsTurn() == false || unit.GetMoveRange() <= 0 || unit.CalculateMoveCost(newPosition) > unit.GetMoveRange()) return;
+        if (!isTileValid(newPosition) || unit.IsTurn == false || unit.MovementRange <= 0 || unit.CalculateMoveCost(newPosition) > unit.MovementRange) return;
 
-        _unitsOnTiles.Remove(unit.currPosition);
+        _unitsOnTiles.Remove(unit.CurrentPosition);
         _unitsOnTiles[newPosition] = unit;
 
         unit.Move(newPosition);
@@ -100,12 +100,21 @@ public class UnitManager : MonoBehaviour
 
     public void AttackUnit(BaseUnit attacker, Vector3Int hitUnit)
     {
-        _unitsOnTiles.TryGetValue(hitUnit, out BaseUnit unit);
-
+        //Ensure target is within the current unit's attack range
         List<Vector3Int> attackRanges = attacker.CalculateAttackRange();
         if (attackRanges.Contains(hitUnit))
-            attacker.Attack(hitUnit);
-        TurnManager.Instance.RemoveUnitFromTurnSystem(unit);
+        {
+            if (_unitsOnTiles.TryGetValue(hitUnit, out BaseUnit unit))
+            {
+                attacker.Attack(hitUnit);
+                //Remove the killed unit from the turn system
+                TurnManager.Instance.RemoveUnitFromTurnSystem(unit);
+            }
+            else
+                Debug.Log($"No unit found at {hitUnit}");
+        }
+        else
+            Debug.Log($"{hitUnit} is out of attack range");
     }
 
 }

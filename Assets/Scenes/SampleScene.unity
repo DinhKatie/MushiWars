@@ -4563,6 +4563,7 @@ MonoBehaviour:
   _highlightTile: {fileID: 11400000, guid: f9a4f293fbff18d4991c4ce2695e29d9, type: 2}
   _outlineTile: {fileID: 11400000, guid: d3c74016266dcae4b83c550673b51030, type: 2}
   _validMoveTile: {fileID: 11400000, guid: 71d8cd255b948d74f93ceab9149952d9, type: 2}
+  _validAttackTile: {fileID: 11400000, guid: 5e7f698d30cb6634b8d231ffa8bf6ecc, type: 2}
 --- !u!1 &1167332268
 GameObject:
   m_ObjectHideFlags: 0
