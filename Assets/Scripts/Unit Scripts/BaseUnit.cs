@@ -70,9 +70,10 @@ public class BaseUnit : MonoBehaviour
     public void Attack(Vector3Int enemy)
     {
         UnitManager.Instance.RemoveUnit(enemy);
+        hasAttacked = true;
         HighlightValidMoves();
         GridManager.Instance.Deselect();
-        hasAttacked = true;
+        
     }
 
     public int CalculateMoveCost(Vector3Int newPosition)
@@ -97,7 +98,10 @@ public class BaseUnit : MonoBehaviour
                     continue;
 
                 Vector3Int tile = new Vector3Int(startPos.x + x, startPos.y + y, startPos.z);
-                if (GridManager.Instance.GetTileAtPosition(tile) != null && UnitManager.Instance.GetUnitAtTile(tile) == null)
+
+                //If the tile is valid, there's no unit, and it's not an obstacle: It's a valid move.
+                if (GridManager.Instance.GetTileAtPosition(tile) != null && UnitManager.Instance.GetUnitAtTile(tile) == null
+                    && !GridManager.Instance.IsObstacleTile(tile))
                 {
                     validMoves.Add(tile);
                 }
@@ -147,12 +151,16 @@ public class BaseUnit : MonoBehaviour
     protected void HighlightValidMoves()
     {
         GridManager.Instance.ClearValidMoves();
-
+        
         List<Vector3Int> validMoves = CalculateValidMoves();
-        List<Vector3Int> validAtt = CalculateValidAttacks();
-
         GridManager.Instance.HighlightValidMoves(validMoves);
-        GridManager.Instance.HighlightValidAttacks(validAtt);
+
+        //If unit hasn't attacked yet, highlight their valid attacks
+        if (!hasAttacked)
+        {
+            List<Vector3Int> validAtt = CalculateValidAttacks();
+            GridManager.Instance.HighlightValidAttacks(validAtt);
+        }
     }
 
 }
