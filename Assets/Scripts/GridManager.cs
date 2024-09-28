@@ -16,6 +16,8 @@ public class GridManager : MonoBehaviour
     [SerializeField] private TileBase _validMoveTile;
     [SerializeField] private TileBase _validAttackTile;
 
+    [SerializeField] private BaseObstacle _obstaclePrefab;
+
     private Vector3Int _previousHoverTilePosition;
 
     private Vector3Int _previousTileSelection = new Vector3Int(-1, -1, -1); //Default if no tile is selected
@@ -33,6 +35,8 @@ public class GridManager : MonoBehaviour
     private void Start()
     {
         _highlightTilemap.ClearAllTiles();
+        Vector3Int tile = new Vector3Int(-1, -3, 0);
+        SpawnObstacle(tile);
     }
 
     private void Update()
@@ -139,6 +143,14 @@ public class GridManager : MonoBehaviour
     public void ClearValidMoves()
     {
         _validMovesMap.ClearAllTiles();
+    }
+
+    // Instantiate the obstacle prefab at the calculated position
+    public void SpawnObstacle(Vector3Int spawnTile)
+    {
+        Vector3 worldPosition = _tilemap.GetCellCenterWorld(spawnTile);
+        BaseObstacle obstacle = Instantiate(_obstaclePrefab, worldPosition, Quaternion.identity);
+        obstacle.SetPosition(spawnTile);
     }
 
     // Get the tile at the specified grid position

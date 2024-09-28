@@ -50,8 +50,7 @@ public class UnitManager : MonoBehaviour
         if (_tilemap.GetTile(spawnTile) != null && !_unitsOnTiles.ContainsKey(spawnTile))
         {
             // spawn Unit
-            BaseUnit newUnit = Instantiate(type);
-            newUnit.transform.position = _tilemap.GetCellCenterWorld(spawnTile);
+            BaseUnit newUnit = Instantiate(type, _tilemap.GetCellCenterWorld(spawnTile), Quaternion.identity);
 
             newUnit.SetCurrentPosition(spawnTile);
 
