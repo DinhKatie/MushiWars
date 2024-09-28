@@ -95,7 +95,8 @@ public class UnitManager : MonoBehaviour
 
     public void MoveUnit(BaseUnit unit, Vector3Int newPosition)
     {
-        if (!isTileValid(newPosition) || !unit.IsTurn || unit.MovementRange <= 0 || unit.CalculateMoveCost(newPosition) > unit.MovementRange) return;
+        if (!isTileValid(newPosition) || !unit.IsTurn || unit.MovementRange <= 0 || unit.CalculateMoveCost(newPosition) > unit.MovementRange
+            || GridManager.Instance.IsObstacleTile(newPosition)) return;
 
         _unitsOnTiles.Remove(unit.CurrentPosition);
         _unitsOnTiles[newPosition] = unit;

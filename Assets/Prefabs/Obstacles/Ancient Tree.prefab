@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4320963413819186164}
   - component: {fileID: 4825900622626829720}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: TopRIght
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -94,7 +94,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5467719332336463826}
   - component: {fileID: 3687704778341448842}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: BotLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -179,9 +179,9 @@ GameObject:
   - component: {fileID: 4858227671306559057}
   - component: {fileID: 4868308938038067767}
   - component: {fileID: 1210173675021165333}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Ancient Tree
-  m_TagString: Untagged
+  m_TagString: Obstacles
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -279,7 +279,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5947773423977358237}
   - component: {fileID: 8763473190113095352}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: BotRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}

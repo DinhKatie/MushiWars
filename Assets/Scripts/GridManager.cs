@@ -17,6 +17,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private TileBase _validAttackTile;
 
     [SerializeField] private BaseObstacle _obstaclePrefab;
+    private List<Vector3Int> _obstacles;
 
     private Vector3Int _previousHoverTilePosition;
 
@@ -36,6 +37,7 @@ public class GridManager : MonoBehaviour
     {
         _highlightTilemap.ClearAllTiles();
         Vector3Int tile = new Vector3Int(-1, -3, 0);
+        _obstacles = new List<Vector3Int>();
         SpawnObstacle(tile);
     }
 
@@ -114,7 +116,7 @@ public class GridManager : MonoBehaviour
             UnitManager.Instance.AttackUnit(unit, tilePosition);
             Debug.Log($"{unit.name} attacked {newUnit.name}!");
         }
-        //If a unit is selected, move the unit to the new position
+        //If a unit is selected, try to move the unit to the new position
         else if (unit != null)
         {
             UnitManager.Instance.MoveUnit(unit, tilePosition);
@@ -145,12 +147,28 @@ public class GridManager : MonoBehaviour
         _validMovesMap.ClearAllTiles();
     }
 
-    // Instantiate the obstacle prefab at the calculated position
+    // Instantiate obstacle and add to obstacles list
     public void SpawnObstacle(Vector3Int spawnTile)
     {
         Vector3 worldPosition = _tilemap.GetCellCenterWorld(spawnTile);
         BaseObstacle obstacle = Instantiate(_obstaclePrefab, worldPosition, Quaternion.identity);
         obstacle.SetPosition(spawnTile);
+
+        //Label the tiles it takes up as obstacles, such as 2x2 ancient tree
+        List<Vector3Int> i = obstacle.GetOccupiedTiles;
+        foreach (var ob in i)
+        {
+            if (i.Count == 0)
+                break;
+            _obstacles.Add(ob);
+        }
+    }
+
+    public bool IsObstacleTile(Vector3Int tile)
+    {
+        if (_obstacles.Count == 0)
+            return false;
+        return _obstacles.Contains(tile);
     }
 
     // Get the tile at the specified grid position

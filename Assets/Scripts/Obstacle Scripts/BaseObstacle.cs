@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BaseObstacle : MonoBehaviour
 {
-    public List<Vector3Int> occupiedTiles;
+    private List<Vector3Int> occupiedTiles;
     protected Vector3Int currPosition;
 
     public Vector3Int CurrPosition => currPosition;
