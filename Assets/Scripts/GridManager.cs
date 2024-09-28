@@ -97,6 +97,10 @@ public class GridManager : MonoBehaviour
         if (_previousTileSelection != tilePosition)
             _outlineTilemap.SetTile(_previousTileSelection, null);
 
+        // Highlight the selected tile
+        _outlineTilemap.SetTile(tilePosition, _outlineTile);
+        _highlightTilemap.SetTile(tilePosition, null);
+
         BaseUnit unit = UnitManager.Instance.GetUnitAtTile(_previousTileSelection);
         BaseUnit newUnit = UnitManager.Instance.GetUnitAtTile(tilePosition);
         
@@ -114,11 +118,6 @@ public class GridManager : MonoBehaviour
 
         _previousTileSelection = tilePosition;
 
-        // Highlight the selected tile
-        _outlineTilemap.SetTile(tilePosition, _outlineTile);
-        _highlightTilemap.SetTile(tilePosition, null);
-        //Debug.Log("Selected tile: " +  _selectedTilePosition);
-        UnitManager.Instance.GetUnitAtTile(tilePosition);
     }
 
     public void HighlightValidMoves(List<Vector3Int> moves)

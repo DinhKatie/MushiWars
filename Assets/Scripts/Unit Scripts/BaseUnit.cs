@@ -5,17 +5,20 @@ using UnityEngine.Tilemaps;
 
 public class BaseUnit : MonoBehaviour
 {
+
     // Unit stats
-    private Vector3Int currPosition;
-    private int movementRange;
-    private int attackRange;
-    private bool turn;
+    protected Vector3Int currPosition;
+    protected int movementRange;
+    protected int attackRange;
+    protected bool turn;
+    protected bool hasAttacked;
 
     // Getters
     public Vector3Int CurrentPosition => currPosition;
     public int MovementRange => movementRange;
     public int AttackRange => attackRange;
     public bool IsTurn => turn;
+    public bool HasAttacked => hasAttacked;
 
     //Setters
     public void SetCurrentPosition(Vector3Int pos)
@@ -26,15 +29,17 @@ public class BaseUnit : MonoBehaviour
     {
         movementRange = 2;
         attackRange = 1;
+        hasAttacked = false;
     }
 
-    public void StartTurn()
+    public virtual void StartTurn()
     {
         Debug.Log($"It's Mushi on {currPosition}'s turn");
         //Reset Stats
         movementRange = 2;
         attackRange = 1;
         turn = true;
+        hasAttacked = false;
 
         HighlightValidMoves();
     }
@@ -67,6 +72,7 @@ public class BaseUnit : MonoBehaviour
         UnitManager.Instance.RemoveUnit(enemy);
         HighlightValidMoves();
         GridManager.Instance.Deselect();
+        hasAttacked = true;
     }
 
     public int CalculateMoveCost(Vector3Int newPosition)
@@ -101,7 +107,7 @@ public class BaseUnit : MonoBehaviour
         return validMoves;
     }
 
-    public List<Vector3Int> CalculateAttackRange()
+    protected virtual List<Vector3Int> GetAttackRange()
     {
         List<Vector3Int> attackRanges = new List<Vector3Int>
         {
@@ -110,6 +116,12 @@ public class BaseUnit : MonoBehaviour
             currPosition + new Vector3Int(-1, 0, 0),
             currPosition + new Vector3Int(1, 0, 0)
         };
+        return attackRanges;
+    }
+
+    public List<Vector3Int> CalculateValidAttacks()
+    {
+        List<Vector3Int> attackRanges = GetAttackRange();
         List<Vector3Int> toRemove = new List<Vector3Int>();
         foreach (var attack in attackRanges)
         {
@@ -132,12 +144,12 @@ public class BaseUnit : MonoBehaviour
         }
     }
 
-    private void HighlightValidMoves()
+    protected void HighlightValidMoves()
     {
         GridManager.Instance.ClearValidMoves();
 
         List<Vector3Int> validMoves = CalculateValidMoves();
-        List<Vector3Int> validAtt = CalculateAttackRange();
+        List<Vector3Int> validAtt = CalculateValidAttacks();
 
         GridManager.Instance.HighlightValidMoves(validMoves);
         GridManager.Instance.HighlightValidAttacks(validAtt);
