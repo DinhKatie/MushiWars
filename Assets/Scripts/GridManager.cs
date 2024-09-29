@@ -112,15 +112,15 @@ public class GridManager : MonoBehaviour
         BaseUnit newUnit = UnitManager.Instance.GetUnitAtTile(tilePosition);
 
         // If a unit is clicked and it's the current squad's turn
-        if (newUnit != null && TurnManager.Instance.isUnitInCurrentSquad(newUnit))
+        if (newUnit != null)
         {
             // If no unit was previously selected, highlight the clicked unit's movement options
-            if (previousUnit == null)
+            if (previousUnit == null && TurnManager.Instance.isUnitInCurrentSquad(newUnit))
             {
                 UnitManager.Instance.GetUnitHighlights(newUnit);
                 Debug.Log($"{newUnit.name} selected. Highlighting move options.");
             }
-            else //previously selected a unit, and now clicked another unit. Check for attack or switching selection.
+            else if (previousUnit != null && newUnit != previousUnit) //previously selected a unit, and now clicked another unit. Check for attack or switching selection.
             {
                 if (!TurnManager.Instance.isUnitInCurrentSquad(newUnit)) //Unit clicked is not in the squad. Attack them.
                 {

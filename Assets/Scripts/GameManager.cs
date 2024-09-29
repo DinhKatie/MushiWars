@@ -48,7 +48,7 @@ public class GameManager : MonoBehaviour
 
         List<Vector3Int> swordUnits = new List<Vector3Int>
         {
-            new Vector3Int(-5, -3, 0),
+            new Vector3Int(0, 0, 0),
             new Vector3Int(-4, -3, 0),
         };
 
@@ -79,7 +79,7 @@ public class GameManager : MonoBehaviour
 
         List<Vector3Int> swordUnits = new List<Vector3Int>
         {
-            new Vector3Int(5, 3, 0),
+            new Vector3Int(0, 1, 0),
             new Vector3Int(4, 3, 0),
         };
 
