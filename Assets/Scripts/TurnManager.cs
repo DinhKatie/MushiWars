@@ -5,8 +5,17 @@ using UnityEngine;
 public class TurnManager : MonoBehaviour
 {
     public static TurnManager Instance;
-    public List<BaseUnit> units; 
-    private int currentUnitIndex = 0; // Track whose turn it is
+    public List<BaseUnit> units;
+
+    public List<BaseUnit> player1Squad;
+    public List<BaseUnit> player2Squad;
+
+    private Dictionary<Squads, List<BaseUnit>> squadsDict;
+    private List<List<BaseUnit>> squadsList;
+
+    public Squads currentSquad; // The squad whose turn it is
+
+    private int currentSquadIndex = 0;
 
 
     private void Awake()
@@ -15,10 +24,14 @@ public class TurnManager : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
-    }
 
-    void Start()
-    {
+        squadsDict = new Dictionary<Squads, List<BaseUnit>>
+        {
+            { Squads.one, player1Squad },
+            { Squads.two, player2Squad },
+        };
+
+        squadsList = new List<List<BaseUnit>> { player1Squad, player2Squad };
     }
 
     void Update()
@@ -30,30 +43,49 @@ public class TurnManager : MonoBehaviour
     // Start the turn of the current unit
     public void StartTurn()
     {
-        BaseUnit currentUnit = units[currentUnitIndex];
-        currentUnit.StartTurn();
+        currentSquad = (Squads)(currentSquadIndex + 1);
+        Debug.Log($"Switching Teams. Team {currentSquad}'s turn");
     }
 
-    // End the current unit's turn and move to the next
+    // End the current squad's turn and move to the next
     public void EndTurn()
     {
-        units[currentUnitIndex].EndTurn();
-        currentUnitIndex = (currentUnitIndex + 1) % units.Count; // Loop through the units
+        currentSquadIndex = (currentSquadIndex + 1) % squadsList.Count; // Loop through the squads
+        UnitManager.Instance.ResetTeam(squadsList[currentSquadIndex]);
+        GridManager.Instance.Deselect();
+        GridManager.Instance.ClearValidMoves();
         StartTurn();
     }
 
-    public void AddUnitToTurnSystem(BaseUnit unit)
+    public bool isUnitInCurrentSquad(BaseUnit unit)
     {
-        units.Add(unit);
+        if (unit.GetSquad == currentSquad) return true;
+        return false;
+    }
+
+    public void AddUnitToSquad(BaseUnit unit, Squads team)
+    {
+        List<BaseUnit> squad = squadsDict[team];
+        unit.SetSquad(team);
+        squad.Add(unit);
     }
 
     public void RemoveUnitFromTurnSystem(BaseUnit unit)
     {
-        units.Remove(unit);
-        //Adjust unit index to match with new list size
-        if (units.Count > 0)
-            currentUnitIndex = currentUnitIndex % units.Count;
-        else
-            currentUnitIndex = 0;
+        foreach (var squad in squadsList)
+        {
+            if (squad.Contains(unit))
+            {
+                squad.Remove(unit);
+                break;
+            }
+        }
     }
 }
+
+public enum Squads
+{ 
+    one = 1,
+    two = 2,
+}
+

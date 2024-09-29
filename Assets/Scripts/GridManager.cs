@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using static UnityEngine.UI.CanvasScaler;
 
 public class GridManager : MonoBehaviour
 {
@@ -106,19 +108,36 @@ public class GridManager : MonoBehaviour
         _outlineTilemap.SetTile(tilePosition, _outlineTile);
         _highlightTilemap.SetTile(tilePosition, null);
 
-        BaseUnit unit = UnitManager.Instance.GetUnitAtTile(_previousTileSelection);
+        BaseUnit previousUnit = UnitManager.Instance.GetUnitAtTile(_previousTileSelection);
         BaseUnit newUnit = UnitManager.Instance.GetUnitAtTile(tilePosition);
-        
-        //If the new position has a unit on it, try to attack it.
-        if (newUnit != null && unit != null)
+
+        // If a unit is clicked and it's the current squad's turn
+        if (newUnit != null && TurnManager.Instance.isUnitInCurrentSquad(newUnit))
         {
-            UnitManager.Instance.AttackUnit(unit, newUnit);
-            Debug.Log($"{unit.name} attacked {newUnit.name}!");
+            // If no unit was previously selected, highlight the clicked unit's movement options
+            if (previousUnit == null)
+            {
+                UnitManager.Instance.GetUnitHighlights(newUnit);
+                Debug.Log($"{newUnit.name} selected. Highlighting move options.");
+            }
+            else //previously selected a unit, and now clicked another unit. Check for attack or switching selection.
+            {
+                if (!TurnManager.Instance.isUnitInCurrentSquad(newUnit)) //Unit clicked is not in the squad. Attack them.
+                {
+                    UnitManager.Instance.AttackUnit(previousUnit, newUnit);
+                    Debug.Log($"{previousUnit.name} attacked {newUnit.name}!");
+                }
+                else //Unit Clicked is in the squad. Switch selection.
+                {
+                    UnitManager.Instance.GetUnitHighlights(newUnit);
+                    Debug.Log($"{newUnit.name} selected. Switching selection and highlights.");
+                }
+            }
         }
-        //If a unit is selected, try to move the unit to the new position
-        else if (unit != null)
+        //Otherwise, if clicked a unit then clicked an empty tile, move the unit.
+        else if (previousUnit != null && newUnit == null && TurnManager.Instance.isUnitInCurrentSquad(previousUnit))
         {
-            UnitManager.Instance.MoveUnit(unit, tilePosition);
+            UnitManager.Instance.MoveUnit(previousUnit, tilePosition);
         }
 
         _previousTileSelection = tilePosition;

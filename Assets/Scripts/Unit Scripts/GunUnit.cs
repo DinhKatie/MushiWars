@@ -6,6 +6,7 @@ public class GunUnit : BaseUnit
 {
     protected override void Start()
     {
+        base.Start();
         ResetStats();
     }
 
@@ -16,13 +17,6 @@ public class GunUnit : BaseUnit
         hasAttacked = false;
     }
 
-    public override void StartTurn()
-    {
-        Debug.Log($"It's Mushi on {currPosition}'s turn");
-        ResetStats();
-        turn = true;
-        HighlightValidMoves();
-    }
     protected override List<Vector3Int> GetAttackRange()
     {
         List<Vector3Int> attackRanges = new List<Vector3Int>

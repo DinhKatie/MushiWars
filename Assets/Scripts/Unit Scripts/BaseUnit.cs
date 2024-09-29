@@ -10,21 +10,22 @@ public class BaseUnit : MonoBehaviour
     protected Vector3Int currPosition;
     protected int movementRange;
     protected int attackRange;
-    protected bool turn;
     protected bool hasAttacked;
     protected int health;
+
+    public Squads squad;
 
     // Getters
     public Vector3Int CurrentPosition => currPosition;
     public int MovementRange => movementRange;
     public int AttackRange => attackRange;
-    public bool IsTurn => turn;
     public bool HasAttacked => hasAttacked;
     public int Health => health;
+    public Squads GetSquad { get { return squad; } }
 
     //Setters
-    public void SetCurrentPosition(Vector3Int pos)
-    { currPosition = pos; }
+    public void SetCurrentPosition(Vector3Int pos) { currPosition = pos; }
+    public void SetSquad(Squads team) { squad = team; }
 
     // Start is called before the first frame update
     protected virtual void Start()
@@ -38,22 +39,6 @@ public class BaseUnit : MonoBehaviour
         movementRange = 2;
         attackRange = 1;
         hasAttacked = false;
-    }
-
-    public virtual void StartTurn()
-    {
-        Debug.Log($"It's Mushi on {currPosition}'s turn");
-        ResetStats();
-        turn = true;
-
-        HighlightValidMoves();
-    }
-
-    public void EndTurn()
-    {
-        turn = false;
-        GridManager.Instance.ClearValidMoves();
-        GridManager.Instance.Deselect();
     }
 
     public void Move(Vector3Int newPosition)
@@ -87,8 +72,7 @@ public class BaseUnit : MonoBehaviour
         if (health <= 0)
         {
             UnitManager.Instance.RemoveUnit(currPosition);
-        }
-            
+        }   
     }
 
     public int CalculateMoveCost(Vector3Int newPosition)
@@ -144,9 +128,12 @@ public class BaseUnit : MonoBehaviour
         List<Vector3Int> toRemove = new List<Vector3Int>();
         foreach (var attack in attackRanges)
         {
-            //If the tile doesn't have a unit on it, do not designate as an attackable tile (needa remove friendly fire later lmao)
-            if (UnitManager.Instance.GetUnitAtTile(attack) == null)
+            BaseUnit unit = UnitManager.Instance.GetUnitAtTile(attack);
+
+            //Do not designate as attackable tile if the tile is empty or if it is a unit within the team
+            if (unit == null || TurnManager.Instance.isUnitInCurrentSquad(unit))
                 toRemove.Add(attack);
+            
         }
         foreach (var attack in toRemove)
         {
@@ -176,6 +163,11 @@ public class BaseUnit : MonoBehaviour
             List<Vector3Int> validAtt = CalculateValidAttacks();
             GridManager.Instance.HighlightValidAttacks(validAtt);
         }
+    }
+
+    public void Reset()
+    {
+        ResetStats();
     }
 
 }

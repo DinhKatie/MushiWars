@@ -6,6 +6,7 @@ public class FireHero : BaseUnit
 {
     protected override void Start()
     {
+        base.Start();
         health = 3;
     }
 }

@@ -32,11 +32,6 @@ public class UnitManager : MonoBehaviour
             { UnitPrefabs.fireHero, fireHeroPrefab }
         };
     }
-    
-    void Start()
-    {
-        
-    }
 
     public void LogUnitsOnTiles()
     {
@@ -46,7 +41,7 @@ public class UnitManager : MonoBehaviour
         }
     }
 
-    public void SpawnUnit(Vector3Int spawnTile, UnitPrefabs unitType)
+    public BaseUnit SpawnUnit(Vector3Int spawnTile, UnitPrefabs unitType)
     {
         // Check if the tile is valid and no unit is already there
         if (_tilemap.GetTile(spawnTile) != null && !_unitsOnTiles.ContainsKey(spawnTile))
@@ -64,18 +59,13 @@ public class UnitManager : MonoBehaviour
 
             Debug.Log($"Unit spawned on tile {spawnTile}");
             newUnit.name = "Mushi " + _unitsOnTiles.Count;
-            TurnManager.Instance.AddUnitToTurnSystem(newUnit);
+
+            return newUnit;
         }
-        else
-        {
-            Debug.Log($"Tile {spawnTile} is either invalid or already has a unit.");
-        }
+        Debug.Log($"Tile {spawnTile} is either invalid or already has a unit.");
+        return null;
     }
 
-    private void GetPrefab()
-    {
-
-    }
     public void RemoveUnit(Vector3Int unitTile)
     {
         if (_unitsOnTiles.TryGetValue(unitTile, out BaseUnit unit))
@@ -93,7 +83,7 @@ public class UnitManager : MonoBehaviour
         if (_unitsOnTiles.TryGetValue(tilePosition, out BaseUnit unit))
         {
             return unit;
-        } 
+        }
         return null;
     }
 
@@ -106,7 +96,7 @@ public class UnitManager : MonoBehaviour
 
     public void MoveUnit(BaseUnit unit, Vector3Int newPosition)
     {
-        if (!isTileValid(newPosition) || !unit.IsTurn || unit.MovementRange <= 0 || unit.CalculateMoveCost(newPosition) > unit.MovementRange) return;
+        if (!isTileValid(newPosition) || unit.MovementRange <= 0 || unit.CalculateMoveCost(newPosition) > unit.MovementRange) return;
         if (GridManager.Instance.IsObstacleTile(newPosition))
         {
             Debug.Log("That is an obstacle.");
@@ -122,7 +112,7 @@ public class UnitManager : MonoBehaviour
     public void AttackUnit(BaseUnit attacker, BaseUnit hitUnit)
     {
         //One attack per turn
-        if (attacker.HasAttacked || !attacker.IsTurn)
+        if (attacker.HasAttacked)
         {
             Debug.Log($"{attacker.name} has attacked already!");
             return;
@@ -148,8 +138,21 @@ public class UnitManager : MonoBehaviour
     {
         foreach (var unit in _unitsOnTiles.Values)
         {
-            if (unit != null && unit.IsTurn)
+            if (unit != null)
                 unit.HighlightValidMoves();
+        }
+    }
+
+    public void GetUnitHighlights(BaseUnit unit)
+    {
+        unit.HighlightValidMoves();
+    }
+
+    public void ResetTeam(List<BaseUnit> squad)
+    {
+        foreach (var unit in squad)
+        {
+            unit.Reset();
         }
     }
 

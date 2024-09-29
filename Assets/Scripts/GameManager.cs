@@ -43,7 +43,8 @@ public class GameManager : MonoBehaviour
     private void SpawnSquad1()
     {
         Vector3Int heroSpawnTile = new Vector3Int(-5, -5, 0);
-        UnitManager.Instance.SpawnUnit(heroSpawnTile, UnitPrefabs.fireHero);
+        BaseUnit heroUnit = UnitManager.Instance.SpawnUnit(heroSpawnTile, UnitPrefabs.fireHero);
+        TurnManager.Instance.AddUnitToSquad(heroUnit, Squads.one);
 
         List<Vector3Int> swordUnits = new List<Vector3Int>
         {
@@ -58,15 +59,23 @@ public class GameManager : MonoBehaviour
         };
 
         foreach (var unit in swordUnits)
-            UnitManager.Instance.SpawnUnit(unit, UnitPrefabs.swordUnit);
+        {
+            BaseUnit swordGuy = UnitManager.Instance.SpawnUnit(unit, UnitPrefabs.swordUnit);
+            TurnManager.Instance.AddUnitToSquad(swordGuy, Squads.one);
+        }
+
         foreach (var unit in gunUnits)
-            UnitManager.Instance.SpawnUnit(unit, UnitPrefabs.gunUnit);
+        {
+            BaseUnit gunGuy = UnitManager.Instance.SpawnUnit(unit, UnitPrefabs.gunUnit);
+            TurnManager.Instance.AddUnitToSquad(gunGuy, Squads.one);
+        }
     }
 
     private void SpawnSquad2()
     {
         Vector3Int heroSpawnTile = new Vector3Int(5, 5, 0);
-        UnitManager.Instance.SpawnUnit(heroSpawnTile, UnitPrefabs.fireHero);
+        BaseUnit heroUnit = UnitManager.Instance.SpawnUnit(heroSpawnTile, UnitPrefabs.fireHero);
+        TurnManager.Instance.AddUnitToSquad(heroUnit, Squads.two);
 
         List<Vector3Int> swordUnits = new List<Vector3Int>
         {
@@ -80,10 +89,17 @@ public class GameManager : MonoBehaviour
             new Vector3Int(3, 4, 0),
         };
 
-        foreach (var unit in swordUnits)
-            UnitManager.Instance.SpawnUnit(unit, UnitPrefabs.swordUnit);
+        foreach(var unit in swordUnits)
+        {
+            BaseUnit swordGuy = UnitManager.Instance.SpawnUnit(unit, UnitPrefabs.swordUnit);
+            TurnManager.Instance.AddUnitToSquad(swordGuy, Squads.two);
+        }
+
         foreach (var unit in gunUnits)
-            UnitManager.Instance.SpawnUnit(unit, UnitPrefabs.gunUnit);
+        {
+            BaseUnit gunGuy = UnitManager.Instance.SpawnUnit(unit, UnitPrefabs.gunUnit);
+            TurnManager.Instance.AddUnitToSquad(gunGuy, Squads.two);
+        }
     }
 
 }
