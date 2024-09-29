@@ -15,6 +15,7 @@ public class UnitManager : MonoBehaviour
     [SerializeField] public BaseUnit fireHeroPrefab;
 
     private Dictionary<Vector3Int, BaseUnit> _unitsOnTiles = new Dictionary<Vector3Int, BaseUnit>();
+    private Dictionary<UnitPrefabs, BaseUnit> unitPrefabsDict;
 
     private void Awake()
     {
@@ -22,22 +23,19 @@ public class UnitManager : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
+
+        unitPrefabsDict = new Dictionary<UnitPrefabs, BaseUnit>
+        {
+            { UnitPrefabs.unit, unitPrefab },
+            { UnitPrefabs.swordUnit, swordUnitPrefab },
+            { UnitPrefabs.gunUnit, gunUnitPrefab },
+            { UnitPrefabs.fireHero, fireHeroPrefab }
+        };
     }
     
     void Start()
     {
-        // Example: Spawning a unit on tile (0, 0) at the start
-        Vector3Int startingTile = new Vector3Int(0, 0, 0);
-        SpawnUnit(startingTile, unitPrefab);
-        Vector3Int tile = new Vector3Int(1, 1, 0);
-        SpawnUnit(tile, unitPrefab);
-        tile = new Vector3Int(-1, -1, 0);
-        SpawnUnit(tile, swordUnitPrefab);
-        tile = new Vector3Int(-2, 0, 0);
-        SpawnUnit(tile, gunUnitPrefab);
-        tile = new Vector3Int(2, 0, 0);
-        SpawnUnit(tile, fireHeroPrefab);
-        TurnManager.Instance.StartTurn();
+        
     }
 
     public void LogUnitsOnTiles()
@@ -48,13 +46,16 @@ public class UnitManager : MonoBehaviour
         }
     }
 
-    private void SpawnUnit(Vector3Int spawnTile, BaseUnit type)
+    public void SpawnUnit(Vector3Int spawnTile, UnitPrefabs unitType)
     {
         // Check if the tile is valid and no unit is already there
         if (_tilemap.GetTile(spawnTile) != null && !_unitsOnTiles.ContainsKey(spawnTile))
         {
-            // spawn Unit
-            BaseUnit newUnit = Instantiate(type, _tilemap.GetCellCenterWorld(spawnTile), Quaternion.identity);
+            // Retrieve the prefab based on the enum type
+            BaseUnit prefabToSpawn = unitPrefabsDict[unitType];
+
+            // Spawn Unit
+            BaseUnit newUnit = Instantiate(prefabToSpawn, _tilemap.GetCellCenterWorld(spawnTile), Quaternion.identity);
 
             newUnit.SetCurrentPosition(spawnTile);
 
@@ -71,6 +72,10 @@ public class UnitManager : MonoBehaviour
         }
     }
 
+    private void GetPrefab()
+    {
+
+    }
     public void RemoveUnit(Vector3Int unitTile)
     {
         if (_unitsOnTiles.TryGetValue(unitTile, out BaseUnit unit))
@@ -149,3 +154,12 @@ public class UnitManager : MonoBehaviour
     }
 
 }
+
+public enum UnitPrefabs
+{
+    unit = 0,
+    swordUnit = 1,
+    gunUnit = 2,
+    fireHero = 3,
+}
+
