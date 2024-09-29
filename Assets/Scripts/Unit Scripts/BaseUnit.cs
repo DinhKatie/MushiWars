@@ -12,6 +12,7 @@ public class BaseUnit : MonoBehaviour
     protected int attackRange;
     protected bool turn;
     protected bool hasAttacked;
+    protected int health;
 
     // Getters
     public Vector3Int CurrentPosition => currPosition;
@@ -19,13 +20,20 @@ public class BaseUnit : MonoBehaviour
     public int AttackRange => attackRange;
     public bool IsTurn => turn;
     public bool HasAttacked => hasAttacked;
+    public int Health => health;
 
     //Setters
     public void SetCurrentPosition(Vector3Int pos)
-    { this.currPosition = pos; }
+    { currPosition = pos; }
 
     // Start is called before the first frame update
     protected virtual void Start()
+    {
+        health = 1;
+        ResetStats();
+    }
+
+    protected virtual void ResetStats()
     {
         movementRange = 2;
         attackRange = 1;
@@ -35,11 +43,8 @@ public class BaseUnit : MonoBehaviour
     public virtual void StartTurn()
     {
         Debug.Log($"It's Mushi on {currPosition}'s turn");
-        //Reset Stats
-        movementRange = 2;
-        attackRange = 1;
+        ResetStats();
         turn = true;
-        hasAttacked = false;
 
         HighlightValidMoves();
     }
@@ -67,13 +72,23 @@ public class BaseUnit : MonoBehaviour
             
     }
 
-    public void Attack(Vector3Int enemy)
+    public virtual void Attack(BaseUnit enemy)
     {
-        UnitManager.Instance.RemoveUnit(enemy);
+        enemy.OnHit();
         hasAttacked = true;
         HighlightValidMoves();
         GridManager.Instance.Deselect();
-        
+    }
+
+    protected virtual void OnHit()
+    {
+        health -= 1;
+        Debug.Log($"{name} has been hit! Health: {health}");
+        if (health <= 0)
+        {
+            UnitManager.Instance.RemoveUnit(currPosition);
+        }
+            
     }
 
     public int CalculateMoveCost(Vector3Int newPosition)

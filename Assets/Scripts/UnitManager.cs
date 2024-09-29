@@ -8,9 +8,11 @@ public class UnitManager : MonoBehaviour
     public static UnitManager Instance;
     [SerializeField] private GridManager gridManager;
     [SerializeField] private Tilemap _tilemap;
+
     [SerializeField] public BaseUnit unitPrefab;
     [SerializeField] public BaseUnit swordUnitPrefab;
     [SerializeField] public BaseUnit gunUnitPrefab;
+    [SerializeField] public BaseUnit fireHeroPrefab;
 
     private Dictionary<Vector3Int, BaseUnit> _unitsOnTiles = new Dictionary<Vector3Int, BaseUnit>();
 
@@ -33,6 +35,8 @@ public class UnitManager : MonoBehaviour
         SpawnUnit(tile, swordUnitPrefab);
         tile = new Vector3Int(-2, 0, 0);
         SpawnUnit(tile, gunUnitPrefab);
+        tile = new Vector3Int(2, 0, 0);
+        SpawnUnit(tile, fireHeroPrefab);
         TurnManager.Instance.StartTurn();
     }
 
@@ -73,6 +77,8 @@ public class UnitManager : MonoBehaviour
         {
             _unitsOnTiles.Remove(unit.CurrentPosition);
             Destroy(unit.gameObject);
+            //Remove the killed unit from the turn system
+            TurnManager.Instance.RemoveUnitFromTurnSystem(unit);
         }
     }
 
@@ -108,7 +114,7 @@ public class UnitManager : MonoBehaviour
         unit.Move(newPosition);
     }
 
-    public void AttackUnit(BaseUnit attacker, Vector3Int hitUnit)
+    public void AttackUnit(BaseUnit attacker, BaseUnit hitUnit)
     {
         //One attack per turn
         if (attacker.HasAttacked || !attacker.IsTurn)
@@ -119,13 +125,11 @@ public class UnitManager : MonoBehaviour
 
         //Ensure target is within the current unit's attack range
         List<Vector3Int> attackRanges = attacker.CalculateValidAttacks();
-        if (attackRanges.Contains(hitUnit))
+        if (attackRanges.Contains(hitUnit.CurrentPosition))
         {
-            if (_unitsOnTiles.TryGetValue(hitUnit, out BaseUnit unit))
+            if (_unitsOnTiles.TryGetValue(hitUnit.CurrentPosition, out BaseUnit unit))
             {
                 attacker.Attack(hitUnit);
-                //Remove the killed unit from the turn system
-                TurnManager.Instance.RemoveUnitFromTurnSystem(unit);
             }
             else
                 Debug.Log($"No unit found at {hitUnit}");

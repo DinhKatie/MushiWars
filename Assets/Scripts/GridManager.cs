@@ -114,7 +114,7 @@ public class GridManager : MonoBehaviour
         //If the new position has a unit on it, try to attack it.
         if (newUnit != null && unit != null)
         {
-            UnitManager.Instance.AttackUnit(unit, tilePosition);
+            UnitManager.Instance.AttackUnit(unit, newUnit);
             Debug.Log($"{unit.name} attacked {newUnit.name}!");
         }
         //If a unit is selected, try to move the unit to the new position

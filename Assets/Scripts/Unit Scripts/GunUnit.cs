@@ -6,6 +6,11 @@ public class GunUnit : BaseUnit
 {
     protected override void Start()
     {
+        ResetStats();
+    }
+
+    protected override void ResetStats()
+    {
         movementRange = 1;
         attackRange = 2; //Except not point blank
         hasAttacked = false;
@@ -14,9 +19,7 @@ public class GunUnit : BaseUnit
     public override void StartTurn()
     {
         Debug.Log($"It's Mushi on {currPosition}'s turn");
-        movementRange = 1;
-        attackRange = 2; 
-        hasAttacked = false;
+        ResetStats();
         turn = true;
         HighlightValidMoves();
     }
