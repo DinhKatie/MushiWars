@@ -95,8 +95,12 @@ public class UnitManager : MonoBehaviour
 
     public void MoveUnit(BaseUnit unit, Vector3Int newPosition)
     {
-        if (!isTileValid(newPosition) || !unit.IsTurn || unit.MovementRange <= 0 || unit.CalculateMoveCost(newPosition) > unit.MovementRange
-            || GridManager.Instance.IsObstacleTile(newPosition)) return;
+        if (!isTileValid(newPosition) || !unit.IsTurn || unit.MovementRange <= 0 || unit.CalculateMoveCost(newPosition) > unit.MovementRange) return;
+        if (GridManager.Instance.IsObstacleTile(newPosition))
+        {
+            Debug.Log("That is an obstacle.");
+            return;
+        }
 
         _unitsOnTiles.Remove(unit.CurrentPosition);
         _unitsOnTiles[newPosition] = unit;
@@ -128,6 +132,16 @@ public class UnitManager : MonoBehaviour
         }
         else
             Debug.Log($"{hitUnit} is out of attack range");
+    }
+
+    // Update highlights when grid changes
+    public void UpdateUnitHighlights()
+    {
+        foreach (var unit in _unitsOnTiles.Values)
+        {
+            if (unit != null && unit.IsTurn)
+                unit.HighlightValidMoves();
+        }
     }
 
 }

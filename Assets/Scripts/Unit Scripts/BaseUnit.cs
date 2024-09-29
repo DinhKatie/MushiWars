@@ -148,7 +148,7 @@ public class BaseUnit : MonoBehaviour
         }
     }
 
-    protected void HighlightValidMoves()
+    public void HighlightValidMoves()
     {
         GridManager.Instance.ClearValidMoves();
         

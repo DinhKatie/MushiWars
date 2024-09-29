@@ -17,7 +17,8 @@ public class GridManager : MonoBehaviour
     [SerializeField] private TileBase _validAttackTile;
 
     [SerializeField] private BaseObstacle _obstaclePrefab;
-    private List<Vector3Int> _obstacles;
+    [SerializeField] private LogObstacle _logObstaclePrefab;
+    public List<Vector3Int> _obstacles;
 
     private Vector3Int _previousHoverTilePosition;
 
@@ -38,7 +39,7 @@ public class GridManager : MonoBehaviour
         _highlightTilemap.ClearAllTiles();
         Vector3Int tile = new Vector3Int(-1, -3, 0);
         _obstacles = new List<Vector3Int>();
-        SpawnObstacle(tile);
+        SpawnLog(tile, LogObstacle.RotationState.Horizontal);
     }
 
     private void Update()
@@ -162,6 +163,47 @@ public class GridManager : MonoBehaviour
                 break;
             _obstacles.Add(ob);
         }
+    }
+
+    public void SpawnLog(Vector3Int spawnTile, LogObstacle.RotationState rotationState)
+    {
+        Vector3 worldPosition = _tilemap.GetCellCenterWorld(spawnTile);
+
+        LogObstacle obstacle;
+
+        if (rotationState == LogObstacle.RotationState.Horizontal)
+            obstacle = Instantiate(_logObstaclePrefab, worldPosition, Quaternion.Euler(0, 0, 90));
+        else
+            obstacle = Instantiate(_logObstaclePrefab, worldPosition, Quaternion.Euler(0, 0, 0));
+
+        obstacle.SetRotation(rotationState);
+        obstacle.SetPosition(spawnTile);
+        
+
+        //Label the tiles it takes up as obstacles, such as 2x2 ancient tree
+        List<Vector3Int> i = obstacle.GetOccupiedTiles;
+        foreach (var ob in i)
+        {
+            if (i.Count == 0)
+                break;
+            _obstacles.Add(ob);
+        }
+    }
+
+    public void UpdateObstacleList(List<Vector3Int> oldTiles, List<Vector3Int> newTiles)
+    {
+        foreach (var tile in oldTiles)
+        {
+            if (_obstacles.Contains(tile))
+                _obstacles.Remove(tile);
+        }
+
+        foreach (var tile in newTiles)
+        {
+            if (!_obstacles.Contains(tile))
+                _obstacles.Add(tile);
+        }
+        UnitManager.Instance.UpdateUnitHighlights();
     }
 
     public bool IsObstacleTile(Vector3Int tile)
