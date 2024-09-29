@@ -47,13 +47,14 @@ public class LogObstacle : BaseObstacle
         if (rotationState == RotationState.Horizontal)
         {
             rotationState = RotationState.Vertical;
-            transform.rotation = Quaternion.Euler(0, 0, 90);
+            transform.rotation = Quaternion.Euler(0, 0, 0);
+            Debug.Log("Rotating to Vertical: " + transform.rotation.eulerAngles);
         }
             
         else
         {
             rotationState = RotationState.Horizontal;
-            transform.rotation = Quaternion.Euler(0, 0, 0);
+            transform.rotation = Quaternion.Euler(0, 0, 90);
         }
         List<Vector3Int> oldTiles = occupiedTiles;
         UpdateOccupiedTiles();
