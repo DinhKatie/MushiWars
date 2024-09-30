@@ -93,11 +93,3 @@ public class GameManager : MonoBehaviour
 
 }
 
-public enum GameState
-{
-    GenerateGrid = 0,
-    SpawnSquad1 = 1,
-    SpawnSquad2 = 2,
-    Player1Turn = 3,
-    Player2Turn = 4
-}

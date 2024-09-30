@@ -141,6 +141,14 @@ public class GridManager : MonoBehaviour
                 {
                     UnitManager.Instance.GetUnitHighlights(newUnit);
                     Debug.Log($"{newUnit.name} selected. Switching selection and highlights.");
+
+                    // Check if the new unit is next to the campfire and display arrows if pushable
+                    Campfire campfire = GetCampfireNearby(newUnit);
+                    if (campfire != null)
+                    {
+                        Menu.Instance.DisplayPushArrow(newUnit, campfire);
+                        Debug.Log("Displaying campfire push arrows.");
+                    }
                 }
             }
         }
@@ -151,6 +159,39 @@ public class GridManager : MonoBehaviour
         }
 
         _previousTileSelection = tilePosition;
+
+    }
+
+    public Campfire GetCampfireNearby(BaseUnit unit)
+    {
+        Vector3Int[] directions = new Vector3Int[]
+        {
+        new Vector3Int(0, 1),  // Up
+        new Vector3Int(0, -1), // Down
+        new Vector3Int(-1, 0), // Left
+        new Vector3Int(1, 0)   // Right
+        };
+
+        foreach (Vector3Int dir in directions)
+        {
+            Vector3Int adjacentPos = unit.CurrentPosition + dir;
+            Campfire campfire = GridManager.Instance.GetCampfireAtPosition(adjacentPos);
+
+            if (campfire != null)
+            {
+                return campfire;
+            }
+        }
+        return null; // No campfire nearby
+    }
+
+    public Campfire GetCampfireAtPosition(Vector3Int position)
+    {
+        BaseUnit unit = UnitManager.Instance.GetUnitAtTile(position);
+        if (unit is Campfire campfire)
+            return campfire;
+        else 
+            return null;
 
     }
 

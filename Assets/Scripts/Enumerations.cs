@@ -28,4 +28,13 @@ public enum RotationState
     Vertical,
 }
 
+public enum GameState
+{
+    GenerateGrid,
+    SpawnSquad1,
+    SpawnSquad2,
+    Player1Turn,
+    Player2Turn 
+}
+
 
