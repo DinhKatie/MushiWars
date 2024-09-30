@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Campfire : BaseObstacle
+public class Campfire : BaseUnit
 {
     public bool canRevive = true; //One unit revival per turn
 
@@ -21,5 +21,19 @@ public class Campfire : BaseObstacle
         }
         return false;
     }
+
+    //Campfires cannot move or attack
+    public override void Move(Vector3Int newPosition)
+    {
+        return;
+    }
+
+    public override void Attack(BaseUnit enemy)
+    {
+        return;
+    }
+
+    
+
 }
 

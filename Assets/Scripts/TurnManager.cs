@@ -83,9 +83,5 @@ public class TurnManager : MonoBehaviour
     }
 }
 
-public enum Squads
-{ 
-    one = 1,
-    two = 2,
-}
+
 

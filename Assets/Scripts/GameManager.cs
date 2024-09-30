@@ -40,9 +40,12 @@ public class GameManager : MonoBehaviour
         }
 
     }
-    private void SpawnSquad(Vector3Int heroSpawnTile, Vector3Int swordTile, Vector3Int gunTile, List<Vector3Int> normalUnits, Squads team)
+    private void SpawnSquad(Vector3Int campfireTile, Vector3Int heroTile, Vector3Int swordTile, Vector3Int gunTile, List<Vector3Int> normalUnits, Squads team)
     {
-        BaseUnit heroUnit = UnitManager.Instance.SpawnUnit(heroSpawnTile, UnitPrefabs.fireHero);
+        BaseUnit campfire = UnitManager.Instance.SpawnUnit(campfireTile, UnitPrefabs.campfire);
+        TurnManager.Instance.AddUnitToSquad(campfire, team);
+
+        BaseUnit heroUnit = UnitManager.Instance.SpawnUnit(heroTile, UnitPrefabs.fireHero);
         TurnManager.Instance.AddUnitToSquad(heroUnit, team);
 
         BaseUnit swordGuy = UnitManager.Instance.SpawnUnit(swordTile, UnitPrefabs.swordUnit);
@@ -60,6 +63,7 @@ public class GameManager : MonoBehaviour
 
     private void SpawnSquad1()
     {
+        Vector3Int campfireTile = new Vector3Int(-4, -4, 0);
         Vector3Int heroSpawnTile = new Vector3Int(-5, -5, 0);
         Vector3Int swordTile = new Vector3Int(0, 0, 0);
         Vector3Int gunTile = new Vector3Int(-4, -3, 0);
@@ -69,11 +73,12 @@ public class GameManager : MonoBehaviour
             new Vector3Int(-5, -3, 0),
         };
 
-        SpawnSquad(heroSpawnTile, swordTile, gunTile, normalUnits, Squads.one);
+        SpawnSquad(campfireTile, heroSpawnTile, swordTile, gunTile, normalUnits, Squads.one);
     }
 
     private void SpawnSquad2()
     {
+        Vector3Int campfireTile = new Vector3Int(4, 4, 0);
         Vector3Int heroSpawnTile = new Vector3Int(5, 5, 0);
         Vector3Int swordTile = new Vector3Int(0, 1, 0);
         Vector3Int gunTile = new Vector3Int(4, 3, 0);
@@ -83,7 +88,7 @@ public class GameManager : MonoBehaviour
             new Vector3Int(5, 3, 0),
         };
 
-        SpawnSquad(heroSpawnTile, swordTile, gunTile, normalUnits, Squads.two);
+        SpawnSquad(campfireTile, heroSpawnTile, swordTile, gunTile, normalUnits, Squads.two);
     }
 
 }

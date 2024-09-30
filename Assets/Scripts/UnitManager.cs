@@ -13,6 +13,7 @@ public class UnitManager : MonoBehaviour
     [SerializeField] public BaseUnit swordUnitPrefab;
     [SerializeField] public BaseUnit gunUnitPrefab;
     [SerializeField] public BaseUnit fireHeroPrefab;
+    [SerializeField] public BaseUnit _campfirePrefab;
 
     private Dictionary<Vector3Int, BaseUnit> _unitsOnTiles = new Dictionary<Vector3Int, BaseUnit>();
     private Dictionary<UnitPrefabs, BaseUnit> unitPrefabsDict;
@@ -29,7 +30,8 @@ public class UnitManager : MonoBehaviour
             { UnitPrefabs.unit, unitPrefab },
             { UnitPrefabs.swordUnit, swordUnitPrefab },
             { UnitPrefabs.gunUnit, gunUnitPrefab },
-            { UnitPrefabs.fireHero, fireHeroPrefab }
+            { UnitPrefabs.fireHero, fireHeroPrefab },
+            { UnitPrefabs.campfire, _campfirePrefab },
         };
     }
 
@@ -144,6 +146,7 @@ public class UnitManager : MonoBehaviour
 
     public void GetUnitHighlights(BaseUnit unit)
     {
+        if (unit is Campfire) return; //Campfire can't move on its own
         unit.HighlightValidMoves();
     }
 
@@ -157,11 +160,5 @@ public class UnitManager : MonoBehaviour
 
 }
 
-public enum UnitPrefabs
-{
-    unit = 0,
-    swordUnit = 1,
-    gunUnit = 2,
-    fireHero = 3,
-}
+
 

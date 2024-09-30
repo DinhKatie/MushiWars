@@ -29,6 +29,7 @@ public class LogObstacle : BaseObstacle
         }
 
     }
+
     public override void SetRotation(RotationState rotation)
     {
         rotationState = rotation;
@@ -50,7 +51,7 @@ public class LogObstacle : BaseObstacle
             transform.rotation = Quaternion.Euler(0, 0, 0);
             Debug.Log("Rotating to Vertical: " + transform.rotation.eulerAngles);
         }
-            
+
         else
         {
             rotationState = RotationState.Horizontal;
@@ -61,12 +62,6 @@ public class LogObstacle : BaseObstacle
         List<Vector3Int> newTiles = occupiedTiles;
         GridManager.Instance.UpdateObstacleList(oldTiles, newTiles);
 
-    }
-
-    public enum RotationState
-    { 
-        Horizontal,
-        Vertical,
     }
 
 }

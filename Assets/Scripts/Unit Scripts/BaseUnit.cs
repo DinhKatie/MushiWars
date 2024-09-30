@@ -43,7 +43,7 @@ public class BaseUnit : MonoBehaviour
         hasAttacked = false;
     }
 
-    public void Move(Vector3Int newPosition)
+    public virtual void Move(Vector3Int newPosition)
     {
         int moveCost = CalculateMoveCost(newPosition);
         if (moveCost <= movementRange)
@@ -170,7 +170,7 @@ public class BaseUnit : MonoBehaviour
         }
     }
 
-    public void HighlightValidMoves()
+    public virtual void HighlightValidMoves()
     {
         GridManager.Instance.ClearValidMoves();
         

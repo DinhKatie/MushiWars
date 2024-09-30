@@ -5371,6 +5371,7 @@ MonoBehaviour:
   _validAttackTile: {fileID: 11400000, guid: 5e7f698d30cb6634b8d231ffa8bf6ecc, type: 2}
   _obstaclePrefab: {fileID: 1210173675021165333, guid: 670501a72e6c6514aa8732d8381e9238, type: 3}
   _logObstaclePrefab: {fileID: 7999287454322203500, guid: be97bde07f3ed8144a68eb662e41aade, type: 3}
+  _campfirePrefab: {fileID: 8984219987410964739, guid: 597ecfcbba18f154e90ab1551d2d3c8a, type: 3}
   _obstacles: []
 --- !u!1 &1167332268
 GameObject:

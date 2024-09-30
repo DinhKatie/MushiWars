@@ -20,7 +20,7 @@ public class GridManager : MonoBehaviour
 
     [SerializeField] private BaseObstacle _obstaclePrefab;
     [SerializeField] private LogObstacle _logObstaclePrefab;
-    [SerializeField] private BaseObstacle _campfirePrefab;
+
 
     public List<Vector3Int> _obstacles;
     private Dictionary<Obstacle, BaseObstacle> obstaclesPrefabsDict;
@@ -42,7 +42,6 @@ public class GridManager : MonoBehaviour
         {
             { Obstacle.log, _logObstaclePrefab },
             { Obstacle.tree, _obstaclePrefab },
-            { Obstacle.campfire, _campfirePrefab },
 
         };
     }
@@ -177,7 +176,7 @@ public class GridManager : MonoBehaviour
     }
 
     // Instantiate obstacle and add to obstacles list
-    public void SpawnObstacle(Vector3Int spawnTile, Obstacle prefabToSpawn, LogObstacle.RotationState? rotationState = null)
+    public void SpawnObstacle(Vector3Int spawnTile, Obstacle prefabToSpawn, RotationState? rotationState = null)
     {
         Vector3 worldPosition = _tilemap.GetCellCenterWorld(spawnTile);
         BaseObstacle prefab = obstaclesPrefabsDict[prefabToSpawn];
@@ -187,7 +186,7 @@ public class GridManager : MonoBehaviour
 
         if (prefab is LogObstacle)
         {
-            if (rotationState == LogObstacle.RotationState.Horizontal)
+            if (rotationState == RotationState.Horizontal)
                 obstacle = Instantiate(_logObstaclePrefab, worldPosition, Quaternion.Euler(0, 0, 90));
             else
                 obstacle = Instantiate(_logObstaclePrefab, worldPosition, Quaternion.Euler(0, 0, 0));
@@ -241,13 +240,5 @@ public class GridManager : MonoBehaviour
     }
 }
 
-public enum Obstacle
-{
-    rock,
-    bamboo,
-    log,
-    mountain,
-    tree,
-    campfire
-}
+
 
