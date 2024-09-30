@@ -40,66 +40,50 @@ public class GameManager : MonoBehaviour
         }
 
     }
+    private void SpawnSquad(Vector3Int heroSpawnTile, Vector3Int swordTile, Vector3Int gunTile, List<Vector3Int> normalUnits, Squads team)
+    {
+        BaseUnit heroUnit = UnitManager.Instance.SpawnUnit(heroSpawnTile, UnitPrefabs.fireHero);
+        TurnManager.Instance.AddUnitToSquad(heroUnit, team);
+
+        BaseUnit swordGuy = UnitManager.Instance.SpawnUnit(swordTile, UnitPrefabs.swordUnit);
+        TurnManager.Instance.AddUnitToSquad(swordGuy, team);
+
+        BaseUnit gunGuy = UnitManager.Instance.SpawnUnit(gunTile, UnitPrefabs.gunUnit);
+        TurnManager.Instance.AddUnitToSquad(gunGuy, team);
+
+        foreach (var unit in normalUnits)
+        {
+            BaseUnit basicGuy = UnitManager.Instance.SpawnUnit(unit, UnitPrefabs.unit);
+            TurnManager.Instance.AddUnitToSquad(basicGuy, team);
+        }
+    }
+
     private void SpawnSquad1()
     {
         Vector3Int heroSpawnTile = new Vector3Int(-5, -5, 0);
-        BaseUnit heroUnit = UnitManager.Instance.SpawnUnit(heroSpawnTile, UnitPrefabs.fireHero);
-        TurnManager.Instance.AddUnitToSquad(heroUnit, Squads.one);
-
-        List<Vector3Int> swordUnits = new List<Vector3Int>
-        {
-            new Vector3Int(0, 0, 0),
-            new Vector3Int(-4, -3, 0),
-        };
-
-        List<Vector3Int> gunUnits = new List<Vector3Int>
+        Vector3Int swordTile = new Vector3Int(-3, -4, 0);
+        Vector3Int gunTile = new Vector3Int(-4, -3, 0);
+        List<Vector3Int> normalUnits = new List<Vector3Int>
         {
             new Vector3Int(-3, -5, 0),
-            new Vector3Int(-3, -4, 0),
+            new Vector3Int(-5, -3, 0),
         };
 
-        foreach (var unit in swordUnits)
-        {
-            BaseUnit swordGuy = UnitManager.Instance.SpawnUnit(unit, UnitPrefabs.swordUnit);
-            TurnManager.Instance.AddUnitToSquad(swordGuy, Squads.one);
-        }
-
-        foreach (var unit in gunUnits)
-        {
-            BaseUnit gunGuy = UnitManager.Instance.SpawnUnit(unit, UnitPrefabs.gunUnit);
-            TurnManager.Instance.AddUnitToSquad(gunGuy, Squads.one);
-        }
+        SpawnSquad(heroSpawnTile, swordTile, gunTile, normalUnits, Squads.one);
     }
 
     private void SpawnSquad2()
     {
         Vector3Int heroSpawnTile = new Vector3Int(5, 5, 0);
-        BaseUnit heroUnit = UnitManager.Instance.SpawnUnit(heroSpawnTile, UnitPrefabs.fireHero);
-        TurnManager.Instance.AddUnitToSquad(heroUnit, Squads.two);
-
-        List<Vector3Int> swordUnits = new List<Vector3Int>
-        {
-            new Vector3Int(0, 1, 0),
-            new Vector3Int(4, 3, 0),
-        };
-
-        List<Vector3Int> gunUnits = new List<Vector3Int>
+        Vector3Int swordTile = new Vector3Int(3, 4, 0);
+        Vector3Int gunTile = new Vector3Int(4, 3, 0);
+        List<Vector3Int> normalUnits = new List<Vector3Int>
         {
             new Vector3Int(3, 5, 0),
-            new Vector3Int(3, 4, 0),
+            new Vector3Int(5, 3, 0),
         };
 
-        foreach(var unit in swordUnits)
-        {
-            BaseUnit swordGuy = UnitManager.Instance.SpawnUnit(unit, UnitPrefabs.swordUnit);
-            TurnManager.Instance.AddUnitToSquad(swordGuy, Squads.two);
-        }
-
-        foreach (var unit in gunUnits)
-        {
-            BaseUnit gunGuy = UnitManager.Instance.SpawnUnit(unit, UnitPrefabs.gunUnit);
-            TurnManager.Instance.AddUnitToSquad(gunGuy, Squads.two);
-        }
+        SpawnSquad(heroSpawnTile, swordTile, gunTile, normalUnits, Squads.two);
     }
 
 }
