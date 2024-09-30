@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static LogObstacle;
 
 public class BaseObstacle : MonoBehaviour
 {
@@ -14,6 +15,11 @@ public class BaseObstacle : MonoBehaviour
     {
         currPosition = newPosition;
         UpdateOccupiedTiles();
+    }
+
+    public virtual void SetRotation(RotationState rotation)
+    {
+        return;
     }
 
     protected virtual void UpdateOccupiedTiles()

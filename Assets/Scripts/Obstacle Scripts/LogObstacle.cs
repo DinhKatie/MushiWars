@@ -29,7 +29,7 @@ public class LogObstacle : BaseObstacle
         }
 
     }
-    public void SetRotation(RotationState rotation)
+    public override void SetRotation(RotationState rotation)
     {
         rotationState = rotation;
     }

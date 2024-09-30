@@ -20,7 +20,10 @@ public class GridManager : MonoBehaviour
 
     [SerializeField] private BaseObstacle _obstaclePrefab;
     [SerializeField] private LogObstacle _logObstaclePrefab;
+    [SerializeField] private BaseObstacle _campfirePrefab;
+
     public List<Vector3Int> _obstacles;
+    private Dictionary<Obstacle, BaseObstacle> obstaclesPrefabsDict;
 
     private Vector3Int _previousHoverTilePosition;
 
@@ -34,6 +37,14 @@ public class GridManager : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
+
+        obstaclesPrefabsDict = new Dictionary<Obstacle, BaseObstacle>
+        {
+            { Obstacle.log, _logObstaclePrefab },
+            { Obstacle.tree, _obstaclePrefab },
+            { Obstacle.campfire, _campfirePrefab },
+
+        };
     }
 
     private void Start()
@@ -166,44 +177,34 @@ public class GridManager : MonoBehaviour
     }
 
     // Instantiate obstacle and add to obstacles list
-    public void SpawnObstacle(Vector3Int spawnTile)
+    public void SpawnObstacle(Vector3Int spawnTile, Obstacle prefabToSpawn, LogObstacle.RotationState? rotationState = null)
     {
         Vector3 worldPosition = _tilemap.GetCellCenterWorld(spawnTile);
-        BaseObstacle obstacle = Instantiate(_obstaclePrefab, worldPosition, Quaternion.identity);
-        obstacle.SetPosition(spawnTile);
+        BaseObstacle prefab = obstaclesPrefabsDict[prefabToSpawn];
 
-        //Label the tiles it takes up as obstacles, such as 2x2 ancient tree
-        List<Vector3Int> i = obstacle.GetOccupiedTiles;
-        foreach (var ob in i)
+        // Instantiate the obstacle
+        BaseObstacle obstacle;
+
+        if (prefab is LogObstacle)
         {
-            if (i.Count == 0)
-                break;
-            _obstacles.Add(ob);
+            if (rotationState == LogObstacle.RotationState.Horizontal)
+                obstacle = Instantiate(_logObstaclePrefab, worldPosition, Quaternion.Euler(0, 0, 90));
+            else
+                obstacle = Instantiate(_logObstaclePrefab, worldPosition, Quaternion.Euler(0, 0, 0));
+            obstacle.SetRotation(rotationState.Value);
+
         }
-    }
-
-    public void SpawnLog(Vector3Int spawnTile, LogObstacle.RotationState rotationState)
-    {
-        Vector3 worldPosition = _tilemap.GetCellCenterWorld(spawnTile);
-
-        LogObstacle obstacle;
-
-        if (rotationState == LogObstacle.RotationState.Horizontal)
-            obstacle = Instantiate(_logObstaclePrefab, worldPosition, Quaternion.Euler(0, 0, 90));
         else
-            obstacle = Instantiate(_logObstaclePrefab, worldPosition, Quaternion.Euler(0, 0, 0));
-
-        obstacle.SetRotation(rotationState);
-        obstacle.SetPosition(spawnTile);
-        
-
-        //Label the tiles it takes up as obstacles, such as 2x2 ancient tree
-        List<Vector3Int> i = obstacle.GetOccupiedTiles;
-        foreach (var ob in i)
         {
-            if (i.Count == 0)
-                break;
-            _obstacles.Add(ob);
+            obstacle = Instantiate(prefab, worldPosition, Quaternion.identity);
+        }
+        obstacle.SetPosition(spawnTile);
+
+        // Label the tiles it takes up as obstacles
+        List<Vector3Int> occupiedTiles = obstacle.GetOccupiedTiles;
+        foreach (var tile in occupiedTiles)
+        {
+            _obstacles.Add(tile);
         }
     }
 
@@ -220,13 +221,10 @@ public class GridManager : MonoBehaviour
             if (!_obstacles.Contains(tile))
                 _obstacles.Add(tile);
         }
-        UnitManager.Instance.UpdateUnitHighlights();
     }
 
     public bool IsObstacleTile(Vector3Int tile)
     {
-        if (_obstacles.Count == 0)
-            return false;
         return _obstacles.Contains(tile);
     }
 
@@ -242,3 +240,14 @@ public class GridManager : MonoBehaviour
         _tilemap.SetTile(position, tile); // Set a tile at the specified position
     }
 }
+
+public enum Obstacle
+{
+    rock,
+    bamboo,
+    log,
+    mountain,
+    tree,
+    campfire
+}
+
