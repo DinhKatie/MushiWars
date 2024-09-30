@@ -12,6 +12,7 @@ public class BaseUnit : MonoBehaviour
     protected int attackRange;
     protected bool hasAttacked;
     protected int health;
+    protected bool dead = false;
 
     public Squads squad;
 
@@ -21,6 +22,7 @@ public class BaseUnit : MonoBehaviour
     public int AttackRange => attackRange;
     public bool HasAttacked => hasAttacked;
     public int Health => health;
+    public bool isDead => dead;
     public Squads GetSquad { get { return squad; } }
 
     //Setters
@@ -72,7 +74,25 @@ public class BaseUnit : MonoBehaviour
         if (health <= 0)
         {
             UnitManager.Instance.RemoveUnit(currPosition);
+            OnDeath();
         }   
+    }
+
+    protected void OnDeath()
+    {
+        dead = true;
+        GetComponent<SpriteRenderer>().enabled = false;
+
+        // Iterate through all child objects and disable their SpriteRenderer components (sword, gun, etc)
+        foreach (Transform child in transform)
+        {
+            SpriteRenderer childSprite = child.GetComponent<SpriteRenderer>();
+            if (childSprite != null)
+                childSprite.enabled = false;
+        }
+        //Simulate death and disable
+        currPosition = new Vector3Int(-1,-1,-1);
+        this.enabled = false;
     }
 
     public int CalculateMoveCost(Vector3Int newPosition)

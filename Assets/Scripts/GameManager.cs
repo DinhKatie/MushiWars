@@ -61,7 +61,7 @@ public class GameManager : MonoBehaviour
     private void SpawnSquad1()
     {
         Vector3Int heroSpawnTile = new Vector3Int(-5, -5, 0);
-        Vector3Int swordTile = new Vector3Int(-3, -4, 0);
+        Vector3Int swordTile = new Vector3Int(0, 0, 0);
         Vector3Int gunTile = new Vector3Int(-4, -3, 0);
         List<Vector3Int> normalUnits = new List<Vector3Int>
         {
@@ -75,7 +75,7 @@ public class GameManager : MonoBehaviour
     private void SpawnSquad2()
     {
         Vector3Int heroSpawnTile = new Vector3Int(5, 5, 0);
-        Vector3Int swordTile = new Vector3Int(3, 4, 0);
+        Vector3Int swordTile = new Vector3Int(0, 1, 0);
         Vector3Int gunTile = new Vector3Int(4, 3, 0);
         List<Vector3Int> normalUnits = new List<Vector3Int>
         {

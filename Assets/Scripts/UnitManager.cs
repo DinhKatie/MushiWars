@@ -71,7 +71,6 @@ public class UnitManager : MonoBehaviour
         if (_unitsOnTiles.TryGetValue(unitTile, out BaseUnit unit))
         {
             _unitsOnTiles.Remove(unit.CurrentPosition);
-            Destroy(unit.gameObject);
             //Remove the killed unit from the turn system
             TurnManager.Instance.RemoveUnitFromTurnSystem(unit);
         }
