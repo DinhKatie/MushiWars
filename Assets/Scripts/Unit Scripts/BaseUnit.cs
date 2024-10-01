@@ -102,6 +102,7 @@ public class BaseUnit : MonoBehaviour
         //Simulate death and disable
         currPosition = new Vector3Int(-1,-1,-1);
         this.enabled = false;
+        UnitManager.Instance.OnUnitDeath(this);
     }
 
     public int CalculateMoveCost(Vector3Int newPosition)

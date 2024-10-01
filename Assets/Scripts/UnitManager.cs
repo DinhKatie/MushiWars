@@ -134,6 +134,13 @@ public class UnitManager : MonoBehaviour
             Debug.Log($"{hitUnit} is out of attack range");
     }
 
+    public void OnUnitDeath(BaseUnit unit)
+    {
+        Squads squad = unit.GetSquad;
+        Campfire campfire = TurnManager.Instance.GetCampfireOfSquad(squad);
+        campfire.RegisterDeadUnit(unit);
+    }
+
     public void PushCampfire(BaseUnit pusher, Campfire campfire, Vector3Int tileToPush)
     {
         if (pusher.MovementRange <= 0) return; 

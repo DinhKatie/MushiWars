@@ -81,6 +81,15 @@ public class TurnManager : MonoBehaviour
             }
         }
     }
+
+    public Campfire GetCampfireOfSquad(Squads squad)
+    {
+        foreach (var u in squadsDict[squad])
+        {
+            if (u is Campfire camp) return camp;
+        }
+        return null;
+    }
 }
 
 
