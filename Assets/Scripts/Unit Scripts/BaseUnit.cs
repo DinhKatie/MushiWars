@@ -183,6 +183,10 @@ public class BaseUnit : MonoBehaviour
             List<Vector3Int> validAtt = CalculateValidAttacks();
             GridManager.Instance.HighlightValidAttacks(validAtt);
         }
+
+        //Highlight if a campfire is pushable
+        GridManager.Instance.isCampfirePushable(this);
+
     }
 
     public void Reset()

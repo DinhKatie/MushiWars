@@ -17,6 +17,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private TileBase _outlineTile;
     [SerializeField] private TileBase _validMoveTile;
     [SerializeField] private TileBase _validAttackTile;
+    [SerializeField] private TileBase _campfirePushTile;
 
     [SerializeField] private BaseObstacle _obstaclePrefab;
     [SerializeField] private LogObstacle _logObstaclePrefab;
@@ -105,6 +106,7 @@ public class GridManager : MonoBehaviour
     public void Deselect()
     {
         _outlineTilemap.ClearAllTiles();
+        ClearValidMoves();
         _previousTileSelection = new Vector3Int(-1, -1, -1);
     }
 
@@ -141,14 +143,6 @@ public class GridManager : MonoBehaviour
                 {
                     UnitManager.Instance.GetUnitHighlights(newUnit);
                     Debug.Log($"{newUnit.name} selected. Switching selection and highlights.");
-
-                    // Check if the new unit is next to the campfire and display arrows if pushable
-                    Campfire campfire = GetCampfireNearby(newUnit);
-                    if (campfire != null)
-                    {
-                        Menu.Instance.DisplayPushArrow(newUnit, campfire);
-                        Debug.Log("Displaying campfire push arrows.");
-                    }
                 }
             }
         }
@@ -160,6 +154,21 @@ public class GridManager : MonoBehaviour
 
         _previousTileSelection = tilePosition;
 
+    }
+
+    public bool isCampfirePushable(BaseUnit unit)
+    {
+        Campfire fire = GetCampfireNearby(unit);
+        if (fire == null) return false;
+
+        Vector3Int pushDirection = -(unit.CurrentPosition - fire.CurrentPosition);
+        Vector3Int targetTile = fire.CurrentPosition + pushDirection;
+        if (UnitManager.Instance.GetUnitAtTile(targetTile) == null)
+        {
+            _validMovesMap.SetTile(fire.CurrentPosition, _campfirePushTile);
+            return true;
+        }
+        return false;
     }
 
     public Campfire GetCampfireNearby(BaseUnit unit)
@@ -175,10 +184,11 @@ public class GridManager : MonoBehaviour
         foreach (Vector3Int dir in directions)
         {
             Vector3Int adjacentPos = unit.CurrentPosition + dir;
-            Campfire campfire = GridManager.Instance.GetCampfireAtPosition(adjacentPos);
+            Campfire campfire = GetCampfireAtPosition(adjacentPos);
 
             if (campfire != null)
             {
+                Debug.Log($"Returning {campfire.name}");
                 return campfire;
             }
         }
