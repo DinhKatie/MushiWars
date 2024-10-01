@@ -26,8 +26,17 @@ public class BaseUnit : MonoBehaviour
     public Squads GetSquad { get { return squad; } }
 
     //Setters
-    public void SetCurrentPosition(Vector3Int pos) { currPosition = pos; }
+    public void SetCurrentPosition(Vector3Int pos) 
+    { 
+        currPosition = pos;
+        transform.position = GridManager.Instance._tilemap.GetCellCenterWorld(pos);
+    }
     public void SetSquad(Squads team) { squad = team; }
+    public void DecrementMove(int moveCost = 1)
+    {
+        movementRange -= moveCost;
+        Debug.Log("Movement Range is now " + movementRange);
+    }
 
     // Start is called before the first frame update
     protected virtual void Start()
