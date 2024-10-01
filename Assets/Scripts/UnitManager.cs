@@ -134,6 +134,26 @@ public class UnitManager : MonoBehaviour
             Debug.Log($"{hitUnit} is out of attack range");
     }
 
+    public void PushCampfire(BaseUnit pusher, Campfire campfire, Vector3Int tileToPush)
+    {
+        if (pusher.MovementRange <= 0) return; 
+
+        Vector3Int pusherOldPos = pusher.CurrentPosition;
+        Vector3Int fireOldPos = campfire.CurrentPosition;
+
+        _unitsOnTiles.Remove(pusherOldPos);
+        _unitsOnTiles.Remove(fireOldPos);
+
+        pusher.SetCurrentPosition(campfire.CurrentPosition);
+        campfire.SetCurrentPosition(tileToPush);
+
+        _unitsOnTiles[campfire.CurrentPosition] = campfire;
+        _unitsOnTiles[pusher.CurrentPosition] = pusher;
+
+        pusher.DecrementMove();
+        pusher.HighlightValidMoves();
+    }
+
     // Update highlights when grid changes
     public void UpdateUnitHighlights()
     {

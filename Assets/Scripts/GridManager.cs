@@ -132,7 +132,20 @@ public class GridManager : MonoBehaviour
                 UnitManager.Instance.GetUnitHighlights(newUnit);
                 Debug.Log($"{newUnit.name} selected. Highlighting move options.");
             }
-            else if (previousUnit != null && newUnit != previousUnit) //previously selected a unit, and now clicked another unit. Check for attack or switching selection.
+            else if (previousUnit != null && newUnit is Campfire campfire) //Campfire Push, can mushis push other team's campfire??
+            {
+                Vector3Int pushDirection = isCampfirePushable(previousUnit);
+
+                // Check if campfire can be pushed and if it's a valid tile
+                if (pushDirection != new Vector3Int(-1, -1, -1)) // nonValidTile check
+                {
+                    UnitManager.Instance.PushCampfire(previousUnit, campfire, pushDirection);
+                    Debug.Log($"{previousUnit.name} is pushing the campfire.");
+                }
+            }
+            //previously selected a unit, and now clicked another unit. 
+            //Check for attack or switching selection
+            else if (previousUnit != null && newUnit != previousUnit) 
             {
                 if (!TurnManager.Instance.isUnitInCurrentSquad(newUnit)) //Unit clicked is not in the squad. Attack them.
                 {
@@ -156,19 +169,20 @@ public class GridManager : MonoBehaviour
 
     }
 
-    public bool isCampfirePushable(BaseUnit unit)
+    public Vector3Int isCampfirePushable(BaseUnit unit)
     {
         Campfire fire = GetCampfireNearby(unit);
-        if (fire == null) return false;
+        if (fire == null) return new Vector3Int(-1,-1,-1);
 
         Vector3Int pushDirection = -(unit.CurrentPosition - fire.CurrentPosition);
         Vector3Int targetTile = fire.CurrentPosition + pushDirection;
-        if (UnitManager.Instance.GetUnitAtTile(targetTile) == null)
+        if (UnitManager.Instance.GetUnitAtTile(targetTile) == null && GetTileAtPosition(targetTile) != null
+            && unit.MovementRange > 0)
         {
             _validMovesMap.SetTile(fire.CurrentPosition, _campfirePushTile);
-            return true;
+            return targetTile;
         }
-        return false;
+        return new Vector3Int(-1, -1, -1);
     }
 
     public Campfire GetCampfireNearby(BaseUnit unit)
