@@ -15,6 +15,7 @@ public class BaseUnit : MonoBehaviour
     protected bool dead = false;
 
     public Squads squad;
+    protected UnitPrefabs prefab = UnitPrefabs.unit;
 
     // Getters
     public Vector3Int CurrentPosition => currPosition;
@@ -24,6 +25,7 @@ public class BaseUnit : MonoBehaviour
     public int Health => health;
     public bool isDead => dead;
     public Squads GetSquad { get { return squad; } }
+    public UnitPrefabs GetPrefab => prefab;
 
     //Setters
     public void SetCurrentPosition(Vector3Int pos) 

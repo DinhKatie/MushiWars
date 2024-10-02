@@ -42,21 +42,21 @@ public class GameManager : MonoBehaviour
     }
     private void SpawnSquad(Vector3Int campfireTile, Vector3Int heroTile, Vector3Int swordTile, Vector3Int gunTile, List<Vector3Int> normalUnits, Squads team)
     {
-        BaseUnit campfire = UnitManager.Instance.SpawnUnit(campfireTile, UnitPrefabs.campfire);
+        BaseUnit campfire = UnitManager.Instance.SpawnUnit(campfireTile, UnitPrefabs.campfire, team);
         TurnManager.Instance.AddUnitToSquad(campfire, team);
 
-        BaseUnit heroUnit = UnitManager.Instance.SpawnUnit(heroTile, UnitPrefabs.fireHero);
+        BaseUnit heroUnit = UnitManager.Instance.SpawnUnit(heroTile, UnitPrefabs.fireHero, team);
         TurnManager.Instance.AddUnitToSquad(heroUnit, team);
 
-        BaseUnit swordGuy = UnitManager.Instance.SpawnUnit(swordTile, UnitPrefabs.swordUnit);
+        BaseUnit swordGuy = UnitManager.Instance.SpawnUnit(swordTile, UnitPrefabs.swordUnit, team);
         TurnManager.Instance.AddUnitToSquad(swordGuy, team);
 
-        BaseUnit gunGuy = UnitManager.Instance.SpawnUnit(gunTile, UnitPrefabs.gunUnit);
+        BaseUnit gunGuy = UnitManager.Instance.SpawnUnit(gunTile, UnitPrefabs.gunUnit, team);
         TurnManager.Instance.AddUnitToSquad(gunGuy, team);
 
         foreach (var unit in normalUnits)
         {
-            BaseUnit basicGuy = UnitManager.Instance.SpawnUnit(unit, UnitPrefabs.unit);
+            BaseUnit basicGuy = UnitManager.Instance.SpawnUnit(unit, UnitPrefabs.unit, team);
             TurnManager.Instance.AddUnitToSquad(basicGuy, team);
         }
     }

@@ -5,6 +5,11 @@ using UnityEngine.UIElements;
 
 public class SwordUnit : BaseUnit
 {
+    protected override void Start()
+    {
+        base.Start();
+        prefab = UnitPrefabs.swordUnit;
+    }
     protected override List<Vector3Int> GetAttackRange()
     {
         List<Vector3Int> attackRanges = base.GetAttackRange();

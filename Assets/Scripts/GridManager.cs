@@ -103,6 +103,20 @@ public class GridManager : MonoBehaviour
             Deselect();
     }
 
+    public Vector3Int GetMouseTilePosition()
+    {
+        if (Input.GetMouseButtonDown(0)) // Left mouse button
+        {
+            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector3Int tilePosition = _tilemap.WorldToCell(mousePosition);
+
+            // Check if the tile is valid
+            if (GetTileAtPosition(tilePosition) != null)
+                return tilePosition;
+        }
+        return new Vector3Int(-1,-1, -1);
+    }
+
     public void Deselect()
     {
         _outlineTilemap.ClearAllTiles();
@@ -233,6 +247,12 @@ public class GridManager : MonoBehaviour
         {
             _validMovesMap.SetTile(att, _validAttackTile);
         }
+    }
+
+    public void HighlightRevivalTiles(List<Vector3Int> revivals)
+    {
+        foreach (var tile in revivals)
+            _validMovesMap.SetTile(tile, _outlineTile);
     }
 
     public void ClearValidMoves()

@@ -8,6 +8,7 @@ public class GunUnit : BaseUnit
     {
         base.Start();
         ResetStats();
+        prefab = UnitPrefabs.gunUnit;
     }
 
     protected override void ResetStats()

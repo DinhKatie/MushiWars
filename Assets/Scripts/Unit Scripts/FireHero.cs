@@ -4,5 +4,9 @@ using UnityEngine;
 
 public class FireHero : BaseHero
 {
-    
+    protected override void Start()
+    {
+        base.Start();
+        prefab = UnitPrefabs.fireHero;
+    }
 }

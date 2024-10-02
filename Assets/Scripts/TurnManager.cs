@@ -44,6 +44,9 @@ public class TurnManager : MonoBehaviour
     public void StartTurn()
     {
         currentSquad = (Squads)(currentSquadIndex + 1);
+        Campfire fire = GetCampfireOfSquad(currentSquad);
+        if (fire.graveyard.Count > 0)
+            fire.ListGraveyard();
         Debug.Log($"Switching Teams. Team {currentSquad}'s turn");
     }
 
@@ -53,7 +56,6 @@ public class TurnManager : MonoBehaviour
         currentSquadIndex = (currentSquadIndex + 1) % squadsList.Count; // Loop through the squads
         UnitManager.Instance.ResetTeam(squadsList[currentSquadIndex]);
         GridManager.Instance.Deselect();
-        GridManager.Instance.ClearValidMoves();
         StartTurn();
     }
 

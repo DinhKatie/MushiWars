@@ -43,7 +43,7 @@ public class UnitManager : MonoBehaviour
         }
     }
 
-    public BaseUnit SpawnUnit(Vector3Int spawnTile, UnitPrefabs unitType)
+    public BaseUnit SpawnUnit(Vector3Int spawnTile, UnitPrefabs unitType, Squads squad)
     {
         // Check if the tile is valid and no unit is already there
         if (_tilemap.GetTile(spawnTile) != null && !_unitsOnTiles.ContainsKey(spawnTile))
@@ -55,6 +55,7 @@ public class UnitManager : MonoBehaviour
             BaseUnit newUnit = Instantiate(prefabToSpawn, _tilemap.GetCellCenterWorld(spawnTile), Quaternion.identity);
 
             newUnit.SetCurrentPosition(spawnTile);
+            newUnit.SetSquad(squad);
 
             // Add the unit to the dictionary to track its position
             _unitsOnTiles[spawnTile] = newUnit;
@@ -70,7 +71,8 @@ public class UnitManager : MonoBehaviour
 
     public void RemoveUnit(Vector3Int unitTile)
     {
-        if (_unitsOnTiles.TryGetValue(unitTile, out BaseUnit unit))
+        BaseUnit unit = GetUnitAtTile(unitTile);
+        if (unit != null)
         {
             _unitsOnTiles.Remove(unit.CurrentPosition);
             //Remove the killed unit from the turn system
@@ -123,7 +125,7 @@ public class UnitManager : MonoBehaviour
         List<Vector3Int> attackRanges = attacker.CalculateValidAttacks();
         if (attackRanges.Contains(hitUnit.CurrentPosition))
         {
-            if (_unitsOnTiles.TryGetValue(hitUnit.CurrentPosition, out BaseUnit unit))
+            if (GetUnitAtTile(hitUnit.CurrentPosition))
             {
                 attacker.Attack(hitUnit);
             }
