@@ -5,19 +5,21 @@ using UnityEngine;
 
 public class Campfire : BaseUnit
 {
-    public bool canRevive = true; //One unit revival per turn
+    public bool canRevive; //One unit revival per turn
     public List<BaseUnit> graveyard = new List<BaseUnit>(); //Keep track of dead units
+    Coroutine revivalSelection;
 
     protected override void ResetStats()
     {
         movementRange = 0;
         attackRange = 0;
         hasAttacked = false;
+        canRevive = true;
     }
 
-    public void RegisterDeadUnit(BaseUnit unit) { graveyard.Add(unit); }
+    public void RegisterDeadUnit(BaseUnit unit) => graveyard.Add(unit);
 
-    public void UnregisterDeadUnit(BaseUnit unit) {  graveyard.Remove(unit); }
+    public void UnregisterDeadUnit(BaseUnit unit) => graveyard.Remove(unit);
 
     public void ListGraveyard()
     {
@@ -27,23 +29,16 @@ public class Campfire : BaseUnit
             string className = graveyard[i].GetType().Name;
             Debug.Log($"{i}: {className}\n");
         }
-        StartCoroutine(WaitForReviveSelection());
     }
 
-    public void ResetRevive()
+    public void TryRevive()
     {
-        canRevive = true;
-    }
+        if (!canRevive || graveyard.Count == 0) return;
+        
+        ListGraveyard();
 
-    public bool TryRevive(BaseUnit unit)
-    {
-        if (canRevive && graveyard.Contains(unit))
-        {
-            //unit.Revive();
-            canRevive = false; // Campfire has been used for this turn
-            return true;
-        }
-        return false;
+        if (revivalSelection == null)
+            revivalSelection = StartCoroutine(WaitForReviveSelection());
     }
 
     private IEnumerator WaitForReviveSelection()
@@ -56,7 +51,7 @@ public class Campfire : BaseUnit
                 {
                     Debug.Log($"Player selected {graveyard[i].GetType().Name} to revive.");
                     ReviveUnitFromGraveyard(i);
-                    break;
+                    yield break;
                 }
             }
 
@@ -69,19 +64,11 @@ public class Campfire : BaseUnit
         if (index >= 0 && index < graveyard.Count)
         {
             BaseUnit unitToRevive = graveyard[index];
-            Campfire campfire = TurnManager.Instance.GetCampfireOfSquad(unitToRevive.GetSquad);
-            if (campfire != null)
-            {
-                List<Vector3Int> validTiles = GetValidRevivalTiles(campfire.CurrentPosition);
-                HighlightValidRevivalTiles(validTiles);
 
-                StartCoroutine(WaitForTileSelection(unitToRevive, validTiles));
-                graveyard.Remove(unitToRevive);
-            }
-        }
-        else
-        {
-            Debug.Log("Invalid selection. Please choose a valid unit.");
+            List<Vector3Int> validTiles = GetValidRevivalTiles(CurrentPosition);
+            GridManager.Instance.HighlightRevivalTiles(validTiles);
+
+            StartCoroutine(WaitForTileSelection(unitToRevive, validTiles));
         }
     }
 
@@ -90,10 +77,10 @@ public class Campfire : BaseUnit
     {
         List<Vector3Int> validTiles = new List<Vector3Int>
         {
-            campfirePosition + new Vector3Int(0, 1, 0),
-            campfirePosition + new Vector3Int(0, -1, 0),
-            campfirePosition + new Vector3Int(1, 0, 0),
-            campfirePosition + new Vector3Int(-1, 0, 0)
+            campfirePosition + Vector3Int.up,
+            campfirePosition + Vector3Int.down,
+            campfirePosition + Vector3Int.right,
+            campfirePosition + Vector3Int.left
         };
 
         // Do not spawn on invalid tiles
@@ -106,19 +93,13 @@ public class Campfire : BaseUnit
         return validTiles;
     }
 
-    // Highlight the valid revival tiles
-    private void HighlightValidRevivalTiles(List<Vector3Int> validTiles)
-    {
-        GridManager.Instance.HighlightRevivalTiles(validTiles);
-    }
 
     // Coroutine to wait for the player to select a tile
     private IEnumerator WaitForTileSelection(BaseUnit unitToRevive, List<Vector3Int> validTiles)
     {
-        bool tileSelected = false;
-        Vector3Int selectedTile = new Vector3Int(-1, -1, -1);
+        Vector3Int selectedTile;
 
-        while (!tileSelected)
+        while (true)
         {
             if (Input.GetMouseButtonDown(0))
             {
@@ -127,22 +108,26 @@ public class Campfire : BaseUnit
                 if (validTiles.Contains(clickedTile))
                 {
                     selectedTile = clickedTile;
-                    tileSelected = true;
+                    break;
                 }
-            } 
-            else if (Input.GetMouseButtonDown(1)) 
+            }
+            else if (Input.GetMouseButtonDown(1))
             {
                 GridManager.Instance.Deselect();
+                canRevive = true;
+                revivalSelection = null;
                 yield break;
             }
 
-            yield return null; // Wait for the next frame
+            yield return null;
         }
 
         // Spawn the unit on the selected tile
         UnitManager.Instance.SpawnUnit(selectedTile, unitToRevive.GetPrefab, squad);
-        UnregisterDeadUnit(unitToRevive);
-        GridManager.Instance.Deselect(); // Clear the highlights
+        GridManager.Instance.Deselect();
+        graveyard.Remove(unitToRevive);
+        canRevive = false;
+        revivalSelection = null;
     }
 
 

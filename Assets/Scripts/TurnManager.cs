@@ -45,8 +45,7 @@ public class TurnManager : MonoBehaviour
     {
         currentSquad = (Squads)(currentSquadIndex + 1);
         Campfire fire = GetCampfireOfSquad(currentSquad);
-        if (fire.graveyard.Count > 0)
-            fire.ListGraveyard();
+        fire.TryRevive();
         Debug.Log($"Switching Teams. Team {currentSquad}'s turn");
     }
 
