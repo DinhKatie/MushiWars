@@ -24,7 +24,7 @@ public class BaseUnit : MonoBehaviour
     public bool HasAttacked => hasAttacked;
     public int Health => health;
     public bool isDead => dead;
-    public Squads GetSquad { get { return squad; } }
+    public Squads GetSquad => squad;
     public UnitPrefabs GetPrefab => prefab;
 
     //Setters
@@ -104,7 +104,9 @@ public class BaseUnit : MonoBehaviour
         //Simulate death and disable
         currPosition = new Vector3Int(-1,-1,-1);
         this.enabled = false;
-        UnitManager.Instance.OnUnitDeath(this);
+
+        Campfire campfire = TurnManager.Instance.GetCampfireOfSquad(squad);
+        campfire.RegisterDeadUnit(this);
     }
 
     public int CalculateMoveCost(Vector3Int newPosition)

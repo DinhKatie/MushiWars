@@ -55,7 +55,7 @@ public class UnitManager : MonoBehaviour
             BaseUnit newUnit = Instantiate(prefabToSpawn, _tilemap.GetCellCenterWorld(spawnTile), Quaternion.identity);
 
             newUnit.SetCurrentPosition(spawnTile);
-            newUnit.SetSquad(squad);
+            TurnManager.Instance.AddUnitToSquad(newUnit, squad);
 
             // Add the unit to the dictionary to track its position
             _unitsOnTiles[spawnTile] = newUnit;
@@ -80,13 +80,11 @@ public class UnitManager : MonoBehaviour
         }
     }
 
-    // Method to get the unit at a specific tile
+    // Method to get the unit at a specific tiles
     public BaseUnit GetUnitAtTile(Vector3Int tilePosition)
     {
         if (_unitsOnTiles.TryGetValue(tilePosition, out BaseUnit unit))
-        {
             return unit;
-        }
         return null;
     }
 
@@ -123,43 +121,33 @@ public class UnitManager : MonoBehaviour
 
         //Ensure target is within the current unit's attack range
         List<Vector3Int> attackRanges = attacker.CalculateValidAttacks();
-        if (attackRanges.Contains(hitUnit.CurrentPosition))
+        if (attackRanges.Contains(hitUnit.CurrentPosition) && GetUnitAtTile(hitUnit.CurrentPosition))
         {
-            if (GetUnitAtTile(hitUnit.CurrentPosition))
-            {
-                attacker.Attack(hitUnit);
-            }
-            else
-                Debug.Log($"No unit found at {hitUnit}");
+            attacker.Attack(hitUnit);
         }
         else
             Debug.Log($"{hitUnit} is out of attack range");
-    }
-
-    public void OnUnitDeath(BaseUnit unit)
-    {
-        Squads squad = unit.GetSquad;
-        Campfire campfire = TurnManager.Instance.GetCampfireOfSquad(squad);
-        campfire.RegisterDeadUnit(unit);
     }
 
     public void PushCampfire(BaseUnit pusher, Campfire campfire, Vector3Int tileToPush)
     {
         if (pusher.MovementRange <= 0) return; 
 
+        //Remove previous positions
         Vector3Int pusherOldPos = pusher.CurrentPosition;
         Vector3Int fireOldPos = campfire.CurrentPosition;
 
         _unitsOnTiles.Remove(pusherOldPos);
         _unitsOnTiles.Remove(fireOldPos);
 
+        //Set new positions after push
         pusher.SetCurrentPosition(campfire.CurrentPosition);
         campfire.SetCurrentPosition(tileToPush);
 
         _unitsOnTiles[campfire.CurrentPosition] = campfire;
         _unitsOnTiles[pusher.CurrentPosition] = pusher;
 
-        pusher.DecrementMove();
+        pusher.DecrementMove(); //Move cost of pushing one tile is 1
         pusher.HighlightValidMoves();
     }
 

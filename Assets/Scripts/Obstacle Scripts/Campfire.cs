@@ -93,7 +93,6 @@ public class Campfire : BaseUnit
         return validTiles;
     }
 
-
     // Coroutine to wait for the player to select a tile
     private IEnumerator WaitForTileSelection(BaseUnit unitToRevive, List<Vector3Int> validTiles)
     {
@@ -126,22 +125,14 @@ public class Campfire : BaseUnit
         UnitManager.Instance.SpawnUnit(selectedTile, unitToRevive.GetPrefab, squad);
         GridManager.Instance.Deselect();
         graveyard.Remove(unitToRevive);
+        Destroy(unitToRevive.gameObject);
         canRevive = false;
         revivalSelection = null;
     }
 
-
     //Campfires cannot move or attack
-    public override void Move(Vector3Int newPosition)
-    {
-        return;
-    }
+    public override void Move(Vector3Int newPosition) { return; }
 
-    public override void Attack(BaseUnit enemy)
-    {
-        return;
-    }
-
-
+    public override void Attack(BaseUnit enemy) { return; }
 }
 
