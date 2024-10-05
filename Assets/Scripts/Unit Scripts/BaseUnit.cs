@@ -54,8 +54,6 @@ public class BaseUnit : MonoBehaviour
             
         else
             ResetStats();
-
-        Debug.Log($"Move Range: {movementRange}, Attack: {attackRange}. Disabled.");
     }
 
     protected virtual void ResetStats()
@@ -63,7 +61,6 @@ public class BaseUnit : MonoBehaviour
         movementRange = 2;
         attackRange = 1;
         hasAttacked = false;
-        Debug.Log($"Move Range: {movementRange}, Attack: {attackRange}.");
     }
 
     public virtual void Move(Vector3Int newPosition)
@@ -95,7 +92,6 @@ public class BaseUnit : MonoBehaviour
         hasAttacked = true;
         movementRange = 0;
         attackRange = 0;
-        Debug.Log($"Move Range: {movementRange}, Attack: {attackRange}. Disabled.");
     }
 
     protected virtual void OnHit()
@@ -142,26 +138,47 @@ public class BaseUnit : MonoBehaviour
     {
         List<Vector3Int> validMoves = new List<Vector3Int>();
         Vector3Int startPos = currPosition;
-        //Loop through the valid move range.
-        for (int x = -movementRange; x <= movementRange; x++)
+
+        Queue<Vector3Int> queue = new Queue<Vector3Int>();
+        HashSet<Vector3Int> visited = new HashSet<Vector3Int>();
+
+        queue.Enqueue(startPos);
+        visited.Add(startPos);
+
+        Vector3Int[] directions = new Vector3Int[]
         {
-            for (int y = -movementRange; y <= movementRange; y++)
+        new Vector3Int(1, 0, 0),
+        new Vector3Int(-1, 0, 0),
+        new Vector3Int(0, 1, 0),
+        new Vector3Int(0, -1, 0)
+        };
+
+        while (queue.Count > 0)
+        {
+            Vector3Int currentPos = queue.Dequeue();
+
+             validMoves.Add(currentPos);
+
+            foreach (Vector3Int dir in directions)
             {
-                //A diagonal move is 2 moves. Account for this.
-                if (Mathf.Abs(x) + Mathf.Abs(y) > movementRange)
+                Vector3Int neighbor = currentPos + dir;
+
+                // Check if the neighbor is within movement range and hasn't been visited yet.
+                int distance = Mathf.Abs(neighbor.x - startPos.x) + Mathf.Abs(neighbor.y - startPos.y);
+                if (distance > movementRange || visited.Contains(neighbor))
                     continue;
 
-                Vector3Int tile = new Vector3Int(startPos.x + x, startPos.y + y, startPos.z);
-
-                //If the tile is valid, there's no unit, and it's not an obstacle: It's a valid move.
-                if (GridManager.Instance.GetTileAtPosition(tile) != null && UnitManager.Instance.GetUnitAtTile(tile) == null
-                    && !GridManager.Instance.IsObstacleTile(tile))
+                // Check if the tile is valid (not an obstacle, no unit on it).
+                if (GridManager.Instance.GetTileAtPosition(neighbor) != null &&
+                    UnitManager.Instance.GetUnitAtTile(neighbor) == null &&
+                    !GridManager.Instance.IsObstacleTile(neighbor))
                 {
-                    validMoves.Add(tile);
+                    // Mark the neighbor as visited and add it to the queue
+                    queue.Enqueue(neighbor);
+                    visited.Add(neighbor);
                 }
             }
         }
-        validMoves.Add(startPos);
         return validMoves;
     }
 

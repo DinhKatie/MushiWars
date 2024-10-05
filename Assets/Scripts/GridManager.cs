@@ -51,6 +51,10 @@ public class GridManager : MonoBehaviour
     {
         _highlightTilemap.ClearAllTiles();
         _obstacles = new List<Vector3Int>();
+        Vector3Int tile = new Vector3Int(-3, -3, 0);
+        Vector3Int newTile = new Vector3Int(2,2, 0);
+        SpawnObstacle(tile, Obstacle.tree);
+        SpawnObstacle(newTile, Obstacle.log, RotationState.Horizontal);
     }
 
     private void Update()
