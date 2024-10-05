@@ -9,6 +9,13 @@ public class Campfire : BaseUnit
     public List<BaseUnit> graveyard = new List<BaseUnit>(); //Keep track of dead units
     Coroutine revivalSelection;
 
+    private void Update()
+    {
+        if (revivalSelection == null && canRevive && graveyard.Count > 0 && TurnManager.Instance.GetCurrentSquad() == squad)
+        {
+            TryRevive();
+        }
+    }
     protected override void ResetStats()
     {
         movementRange = 0;
@@ -21,7 +28,7 @@ public class Campfire : BaseUnit
 
     public void UnregisterDeadUnit(BaseUnit unit) => graveyard.Remove(unit);
 
-    public void ListGraveyard()
+    private void ListGraveyard()
     {
         Debug.Log("Pick the corresponding key to revive a character: \n");
         for (int i = 0; i < graveyard.Count; i++)
@@ -31,7 +38,7 @@ public class Campfire : BaseUnit
         }
     }
 
-    public void TryRevive()
+    private void TryRevive()
     {
         if (!canRevive || graveyard.Count == 0) return;
         
@@ -59,9 +66,9 @@ public class Campfire : BaseUnit
         }
     }
 
-    public void ReviveUnitFromGraveyard(int index)
+    private void ReviveUnitFromGraveyard(int index)
     {
-        if (index >= 0 && index < graveyard.Count)
+        if (index >= 0 && index < graveyard.Count && squad == TurnManager.Instance.GetCurrentSquad())
         {
             BaseUnit unitToRevive = graveyard[index];
 
@@ -72,7 +79,46 @@ public class Campfire : BaseUnit
         }
     }
 
-    // Get the valid cardinal direction tiles around the campfire
+    // Coroutine to wait for the player to select a tile
+    private IEnumerator WaitForTileSelection(BaseUnit unitToRevive, List<Vector3Int> validTiles)
+    {
+        Vector3Int selectedTile;
+
+        while (true)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                Vector3Int clickedTile = GridManager.Instance.GetMouseTilePosition();
+
+                if (validTiles.Contains(clickedTile))
+                {
+                    selectedTile = clickedTile;
+                    break;
+                }
+            }
+            else if (Input.GetMouseButtonDown(1)) //Deselect, but allow revival again.
+            {
+                GridManager.Instance.Deselect();
+                canRevive = true;
+                revivalSelection = null;
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        // Spawn the unit on the selected tile
+        BaseUnit newUnit = UnitManager.Instance.SpawnUnit(selectedTile, unitToRevive.GetPrefab, squad);
+        newUnit.justRevived = true;
+
+        GridManager.Instance.Deselect();
+        graveyard.Remove(unitToRevive);
+        Destroy(unitToRevive.gameObject);
+        canRevive = false;
+        revivalSelection = null;
+    }
+
+  // Get the valid cardinal direction tiles around the campfire
     private List<Vector3Int> GetValidRevivalTiles(Vector3Int campfirePosition)
     {
         List<Vector3Int> validTiles = new List<Vector3Int>
@@ -93,46 +139,17 @@ public class Campfire : BaseUnit
         return validTiles;
     }
 
-    // Coroutine to wait for the player to select a tile
-    private IEnumerator WaitForTileSelection(BaseUnit unitToRevive, List<Vector3Int> validTiles)
-    {
-        Vector3Int selectedTile;
-
-        while (true)
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                Vector3Int clickedTile = GridManager.Instance.GetMouseTilePosition();
-
-                if (validTiles.Contains(clickedTile))
-                {
-                    selectedTile = clickedTile;
-                    break;
-                }
-            }
-            else if (Input.GetMouseButtonDown(1))
-            {
-                GridManager.Instance.Deselect();
-                canRevive = true;
-                revivalSelection = null;
-                yield break;
-            }
-
-            yield return null;
-        }
-
-        // Spawn the unit on the selected tile
-        UnitManager.Instance.SpawnUnit(selectedTile, unitToRevive.GetPrefab, squad);
-        GridManager.Instance.Deselect();
-        graveyard.Remove(unitToRevive);
-        Destroy(unitToRevive.gameObject);
-        canRevive = false;
-        revivalSelection = null;
-    }
-
     //Campfires cannot move or attack
     public override void Move(Vector3Int newPosition) { return; }
 
     public override void Attack(BaseUnit enemy) { return; }
+
+    protected override void OnDeath()
+    {
+        graveyard = null;
+        StopAllCoroutines();
+        UnitManager.Instance.RemoveUnit(currPosition);
+        Destroy(gameObject);
+    }
 }
 

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.Tilemaps;
 
 public class BaseUnit : MonoBehaviour
@@ -8,11 +9,12 @@ public class BaseUnit : MonoBehaviour
 
     // Unit stats
     protected Vector3Int currPosition;
-    protected int movementRange;
+    public int movementRange;
     protected int attackRange;
     protected bool hasAttacked;
     protected int health;
     protected bool dead = false;
+    public bool justRevived = false;
 
     public Squads squad;
     protected UnitPrefabs prefab = UnitPrefabs.unit;
@@ -44,7 +46,16 @@ public class BaseUnit : MonoBehaviour
     protected virtual void Start()
     {
         health = 1;
-        ResetStats();
+        if (justRevived)
+        {
+            DisableMovementAndAttack();
+            justRevived = false;
+        }
+            
+        else
+            ResetStats();
+
+        Debug.Log($"Move Range: {movementRange}, Attack: {attackRange}. Disabled.");
     }
 
     protected virtual void ResetStats()
@@ -52,6 +63,7 @@ public class BaseUnit : MonoBehaviour
         movementRange = 2;
         attackRange = 1;
         hasAttacked = false;
+        Debug.Log($"Move Range: {movementRange}, Attack: {attackRange}.");
     }
 
     public virtual void Move(Vector3Int newPosition)
@@ -78,6 +90,14 @@ public class BaseUnit : MonoBehaviour
         GridManager.Instance.Deselect();
     }
 
+    public void DisableMovementAndAttack()
+    {
+        hasAttacked = true;
+        movementRange = 0;
+        attackRange = 0;
+        Debug.Log($"Move Range: {movementRange}, Attack: {attackRange}. Disabled.");
+    }
+
     protected virtual void OnHit()
     {
         health -= 1;
@@ -89,7 +109,7 @@ public class BaseUnit : MonoBehaviour
         }   
     }
 
-    protected void OnDeath()
+    protected virtual void OnDeath()
     {
         dead = true;
         GetComponent<SpriteRenderer>().enabled = false;
@@ -106,7 +126,8 @@ public class BaseUnit : MonoBehaviour
         this.enabled = false;
 
         Campfire campfire = TurnManager.Instance.GetCampfireOfSquad(squad);
-        campfire.RegisterDeadUnit(this);
+        if (campfire != null)
+            campfire.RegisterDeadUnit(this);
     }
 
     public int CalculateMoveCost(Vector3Int newPosition)

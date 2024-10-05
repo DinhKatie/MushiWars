@@ -13,9 +13,11 @@ public class TurnManager : MonoBehaviour
     private Dictionary<Squads, List<BaseUnit>> squadsDict;
     private List<List<BaseUnit>> squadsList;
 
-    public Squads currentSquad; // The squad whose turn it is
+    private Squads currentSquad; // The squad whose turn it is
 
     private int currentSquadIndex = 0;
+
+    public Squads GetCurrentSquad() => currentSquad;
 
 
     private void Awake()
@@ -44,8 +46,6 @@ public class TurnManager : MonoBehaviour
     public void StartTurn()
     {
         currentSquad = (Squads)(currentSquadIndex + 1);
-        Campfire fire = GetCampfireOfSquad(currentSquad);
-        fire.TryRevive();
         Debug.Log($"Switching Teams. Team {currentSquad}'s turn");
     }
 
@@ -73,14 +73,9 @@ public class TurnManager : MonoBehaviour
 
     public void RemoveUnitFromTurnSystem(BaseUnit unit)
     {
-        foreach (var squad in squadsList)
-        {
-            if (squad.Contains(unit))
-            {
-                squad.Remove(unit);
-                break;
-            }
-        }
+        List<BaseUnit> l = squadsDict[unit.GetSquad];
+        if (l.Contains(unit))
+            l.Remove(unit);
     }
 
     public Campfire GetCampfireOfSquad(Squads squad)
