@@ -133,21 +133,19 @@ public class UnitManager : MonoBehaviour
     {
         if (pusher.MovementRange <= 0) return; 
 
-        //Remove previous positions
         Vector3Int pusherOldPos = pusher.CurrentPosition;
         Vector3Int fireOldPos = campfire.CurrentPosition;
 
         _unitsOnTiles.Remove(pusherOldPos);
         _unitsOnTiles.Remove(fireOldPos);
 
-        //Set new positions after push
         pusher.SetCurrentPosition(campfire.CurrentPosition);
         campfire.SetCurrentPosition(tileToPush);
 
         _unitsOnTiles[campfire.CurrentPosition] = campfire;
         _unitsOnTiles[pusher.CurrentPosition] = pusher;
 
-        pusher.DecrementMove(); //Move cost of pushing one tile is 1
+        pusher.DecrementMove();
         pusher.HighlightValidMoves();
     }
 
