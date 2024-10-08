@@ -161,7 +161,9 @@ public class UnitManager : MonoBehaviour
 
     public void GetUnitHighlights(BaseUnit unit)
     {
-        if (unit is Campfire) return; //Campfire can't move on its own
+        Squads currSquad = TurnManager.Instance.GetCurrentSquad();
+        //Campfire can't move on its own unless FireBoy is the hero
+        if (unit is Campfire && TurnManager.Instance.GetHeroType(currSquad) != HeroTypes.Fire) return; 
         unit.HighlightValidMoves();
     }
 
@@ -172,6 +174,19 @@ public class UnitManager : MonoBehaviour
             unit.Reset();
         }
     }
+
+    public void UseHeroAbility(List<BaseUnit> squad)
+    {
+        foreach( var unit in squad)
+        {
+            if (unit is BaseHero hero)
+            {
+                hero.UseAbility();
+                break;
+            }
+        }
+    }
+
 
 }
 

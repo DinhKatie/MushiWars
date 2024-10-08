@@ -134,7 +134,7 @@ public class BaseUnit : MonoBehaviour
         return x + y;
     }
 
-    private List<Vector3Int> CalculateValidMoves()
+    private List<Vector3Int> CalculateValidMoves() //Breadth-first search
     {
         List<Vector3Int> validMoves = new List<Vector3Int>();
         Vector3Int startPos = currPosition;
@@ -156,8 +156,7 @@ public class BaseUnit : MonoBehaviour
         while (queue.Count > 0)
         {
             Vector3Int currentPos = queue.Dequeue();
-
-             validMoves.Add(currentPos);
+            validMoves.Add(currentPos);
 
             foreach (Vector3Int dir in directions)
             {
@@ -241,7 +240,7 @@ public class BaseUnit : MonoBehaviour
 
     }
 
-    public void Reset()
+    public virtual void Reset()
     {
         ResetStats();
     }

@@ -51,7 +51,7 @@ public class GridManager : MonoBehaviour
     {
         _highlightTilemap.ClearAllTiles();
         _obstacles = new List<Vector3Int>();
-        Vector3Int tile = new Vector3Int(-3, -3, 0);
+        Vector3Int tile = new Vector3Int(-2, -3, 0);
         Vector3Int newTile = new Vector3Int(2,2, 0);
         SpawnObstacle(tile, Obstacle.tree);
         SpawnObstacle(newTile, Obstacle.log, RotationState.Horizontal);
@@ -152,6 +152,7 @@ public class GridManager : MonoBehaviour
             }
             else if (previousUnit != null && newUnit is Campfire campfire && TurnManager.Instance.isUnitInCurrentSquad(campfire)) //Campfire Push, can mushis push other team's campfire??
             {
+                
                 Vector3Int pushDirection = isCampfirePushable(previousUnit);
 
                 // Check if campfire can be pushed and if it's a valid tile
@@ -160,6 +161,8 @@ public class GridManager : MonoBehaviour
                     UnitManager.Instance.PushCampfire(previousUnit, campfire, pushDirection);
                     Debug.Log($"{previousUnit.name} is pushing the campfire.");
                 }
+                else
+                    UnitManager.Instance.GetUnitHighlights(newUnit);
             }
             //previously selected a unit, and now clicked another unit. 
             //Check for attack or switching selection
@@ -195,7 +198,7 @@ public class GridManager : MonoBehaviour
         Vector3Int pushDirection = -(unit.CurrentPosition - fire.CurrentPosition);
         Vector3Int targetTile = fire.CurrentPosition + pushDirection;
         if (UnitManager.Instance.GetUnitAtTile(targetTile) == null && GetTileAtPosition(targetTile) != null
-            && unit.MovementRange > 0)
+            && unit.MovementRange > 0 && !IsObstacleTile(targetTile))
         {
             _validMovesMap.SetTile(fire.CurrentPosition, _campfirePushTile);
             return targetTile;

@@ -86,6 +86,16 @@ public class TurnManager : MonoBehaviour
         }
         return null;
     }
+
+    public HeroTypes GetHeroType(Squads squad)
+    {
+        foreach (var unit in squadsDict[squad])
+        {
+            if (unit is BaseHero hero)
+                return hero.heroType;
+        }
+        return HeroTypes.None;
+    }
 }
 
 

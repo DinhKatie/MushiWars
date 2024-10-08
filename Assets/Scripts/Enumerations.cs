@@ -34,7 +34,14 @@ public enum GameState
     SpawnSquad1,
     SpawnSquad2,
     Player1Turn,
-    Player2Turn 
+    Player2Turn
 }
+
+public enum HeroTypes
+{ 
+    Fire,
+    None,
+}
+
 
 

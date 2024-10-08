@@ -18,7 +18,10 @@ public class Campfire : BaseUnit
     }
     protected override void ResetStats()
     {
-        movementRange = 0;
+        if (TurnManager.Instance.GetHeroType(TurnManager.Instance.GetCurrentSquad()) == HeroTypes.Fire)
+            movementRange = 1;
+        else
+            movementRange = 0;
         attackRange = 0;
         hasAttacked = false;
         canRevive = true;
@@ -140,7 +143,10 @@ public class Campfire : BaseUnit
     }
 
     //Campfires cannot move or attack
-    public override void Move(Vector3Int newPosition) { return; }
+    public override void Move(Vector3Int newPosition)
+    {
+        base.Move(newPosition);
+    }
 
     public override void Attack(BaseUnit enemy) { return; }
 
@@ -148,8 +154,16 @@ public class Campfire : BaseUnit
     {
         graveyard = null;
         StopAllCoroutines();
+        revivalSelection = null;
         UnitManager.Instance.RemoveUnit(currPosition);
         Destroy(gameObject);
+    }
+
+    public override void Reset()
+    {
+        base.Reset();
+        StopAllCoroutines();
+        revivalSelection = null;
     }
 }
 
