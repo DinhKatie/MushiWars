@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - Obstacles
+  - CardCanvas
   layers:
   - Default
   - TransparentFX

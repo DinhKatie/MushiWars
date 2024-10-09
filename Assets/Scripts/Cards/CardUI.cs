@@ -38,12 +38,13 @@ public class CardUI : MonoBehaviour
         Awake();
     }
 
-    private void SetCardUI()
+    public void SetCardUI()
     {
         if (_card != null && _card.cardData != null)
         {
             SetCardTexts();
             SetRarityBackground();
+            SetCardImage();
         }
     }
 
@@ -71,5 +72,10 @@ public class CardUI : MonoBehaviour
                 _rarityBackground.sprite = _legendaryRarityBackground;
                 break;
         }
+    }
+
+    private void SetCardImage()
+    {
+        _cardImage.sprite = _card.cardData.Image;
     }
 }
