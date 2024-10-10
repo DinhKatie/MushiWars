@@ -12,6 +12,7 @@ public class FireHero : BaseHero
     }
 
     //Fire Boy can move the campfire on square in any cardinal direction without being next to it.
+    //Handled in Campfire.
     public override void UseAbility()
     {
         return;

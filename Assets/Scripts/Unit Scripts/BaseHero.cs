@@ -13,4 +13,5 @@ public abstract class BaseHero : BaseUnit
     }
 
     public abstract void UseAbility();
+
 }
