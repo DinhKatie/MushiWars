@@ -410,7 +410,7 @@ MonoBehaviour:
   m_Intensity: 1
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
-  m_ApplyToSortingLayers: 00000000172cd7410d02c3bb192a3898
+  m_ApplyToSortingLayers: 00000000172cd7410d02c3bb192a389851423592
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -7246,7 +7246,6 @@ MonoBehaviour:
   units: []
   player1Squad: []
   player2Squad: []
-  currentSquad: 0
 --- !u!1 &1719808069
 GameObject:
   m_ObjectHideFlags: 0
