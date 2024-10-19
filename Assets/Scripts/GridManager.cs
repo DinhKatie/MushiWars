@@ -19,8 +19,10 @@ public class GridManager : MonoBehaviour
     [SerializeField] private TileBase _validAttackTile;
     [SerializeField] private TileBase _campfirePushTile;
 
-    [SerializeField] private BaseObstacle _obstaclePrefab;
+    [SerializeField] private BaseObstacle _treeObstaclePrefab;
+    [SerializeField] private BaseObstacle _rockObstaclePrefab;
     [SerializeField] private LogObstacle _logObstaclePrefab;
+    [SerializeField] private BaseObstacle _bambooObstaclePrefab;
 
 
     public List<Vector3Int> _obstacles;
@@ -42,7 +44,9 @@ public class GridManager : MonoBehaviour
         obstaclesPrefabsDict = new Dictionary<Obstacle, BaseObstacle>
         {
             { Obstacle.log, _logObstaclePrefab },
-            { Obstacle.tree, _obstaclePrefab },
+            { Obstacle.tree, _treeObstaclePrefab },
+            { Obstacle.rock, _rockObstaclePrefab },
+            { Obstacle.bamboo, _bambooObstaclePrefab },
 
         };
     }
@@ -53,8 +57,14 @@ public class GridManager : MonoBehaviour
         _obstacles = new List<Vector3Int>();
         Vector3Int tile = new Vector3Int(-2, -1, 0);
         Vector3Int newTile = new Vector3Int(2,2, 0);
-        SpawnObstacle(tile, Obstacle.tree);
+        Vector3Int treeTile = new Vector3Int(0, -4,0);
+        Vector3Int newnewTile = new Vector3Int(2,0, 0); 
+        SpawnObstacle(tile, Obstacle.rock);
         SpawnObstacle(newTile, Obstacle.log, RotationState.Horizontal);
+        newTile = new Vector3Int(-4, 3, 0);
+        SpawnObstacle(newTile, Obstacle.log, RotationState.Vertical);
+        SpawnObstacle(treeTile, Obstacle.tree);
+        SpawnObstacle(newnewTile, Obstacle.bamboo);
     }
 
     private void Update()

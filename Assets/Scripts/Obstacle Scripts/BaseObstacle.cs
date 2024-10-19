@@ -24,14 +24,6 @@ public class BaseObstacle : MonoBehaviour
 
     protected virtual void UpdateOccupiedTiles()
     {
-        //Where parent is the top left tile
-        occupiedTiles = new List<Vector3Int>
-        {
-            currPosition,
-            currPosition + new Vector3Int(1, 0, 0),
-            currPosition + new Vector3Int(0, -1, 0),
-            currPosition + new Vector3Int(1, -1, 0)
-        };
-
+        occupiedTiles.Add(currPosition);
     }
 }

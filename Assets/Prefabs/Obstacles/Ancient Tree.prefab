@@ -178,7 +178,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4858227671306559057}
   - component: {fileID: 4868308938038067767}
-  - component: {fileID: 1210173675021165333}
+  - component: {fileID: 7723542644441480782}
   m_Layer: 7
   m_Name: Ancient Tree
   m_TagString: Obstacles
@@ -255,7 +255,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &1210173675021165333
+--- !u!114 &7723542644441480782
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -264,7 +264,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 3803766529725849928}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9f8ab4e4982e29d4091f27b94554829e, type: 3}
+  m_Script: {fileID: 11500000, guid: 0c6a10601b7d32449826d98178c104c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   occupiedTiles: []
