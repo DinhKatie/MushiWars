@@ -47,7 +47,7 @@ public class Deck : MonoBehaviour
     }
 
     //Call at Start and whenever Deck is empty
-    //Fisher Yates from internet lol
+    //Fisher Yates from internet
     private void Shuffle()
     {
         for (int i = _deckPile.Count - 1; i > 0; i--)
@@ -58,6 +58,10 @@ public class Deck : MonoBehaviour
             _deckPile[j] = temp;
         }
     }
+
+    public event System.Action OnCardDrawn;
+    public event System.Action OnCardDiscarded;
+
 
     public void DrawHand(int amount = 5)
     {
@@ -75,6 +79,7 @@ public class Deck : MonoBehaviour
                 HandCards.Add(_deckPile[0]);
                 _deckPile[0].gameObject.SetActive(true);
                 _deckPile.RemoveAt(0);
+                OnCardDrawn?.Invoke();
             }
             
         }
@@ -89,6 +94,7 @@ public class Deck : MonoBehaviour
             HandCards.Remove(card);
             _discardPile.Add(card);
             card.gameObject.SetActive(false);
+            OnCardDiscarded?.Invoke();
         }
     }
 }

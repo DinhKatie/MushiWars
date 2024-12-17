@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
 using static UnityEngine.UI.CanvasScaler;
 
@@ -69,8 +70,11 @@ public class GridManager : MonoBehaviour
 
     private void Update()
     {
-        HandleTileHover();
-        HandleTileSelection();
+        //if (!EventSystem.current.IsPointerOverGameObject())
+        //{
+         HandleTileHover();
+         HandleTileSelection();
+        //}
     }
 
     private void HandleTileHover()
@@ -162,7 +166,6 @@ public class GridManager : MonoBehaviour
             }
             else if (previousUnit != null && newUnit is Campfire campfire && TurnManager.Instance.isUnitInCurrentSquad(campfire)) //Campfire Push, can mushis push other team's campfire??
             {
-                
                 Vector3Int pushDirection = isCampfirePushable(previousUnit);
 
                 // Check if campfire can be pushed and if it's a valid tile
@@ -178,12 +181,13 @@ public class GridManager : MonoBehaviour
             //Check for attack or switching selection
             else if (previousUnit != null && newUnit != previousUnit) 
             {
-                if (!TurnManager.Instance.isUnitInCurrentSquad(newUnit)) //Unit clicked is not in the squad. Attack them.
+                if (!TurnManager.Instance.isUnitInCurrentSquad(newUnit) && TurnManager.Instance.isUnitInCurrentSquad(previousUnit)) //Unit clicked is not in the squad. Attack them.
                 {
                     UnitManager.Instance.AttackUnit(previousUnit, newUnit);
                     Debug.Log($"{previousUnit.name} attacked {newUnit.name}!");
+                    ClearValidMoves();
                 }
-                else //Unit Clicked is in the squad. Switch selection.
+                else if (TurnManager.Instance.isUnitInCurrentSquad(newUnit)) //Unit Clicked is in the squad. Switch selection.
                 {
                     UnitManager.Instance.GetUnitHighlights(newUnit);
                     Debug.Log($"{newUnit.name} selected. Switching selection and highlights.");

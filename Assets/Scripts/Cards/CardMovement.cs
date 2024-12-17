@@ -11,6 +11,8 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
     private RectTransform _rectTransform;
     private Card _card;
 
+    private Vector2 _originalPos;
+
     private readonly string CANVAS_TAG = "CardCanvas";
 
 
@@ -24,16 +26,36 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
     public void OnBeginDrag(PointerEventData eventData)
     {
         _isBeingDragged = true;
+        HandManager.Instance.NotifyCardBeginDrag(this);
+        _originalPos = _rectTransform.position;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        _rectTransform.anchoredPosition += (eventData.delta / _cardCanvas.scaleFactor);
+        // Convert screen position to world position based on the canvas's scale and positioning
+        Vector3 worldPointerPosition;
+        RectTransformUtility.ScreenPointToWorldPointInRectangle(
+            _rectTransform.parent as RectTransform,
+            eventData.position,
+            eventData.pressEventCamera,
+            out worldPointerPosition
+        );
+
+        // Apply world position and offset to the card's anchored position
+        _rectTransform.position = worldPointerPosition;
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
         _isBeingDragged = false;
-        Deck.Instance.DiscardCard(_card);
+        RectTransform handRect = _cardCanvas.transform.Find("Hand").GetComponent<RectTransform>();
+
+        // Check if the card is outside the hand canvas
+        if (!RectTransformUtility.RectangleContainsScreenPoint(handRect, Input.mousePosition, eventData.pressEventCamera))
+            Deck.Instance.DiscardCard(_card);
+        else
+            _rectTransform.position = _originalPos;
+
+        HandManager.Instance.NotifyCardEndDrag(this);
     }
 }
