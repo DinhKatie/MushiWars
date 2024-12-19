@@ -16,10 +16,10 @@ public class SwordUnit : BaseUnit
         List<Vector3Int> diagonals = new List<Vector3Int>
         {
             // Diagonal directions
-            currPosition + new Vector3Int(-1, 1, 0),  // Northwest
-            currPosition + new Vector3Int(1, 1, 0),   // Northeast
-            currPosition + new Vector3Int(-1, -1, 0), // Southwest
-            currPosition + new Vector3Int(1, -1, 0)   // Southeast
+            currPosition + new Vector3Int(-attackRange, attackRange, 0),  // Northwest
+            currPosition + new Vector3Int(attackRange, attackRange, 0),   // Northeast
+            currPosition + new Vector3Int(-attackRange, -attackRange, 0), // Southwest
+            currPosition + new Vector3Int(attackRange, -attackRange, 0)   // Southeast
         };
         attackRanges.AddRange(diagonals);
 

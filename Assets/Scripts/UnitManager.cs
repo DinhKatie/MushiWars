@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.WSA;
 
 public class UnitManager : MonoBehaviour
 {
@@ -83,21 +84,14 @@ public class UnitManager : MonoBehaviour
     // Method to get the unit at a specific tiles
     public BaseUnit GetUnitAtTile(Vector3Int tilePosition)
     {
-        if (_unitsOnTiles.TryGetValue(tilePosition, out BaseUnit unit))
-            return unit;
-        return null;
-    }
+        _unitsOnTiles.TryGetValue(tilePosition, out BaseUnit unit);
+        return unit;
 
-    public bool isTileValid(Vector3Int tile)
-    {
-        if (GetUnitAtTile(tile) != null)
-            return false;
-        return true;
     }
 
     public void MoveUnit(BaseUnit unit, Vector3Int newPosition)
     {
-        if (!isTileValid(newPosition) || unit.MovementRange <= 0 || unit.CalculateMoveCost(newPosition) > unit.MovementRange) return;
+        if (GetUnitAtTile(newPosition) != null || unit.MovementRange <= 0 || unit.CalculateMoveCost(newPosition) > unit.MovementRange) return;
         if (GridManager.Instance.IsObstacleTile(newPosition))
         {
             Debug.Log("That is an obstacle.");

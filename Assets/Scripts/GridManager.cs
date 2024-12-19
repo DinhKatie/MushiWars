@@ -8,25 +8,27 @@ using static UnityEngine.UI.CanvasScaler;
 
 public class GridManager : MonoBehaviour
 {
+    [Header("Tilemaps")]
     [SerializeField] public Tilemap _tilemap;
-
     [SerializeField] private Tilemap _highlightTilemap;
     [SerializeField] private Tilemap _outlineTilemap;
     [SerializeField] private Tilemap _validMovesMap;
 
+    [Header("Tiles")]
     [SerializeField] private TileBase _highlightTile;
     [SerializeField] private TileBase _outlineTile;
     [SerializeField] private TileBase _validMoveTile;
     [SerializeField] private TileBase _validAttackTile;
     [SerializeField] private TileBase _campfirePushTile;
 
+    [Header("Obstacles")]
     [SerializeField] private BaseObstacle _treeObstaclePrefab;
     [SerializeField] private BaseObstacle _rockObstaclePrefab;
     [SerializeField] private LogObstacle _logObstaclePrefab;
     [SerializeField] private BaseObstacle _bambooObstaclePrefab;
 
 
-    public List<Vector3Int> _obstacles;
+    public List<Vector3Int> _obstacles = new List<Vector3Int>();
     private Dictionary<Obstacle, BaseObstacle> obstaclesPrefabsDict;
 
     private Vector3Int _previousHoverTilePosition;
@@ -55,17 +57,7 @@ public class GridManager : MonoBehaviour
     private void Start()
     {
         _highlightTilemap.ClearAllTiles();
-        _obstacles = new List<Vector3Int>();
-        Vector3Int tile = new Vector3Int(-2, -1, 0);
-        Vector3Int newTile = new Vector3Int(2,2, 0);
-        Vector3Int treeTile = new Vector3Int(0, -4,0);
-        Vector3Int newnewTile = new Vector3Int(2,0, 0); 
-        SpawnObstacle(tile, Obstacle.rock);
-        SpawnObstacle(newTile, Obstacle.log, RotationState.Horizontal);
-        newTile = new Vector3Int(-4, 3, 0);
-        SpawnObstacle(newTile, Obstacle.log, RotationState.Vertical);
-        SpawnObstacle(treeTile, Obstacle.tree);
-        SpawnObstacle(newnewTile, Obstacle.bamboo);
+        InitializeDefaultObstacles();
     }
 
     private void Update()
@@ -77,41 +69,37 @@ public class GridManager : MonoBehaviour
         //}
     }
 
+    private void InitializeDefaultObstacles()
+    {
+        SpawnObstacle(new Vector3Int(-2, -1, 0), Obstacle.rock);
+        SpawnObstacle(new Vector3Int(2, 2, 0), Obstacle.log, RotationState.Horizontal);
+        SpawnObstacle(new Vector3Int(-4, 3, 0), Obstacle.log, RotationState.Vertical);
+        SpawnObstacle(new Vector3Int(0, -4, 0), Obstacle.tree);
+        SpawnObstacle(new Vector3Int(2, 0, 0), Obstacle.bamboo);
+    }
+
     private void HandleTileHover()
     {
-        // Perform a raycast from the mouse position to detect tiles
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector3Int tilePosition = _tilemap.WorldToCell(mousePosition);
+        // Detect tiles the mouse is over
+        Vector3Int tilePosition = GetMouseTilePosition();
+
+        // Deselect the previously hovered tile
+        _highlightTilemap.SetTile(_previousHoverTilePosition, null);
+        _previousHoverTilePosition = tilePosition;
 
         // Check if the hovered tile is valid
-        TileBase hoveredTile = GetTileAtPosition(tilePosition);
-        if (hoveredTile != null)
+        if (GetTileAtPosition(tilePosition) != null)
         {
-            // Highlight the tile if it's not already highlighted
-            if (tilePosition != _previousHoverTilePosition)
-            {
-                // Deselect the previously hovered tile
-                _highlightTilemap.SetTile(_previousHoverTilePosition, null);
-                _previousHoverTilePosition = tilePosition;
+            _highlightTilemap.SetTile(tilePosition, _highlightTile);
+        }
 
-                // Highlight the current tile
-                _highlightTilemap.SetTile(tilePosition, _highlightTile);
-            }
-        }
-        else
-        {
-            // If no tile is hovered, deselect the previous one
-            _highlightTilemap.SetTile(_previousHoverTilePosition, null);
-            _previousHoverTilePosition = tilePosition; // Reset previous hover position
-        }
     }
 
     private void HandleTileSelection()
     {
         if (Input.GetMouseButtonDown(0)) // Left mouse button
         {
-            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector3Int tilePosition = _tilemap.WorldToCell(mousePosition);
+            Vector3Int tilePosition = GetMouseTilePosition();
 
             // Check if the tile is valid
             if (GetTileAtPosition(tilePosition) != null)
@@ -119,20 +107,6 @@ public class GridManager : MonoBehaviour
         }
         else if (Input.GetMouseButtonDown(1)) //Cancel selection on right mouse click
             Deselect();
-    }
-
-    public Vector3Int GetMouseTilePosition()
-    {
-        if (Input.GetMouseButtonDown(0)) // Left mouse button
-        {
-            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector3Int tilePosition = _tilemap.WorldToCell(mousePosition);
-
-            // Check if the tile is valid
-            if (GetTileAtPosition(tilePosition) != null)
-                return tilePosition;
-        }
-        return new Vector3Int(-1,-1, -1);
     }
 
     public void Deselect()
@@ -158,50 +132,77 @@ public class GridManager : MonoBehaviour
         // If a unit is clicked and it's the current squad's turn
         if (newUnit != null)
         {
-            // If no unit was previously selected, highlight the clicked unit's movement options
-            if (previousUnit == null && TurnManager.Instance.isUnitInCurrentSquad(newUnit))
-            {
-                UnitManager.Instance.GetUnitHighlights(newUnit);
-                Debug.Log($"{newUnit.name} selected. Highlighting move options.");
-            }
-            else if (previousUnit != null && newUnit is Campfire campfire && TurnManager.Instance.isUnitInCurrentSquad(campfire)) //Campfire Push, can mushis push other team's campfire??
-            {
-                Vector3Int pushDirection = isCampfirePushable(previousUnit);
-
-                // Check if campfire can be pushed and if it's a valid tile
-                if (pushDirection != new Vector3Int(-1, -1, -1)) // nonValidTile check
-                {
-                    UnitManager.Instance.PushCampfire(previousUnit, campfire, pushDirection);
-                    Debug.Log($"{previousUnit.name} is pushing the campfire.");
-                }
-                else
-                    UnitManager.Instance.GetUnitHighlights(newUnit);
-            }
-            //previously selected a unit, and now clicked another unit. 
-            //Check for attack or switching selection
-            else if (previousUnit != null && newUnit != previousUnit) 
-            {
-                if (!TurnManager.Instance.isUnitInCurrentSquad(newUnit) && TurnManager.Instance.isUnitInCurrentSquad(previousUnit)) //Unit clicked is not in the squad. Attack them.
-                {
-                    UnitManager.Instance.AttackUnit(previousUnit, newUnit);
-                    Debug.Log($"{previousUnit.name} attacked {newUnit.name}!");
-                    ClearValidMoves();
-                }
-                else if (TurnManager.Instance.isUnitInCurrentSquad(newUnit)) //Unit Clicked is in the squad. Switch selection.
-                {
-                    UnitManager.Instance.GetUnitHighlights(newUnit);
-                    Debug.Log($"{newUnit.name} selected. Switching selection and highlights.");
-                }
-            }
+            HandleUnitSelection(previousUnit, newUnit);
         }
         //Otherwise, if clicked a unit then clicked an empty tile, move the unit.
-        else if (previousUnit != null && newUnit == null && TurnManager.Instance.isUnitInCurrentSquad(previousUnit))
+        else if (IsValidMove(previousUnit, newUnit))
         {
             UnitManager.Instance.MoveUnit(previousUnit, tilePosition);
         }
-
         _previousTileSelection = tilePosition;
 
+    }
+
+    private void HandleUnitSelection(BaseUnit previousUnit, BaseUnit newUnit)
+    {
+        if (IsInitialUnitSelection(previousUnit, newUnit))
+        {
+            HighlightUnitOptions(newUnit);
+        }
+        else if (IsCampfirePush(previousUnit, newUnit))
+        {
+            AttemptCampfirePush(previousUnit, (Campfire)newUnit);
+        }
+        else if (IsAttackScenario(previousUnit, newUnit))
+        {
+            UnitManager.Instance.AttackUnit(previousUnit, newUnit);
+            Debug.Log($"{previousUnit.name} attacked {newUnit.name}!");
+            ClearValidMoves();
+        }
+        else if (TurnManager.Instance.isUnitInCurrentSquad(newUnit)) //New Unit clicked is in the current squad. Switch selection.
+        {
+            HighlightUnitOptions(newUnit);
+        }
+    }
+
+    private bool IsInitialUnitSelection(BaseUnit previousUnit, BaseUnit newUnit)
+    {
+        return previousUnit == null && TurnManager.Instance.isUnitInCurrentSquad(newUnit);
+    }
+
+    private bool IsCampfirePush(BaseUnit previousUnit, BaseUnit newUnit)
+    {
+        return previousUnit != null && newUnit is Campfire campfire &&
+               TurnManager.Instance.isUnitInCurrentSquad(campfire);
+    }
+
+    private bool IsAttackScenario(BaseUnit previousUnit, BaseUnit newUnit)
+    {
+        return previousUnit != null && !TurnManager.Instance.isUnitInCurrentSquad(newUnit) &&
+               TurnManager.Instance.isUnitInCurrentSquad(previousUnit);
+    }
+
+    private void HighlightUnitOptions(BaseUnit unit)
+    {
+        UnitManager.Instance.GetUnitHighlights(unit);
+        Debug.Log($"{unit.name} selected. Highlighting move options.");
+    }
+
+
+    //----- CAMPFIRE LOGIC ------
+
+    private void AttemptCampfirePush(BaseUnit previousUnit, Campfire campfire)
+    {
+        Vector3Int pushDirection = isCampfirePushable(previousUnit);
+
+        // Check if campfire can be pushed and if it's a valid tile
+        if (pushDirection != new Vector3Int(-1, -1, -1)) // nonValidTile check
+        {
+            UnitManager.Instance.PushCampfire(previousUnit, campfire, pushDirection);
+            Debug.Log($"{previousUnit.name} is pushing the campfire.");
+        }
+        else
+            HighlightUnitOptions(campfire);
     }
 
     public Vector3Int isCampfirePushable(BaseUnit unit)
@@ -211,6 +212,7 @@ public class GridManager : MonoBehaviour
 
         Vector3Int pushDirection = -(unit.CurrentPosition - fire.CurrentPosition);
         Vector3Int targetTile = fire.CurrentPosition + pushDirection;
+
         if (UnitManager.Instance.GetUnitAtTile(targetTile) == null && GetTileAtPosition(targetTile) != null
             && unit.MovementRange > 0 && !IsObstacleTile(targetTile))
         {
@@ -222,12 +224,12 @@ public class GridManager : MonoBehaviour
 
     public Campfire GetCampfireNearby(BaseUnit unit)
     {
-        Vector3Int[] directions = new Vector3Int[]
+        Vector3Int[] directions =
         {
-        new Vector3Int(0, 1),  // Up
-        new Vector3Int(0, -1), // Down
-        new Vector3Int(-1, 0), // Left
-        new Vector3Int(1, 0)   // Right
+            Vector3Int.up,
+            Vector3Int.down,
+            Vector3Int.left,
+            Vector3Int.right
         };
 
         foreach (Vector3Int dir in directions)
@@ -246,12 +248,22 @@ public class GridManager : MonoBehaviour
 
     public Campfire GetCampfireAtPosition(Vector3Int position)
     {
-        BaseUnit unit = UnitManager.Instance.GetUnitAtTile(position);
-        if (unit is Campfire campfire)
-            return campfire;
-        else 
-            return null;
+        return UnitManager.Instance.GetUnitAtTile(position) as Campfire;
+    }
 
+    // ----------------------------------
+
+
+    private bool IsValidMove(BaseUnit previousUnit, BaseUnit newUnit)
+    {
+        return previousUnit != null && newUnit == null && TurnManager.Instance.isUnitInCurrentSquad(previousUnit);
+    }
+
+
+    public Vector3Int GetMouseTilePosition()
+    {
+        Vector3 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        return _tilemap.WorldToCell(mouseWorldPosition);
     }
 
     public void HighlightValidMoves(List<Vector3Int> moves)

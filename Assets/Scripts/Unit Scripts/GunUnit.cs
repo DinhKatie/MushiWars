@@ -22,14 +22,14 @@ public class GunUnit : BaseUnit
     {
         List<Vector3Int> attackRanges = new List<Vector3Int>
         {
-            currPosition + new Vector3Int(0, 2, 0),
-            currPosition + new Vector3Int(0, -2, 0),
-            currPosition + new Vector3Int(-2, 0, 0),
-            currPosition + new Vector3Int(2, 0, 0),
-            currPosition + new Vector3Int(-2, 2, 0), //Ask Kevin if gun guys attack diagonals
-            currPosition + new Vector3Int(2, 2, 0),   
-            currPosition + new Vector3Int(-2, -2, 0), 
-            currPosition + new Vector3Int(2, -2, 0)   
+            currPosition + new Vector3Int(0, attackRange, 0),
+            currPosition + new Vector3Int(0, -attackRange, 0),
+            currPosition + new Vector3Int(-attackRange, 0, 0),
+            currPosition + new Vector3Int(attackRange, 0, 0),
+            currPosition + new Vector3Int(-attackRange, attackRange, 0), //Diagonals
+            currPosition + new Vector3Int(attackRange, attackRange, 0),   
+            currPosition + new Vector3Int(-attackRange, -attackRange, 0), 
+            currPosition + new Vector3Int(attackRange, -attackRange, 0)   
         };
         return attackRanges;
     }

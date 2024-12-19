@@ -30,10 +30,10 @@ public class BaseUnit : MonoBehaviour
     public UnitPrefabs GetPrefab => prefab;
 
     //Setters
-    public void SetCurrentPosition(Vector3Int pos) 
-    { 
+    public void SetCurrentPosition(Vector3Int pos)
+    {
         currPosition = pos;
-        transform.position = GridManager.Instance._tilemap.GetCellCenterWorld(pos);
+        transform.position = Grid._tilemap.GetCellCenterWorld(pos);
     }
     public void SetSquad(Squads team) { squad = team; }
     public void DecrementMove(int moveCost = 1)
@@ -41,6 +41,11 @@ public class BaseUnit : MonoBehaviour
         movementRange -= moveCost;
         Debug.Log("Movement Range is now " + movementRange);
     }
+
+
+    //Managers for easy calling
+    private GridManager Grid => GridManager.Instance;
+    private UnitManager UnitMan => UnitManager.Instance;
 
     // Start is called before the first frame update
     protected virtual void Start()
@@ -51,7 +56,6 @@ public class BaseUnit : MonoBehaviour
             DisableMovementAndAttack();
             justRevived = false;
         }
-            
         else
             ResetStats();
     }
@@ -63,6 +67,9 @@ public class BaseUnit : MonoBehaviour
         hasAttacked = false;
     }
 
+    public virtual void Reset() => ResetStats();
+
+    // ------ MOVEMENT ------
     public virtual void Move(Vector3Int newPosition)
     {
         int moveCost = CalculateMoveCost(newPosition);
@@ -70,68 +77,17 @@ public class BaseUnit : MonoBehaviour
         {
             movementRange -= moveCost;
             currPosition = newPosition;
-            transform.position = GridManager.Instance._tilemap.GetCellCenterWorld(newPosition);
+            transform.position = Grid._tilemap.GetCellCenterWorld(newPosition);
 
             Debug.Log($"Unit Move Cost: {moveCost}");
 
             HighlightValidMoves();
         }
-            
-    }
-
-    public virtual void Attack(BaseUnit enemy)
-    {
-        enemy.OnHit();
-        hasAttacked = true;
-        HighlightValidMoves();
-        GridManager.Instance.Deselect();
-    }
-
-    public void DisableMovementAndAttack()
-    {
-        hasAttacked = true;
-        movementRange = 0;
-        attackRange = 0;
-    }
-
-    protected virtual void OnHit()
-    {
-        health -= 1;
-        Debug.Log($"{name} has been hit! Health: {health}");
-        if (health <= 0)
-        {
-            UnitManager.Instance.RemoveUnit(currPosition);
-            OnDeath();
-        }   
-    }
-
-    protected virtual void OnDeath()
-    {
-        dead = true;
-        GetComponent<SpriteRenderer>().enabled = false;
-
-        // Iterate through all child objects and disable their SpriteRenderer components (sword, gun, etc)
-        foreach (Transform child in transform)
-        {
-            SpriteRenderer childSprite = child.GetComponent<SpriteRenderer>();
-            if (childSprite != null)
-                childSprite.enabled = false;
-        }
-        //Simulate death and disable
-        currPosition = new Vector3Int(-1,-1,-1);
-        this.enabled = false;
-
-        Campfire campfire = TurnManager.Instance.GetCampfireOfSquad(squad);
-        if (campfire != null)
-            campfire.RegisterDeadUnit(this);
     }
 
     public int CalculateMoveCost(Vector3Int newPosition)
     {
-        int x = Mathf.Abs(currPosition.x - newPosition.x);
-        int y = Mathf.Abs(currPosition.y - newPosition.y);
-
-        return x + y;
+        return Mathf.Abs(currPosition.x - newPosition.x) + Mathf.Abs(currPosition.y - newPosition.y);
     }
 
     private List<Vector3Int> CalculateValidMoves() //Breadth-first search
@@ -145,13 +101,7 @@ public class BaseUnit : MonoBehaviour
         queue.Enqueue(startPos);
         visited.Add(startPos);
 
-        Vector3Int[] directions = new Vector3Int[]
-        {
-        new Vector3Int(1, 0, 0),
-        new Vector3Int(-1, 0, 0),
-        new Vector3Int(0, 1, 0),
-        new Vector3Int(0, -1, 0)
-        };
+        Vector3Int[] directions = { Vector3Int.right, Vector3Int.left, Vector3Int.up, Vector3Int.down };
 
         while (queue.Count > 0)
         {
@@ -168,9 +118,9 @@ public class BaseUnit : MonoBehaviour
                     continue;
 
                 // Check if the tile is valid (not an obstacle, no unit on it).
-                if (GridManager.Instance.GetTileAtPosition(neighbor) != null &&
-                    UnitManager.Instance.GetUnitAtTile(neighbor) == null &&
-                    !GridManager.Instance.IsObstacleTile(neighbor))
+                if (Grid.GetTileAtPosition(neighbor) != null &&
+                    UnitMan.GetUnitAtTile(neighbor) == null &&
+                    !Grid.IsObstacleTile(neighbor))
                 {
                     // Mark the neighbor as visited and add it to the queue
                     queue.Enqueue(neighbor);
@@ -181,16 +131,14 @@ public class BaseUnit : MonoBehaviour
         return validMoves;
     }
 
-    protected virtual List<Vector3Int> GetAttackRange()
+
+    // ------ ATTACKING -------
+    public virtual void Attack(BaseUnit enemy)
     {
-        List<Vector3Int> attackRanges = new List<Vector3Int>
-        {
-            currPosition + new Vector3Int(0, 1, 0),
-            currPosition + new Vector3Int(0, -1, 0),
-            currPosition + new Vector3Int(-1, 0, 0),
-            currPosition + new Vector3Int(1, 0, 0)
-        };
-        return attackRanges;
+        enemy.OnHit();
+        hasAttacked = true;
+        HighlightValidMoves();
+        Grid.Deselect();
     }
 
     public List<Vector3Int> CalculateValidAttacks()
@@ -199,18 +147,65 @@ public class BaseUnit : MonoBehaviour
         List<Vector3Int> toRemove = new List<Vector3Int>();
         foreach (var attack in attackRanges)
         {
-            BaseUnit unit = UnitManager.Instance.GetUnitAtTile(attack);
+            BaseUnit unit = UnitMan.GetUnitAtTile(attack);
 
             //Do not designate as attackable tile if the tile is empty or if it is a unit within the team
             if (unit == null || TurnManager.Instance.isUnitInCurrentSquad(unit))
                 toRemove.Add(attack);
-            
         }
+        //Remove in-attackable tiles from the highlights
         foreach (var attack in toRemove)
-        {
             attackRanges.Remove(attack);
-        }
+
         return attackRanges;
+    }
+
+    protected virtual List<Vector3Int> GetAttackRange()
+    {
+        return new List<Vector3Int>
+        {
+            currPosition + Vector3Int.up * attackRange,
+            currPosition + Vector3Int.down * attackRange,
+            currPosition + Vector3Int.left * attackRange,
+            currPosition + Vector3Int.right * attackRange
+        };
+    }
+
+
+    // ----- ON HIT AND ON DEATH ------
+    protected virtual void OnHit()
+    {
+        health -= 1;
+        Debug.Log($"{name} has been hit! Health: {health}");
+        if (health <= 0) OnDeath();
+    }
+
+    protected virtual void OnDeath()
+    {
+        UnitMan.RemoveUnit(currPosition);
+        dead = true;
+        GetComponent<SpriteRenderer>().enabled = false;
+
+        // Iterate through all child objects and disable their SpriteRenderer components (sword, gun, etc)
+        foreach (Transform child in transform)
+        {
+            SpriteRenderer childSprite = child.GetComponent<SpriteRenderer>();
+            if (childSprite != null)
+                childSprite.enabled = false;
+        }
+        //Simulate death and disable
+        currPosition = new Vector3Int(-1, -1, -1);
+        this.enabled = false;
+
+        //Notify campfire to signify revival
+        TurnManager.Instance.GetCampfireOfSquad(squad)?.RegisterDeadUnit(this);
+    }
+
+    public void DisableMovementAndAttack()
+    {
+        hasAttacked = true;
+        movementRange = 0;
+        attackRange = 0;
     }
 
     private void LogMoves(List<Vector3Int> validMoves)
@@ -223,27 +218,16 @@ public class BaseUnit : MonoBehaviour
 
     public virtual void HighlightValidMoves()
     {
-        GridManager.Instance.ClearValidMoves();
-        
-        List<Vector3Int> validMoves = CalculateValidMoves();
-        GridManager.Instance.HighlightValidMoves(validMoves);
+        Grid.ClearValidMoves();
+
+        Grid.HighlightValidMoves(CalculateValidMoves());
 
         //If unit hasn't attacked yet, highlight their valid attacks
         if (!hasAttacked)
-        {
-            List<Vector3Int> validAtt = CalculateValidAttacks();
-            GridManager.Instance.HighlightValidAttacks(validAtt);
-        }
+            Grid.HighlightValidAttacks(CalculateValidAttacks());
 
         //Highlight if a campfire is pushable
-        GridManager.Instance.isCampfirePushable(this);
-
-    }
-
-    public virtual void Reset()
-    {
-        ResetStats();
+        Grid.isCampfirePushable(this);
     }
 
 }
-
