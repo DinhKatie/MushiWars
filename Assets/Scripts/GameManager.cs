@@ -27,6 +27,7 @@ public class GameManager : MonoBehaviour
     {
         ChangeState(GameState.SpawnSquad1);
         ChangeState(GameState.SpawnSquad2);
+        TurnManager.Instance.StartTurn();
     }
 
     public void ChangeState(GameState state)
