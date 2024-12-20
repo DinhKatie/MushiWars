@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using UnityEngine.WSA;
 
 public class UnitManager : MonoBehaviour
 {
@@ -161,7 +160,7 @@ public class UnitManager : MonoBehaviour
     {
         Squads currSquad = TurnManager.Instance.GetCurrentSquad();
         //Campfire can't move on its own unless FireBoy is the hero
-        if (unit is Campfire && TurnManager.Instance.GetHeroType(currSquad) != HeroTypes.Fire) return; 
+        //if (unit is Campfire && TurnManager.Instance.GetHeroType(currSquad) != HeroTypes.Fire) return; 
         unit.HighlightValidMoves();
     }
 

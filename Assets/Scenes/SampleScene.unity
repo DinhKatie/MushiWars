@@ -6923,11 +6923,11 @@ RectTransform:
   - {fileID: 1296047965}
   m_Father: {fileID: 2119787821}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -312, y: 30}
-  m_SizeDelta: {x: 172.5, y: 24.963684}
-  m_Pivot: {x: 1, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 46, y: -454}
+  m_SizeDelta: {x: 160, y: -1050}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1169156476
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7524,6 +7524,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1671532721}
   - component: {fileID: 1671532722}
+  - component: {fileID: 1671532723}
   m_Layer: 0
   m_Name: TurnManager
   m_TagString: Untagged
@@ -7561,9 +7562,6 @@ MonoBehaviour:
   units: []
   player1Squad: []
   player2Squad: []
-<<<<<<< Updated upstream
-=======
-  _playerControlsEnabled: 0
 --- !u!114 &1671532723
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7586,7 +7584,6 @@ MonoBehaviour:
   sceneViewId: 1
   InstantiationId: 0
   isRuntimeInstantiated: 0
->>>>>>> Stashed changes
 --- !u!1 &1678843890
 GameObject:
   m_ObjectHideFlags: 0
@@ -7954,7 +7951,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 2234.52, y: 725.8561}
+  m_SizeDelta: {x: 1920, y: 1080}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &2073559833
 MonoBehaviour:

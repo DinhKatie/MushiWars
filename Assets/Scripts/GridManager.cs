@@ -126,6 +126,10 @@ public class GridManager : MonoBehaviour
         _outlineTilemap.SetTile(tilePosition, _outlineTile);
         _highlightTilemap.SetTile(tilePosition, null);
 
+        _previousTileSelection = tilePosition;
+
+        if (!TurnManager.Instance._playerControlsOn) return;
+
         BaseUnit previousUnit = UnitManager.Instance.GetUnitAtTile(_previousTileSelection);
         BaseUnit newUnit = UnitManager.Instance.GetUnitAtTile(tilePosition);
         _previousTileSelection = tilePosition;
@@ -142,7 +146,7 @@ public class GridManager : MonoBehaviour
         {
             UnitManager.Instance.MoveUnit(previousUnit, tilePosition);
         }
-        _previousTileSelection = tilePosition;
+        
 
     }
 
