@@ -18,10 +18,10 @@ public class Campfire : BaseUnit
     }
     protected override void ResetStats()
     {
-        if (TurnManager.Instance.GetHeroType(TurnManager.Instance.GetCurrentSquad()) == HeroTypes.Fire)
+        //if (TurnManager.Instance.GetHeroType(TurnManager.Instance.GetCurrentSquad()) == HeroTypes.Fire)
             movementRange = 1;
-        else
-            movementRange = 0;
+        //else
+            //movementRange = 0;
         attackRange = 0;
         hasAttacked = false;
         canRevive = true;
