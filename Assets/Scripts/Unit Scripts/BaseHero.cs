@@ -14,4 +14,9 @@ public abstract class BaseHero : BaseUnit
 
     public abstract void UseAbility();
 
+    protected override void OnDeath()
+    {
+        GameManager.Instance.GameEnd(squad);
+    }
+
 }

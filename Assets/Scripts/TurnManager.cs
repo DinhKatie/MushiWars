@@ -47,12 +47,58 @@ public class TurnManager : MonoBehaviour
     {
         currentSquad = (Squads)(currentSquadIndex + 1);
         Debug.Log($"Switching Teams. Team {currentSquad}'s turn");
+<<<<<<< Updated upstream
+=======
+
+        /*// Check which Photon player owns the current squad
+        if (squadOwners.TryGetValue(currentSquad, out Player owner))
+        {
+            Debug.Log(owner);
+            Debug.Log("Trying");
+            if (owner == PhotonNetwork.LocalPlayer)
+                EnablePlayerControls();
+            else
+                DisablePlayerControls();
+        }*/
+    }
+
+    public void EnablePlayerControls()
+    {
+        _playerControlsEnabled = true;
+        Debug.Log("Player controls enabled for local player.");
+    }
+
+    public void DisablePlayerControls()
+    {
+        _playerControlsEnabled = false;
+        Debug.Log("Player controls disabled for local player.");
+>>>>>>> Stashed changes
     }
 
     // End the current squad's turn and move to the next
     public void EndTurn()
     {
+<<<<<<< Updated upstream
         currentSquadIndex = (currentSquadIndex + 1) % squadsList.Count; // Loop through the squads
+=======
+        currentSquadIndex = (currentSquadIndex + 1) % squadsList.Count;
+        UnitManager.Instance.ResetTeam(squadsList[currentSquadIndex]);
+        GridManager.Instance.Deselect();
+        StartTurn();
+
+        /*if (PhotonNetwork.LocalPlayer == squadOwners[currentSquad])
+        {
+            Debug.Log("End Turn RPC Sent.");
+            PhotonView photonView = PhotonView.Get(this);
+            photonView.RPC("EndTurnRPC", RpcTarget.All);
+        }*/
+    }
+
+    [PunRPC]
+    public void EndTurnRPC()
+    {
+        currentSquadIndex = (currentSquadIndex + 1) % squadsList.Count;
+>>>>>>> Stashed changes
         UnitManager.Instance.ResetTeam(squadsList[currentSquadIndex]);
         GridManager.Instance.Deselect();
         StartTurn();

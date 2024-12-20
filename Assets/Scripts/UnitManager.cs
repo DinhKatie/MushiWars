@@ -53,7 +53,11 @@ public class UnitManager : MonoBehaviour
             BaseUnit prefabToSpawn = unitPrefabsDict[unitType];
 
             // Spawn Unit
-            BaseUnit newUnit = Instantiate(prefabToSpawn, _tilemap.GetCellCenterWorld(spawnTile), Quaternion.identity);
+            BaseUnit newUnit;
+            if ((int) squad % 2 == 0)
+                newUnit = Instantiate(prefabToSpawn, _tilemap.GetCellCenterWorld(spawnTile), Quaternion.Euler(0, 180, 0));
+            else
+                newUnit = Instantiate(prefabToSpawn, _tilemap.GetCellCenterWorld(spawnTile), Quaternion.identity);
 
             newUnit.SetCurrentPosition(spawnTile);
             TurnManager.Instance.AddUnitToSquad(newUnit, squad);

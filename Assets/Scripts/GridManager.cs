@@ -128,6 +128,9 @@ public class GridManager : MonoBehaviour
 
         BaseUnit previousUnit = UnitManager.Instance.GetUnitAtTile(_previousTileSelection);
         BaseUnit newUnit = UnitManager.Instance.GetUnitAtTile(tilePosition);
+        _previousTileSelection = tilePosition;
+
+        //if (!TurnManager.Instance._playerControlsOn) return;
 
         // If a unit is clicked and it's the current squad's turn
         if (newUnit != null)

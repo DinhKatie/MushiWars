@@ -1,16 +1,24 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.SearchService;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
     public GameState GameState;
+    public Squads winningTeam;
+
     private void Awake()
     {
         if (Instance == null)
+        {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+            
         else
             Destroy(gameObject);
     }
@@ -85,5 +93,10 @@ public class GameManager : MonoBehaviour
         SpawnSquad(campfireTile, heroSpawnTile, swordTile, gunTile, normalUnits, Squads.two);
     }
 
+    public void GameEnd(Squads winningSquad)
+    {
+        winningTeam = winningSquad;
+        SceneManager.LoadScene("GameOver");
+    }
 }
 
