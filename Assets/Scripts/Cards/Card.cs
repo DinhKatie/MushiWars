@@ -14,4 +14,9 @@ public class Card : MonoBehaviour
         cardData = data;
         GetComponent<CardUI>().SetCardUI();
     }
+
+    public void PlayEffect()
+    {
+        cardData.PlayEffect();
+    }
 }

@@ -11,8 +11,13 @@ public class ScriptableCard : ScriptableObject
     [field: SerializeField] public Sprite Image { get; private set; }
     [field: SerializeField] public CardRarity Rarity { get; private set; }
 
+    // Define a delegate for card effects
+    public System.Action OnPlayEffect;
 
-
+    public void PlayEffect()
+    {
+        OnPlayEffect?.Invoke();
+    }
 
     public enum CardRarity
     { 

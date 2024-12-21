@@ -114,6 +114,7 @@ public class GridManager : MonoBehaviour
         _outlineTilemap.ClearAllTiles();
         ClearValidMoves();
         _previousTileSelection = new Vector3Int(-1, -1, -1);
+        StopAllCoroutines();
     }
 
     private void SelectTile(Vector3Int tilePosition)
@@ -358,6 +359,12 @@ public class GridManager : MonoBehaviour
     public void SetTileAtPosition(Vector3Int position, TileBase tile)
     {
         _tilemap.SetTile(position, tile); // Set a tile at the specified position
+    }
+
+    public void HighlightOutlineTiles(List<Vector3Int> outlines)
+    {
+        foreach (var tile in outlines)
+            _validMovesMap.SetTile(tile, _outlineTile);
     }
 }
 

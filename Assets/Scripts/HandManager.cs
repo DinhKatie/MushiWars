@@ -43,18 +43,6 @@ public class HandManager : MonoBehaviour
         }
     }
 
-    private void OnEnable()
-    {
-        Deck.Instance.OnCardDrawn += ArrangeCardsInHand;
-        Deck.Instance.OnCardDiscarded += ArrangeCardsInHand;
-    }
-
-    private void OnDisable()
-    {
-        Deck.Instance.OnCardDrawn -= ArrangeCardsInHand;
-        Deck.Instance.OnCardDiscarded -= ArrangeCardsInHand;
-    }
-
     // Called when a card drag begins
     public void NotifyCardBeginDrag(CardMovement cardMovement)
     {
@@ -66,21 +54,6 @@ public class HandManager : MonoBehaviour
     {
         RectTransform cardRect = cardMovement.GetComponent<RectTransform>();
         ArrangeCardsInHand();
-
-        // Check if the card was dragged into the discard area
-        //if (RectTransformUtility.RectangleContainsScreenPoint(discardArea, cardRect.position))
-        //{
-            // If dragged into discard area, discard the card
-        //    Deck.Instance.DiscardCard(cardMovement.GetComponent<Card>());
-        //}
-        //else
-        //{
-            // If not, re-arrange the cards in hand
-        //    ArrangeCardsInHand();
-        //}
-
-        // Hide discard area after drag ends
-        //discardArea.gameObject.SetActive(false);
     }
 
 }

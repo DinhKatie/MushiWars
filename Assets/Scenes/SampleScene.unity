@@ -267,6 +267,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GameState: 0
+  winningTeam: 0
 --- !u!4 &413555210
 Transform:
   m_ObjectHideFlags: 0
@@ -7562,6 +7563,7 @@ MonoBehaviour:
   units: []
   player1Squad: []
   player2Squad: []
+  _playerControlsEnabled: 0
 --- !u!114 &1671532723
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7594,6 +7596,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1678843892}
   - component: {fileID: 1678843891}
+  - component: {fileID: 1678843893}
   m_Layer: 0
   m_Name: Deck
   m_TagString: Untagged
@@ -7634,6 +7637,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1678843893
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1678843890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f0653f9ac8779e4899dad2017512427, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveCard: {fileID: 11400000, guid: 81199b01f0a4b314f9aae6a64536579b, type: 2}
 --- !u!1 &1719808069
 GameObject:
   m_ObjectHideFlags: 0

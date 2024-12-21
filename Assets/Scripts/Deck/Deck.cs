@@ -83,6 +83,7 @@ public class Deck : MonoBehaviour
             }
             
         }
+        HandManager.Instance.ArrangeCardsInHand();
     }
 
     //No cards can be discarded from deck to discard

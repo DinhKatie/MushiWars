@@ -52,7 +52,10 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
 
         // Check if the card is outside the hand canvas
         if (!RectTransformUtility.RectangleContainsScreenPoint(handRect, Input.mousePosition, eventData.pressEventCamera))
+        {
             Deck.Instance.DiscardCard(_card);
+            _card.PlayEffect(); //Apply its effect
+        }
         else
             _rectTransform.position = _originalPos;
 

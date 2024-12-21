@@ -184,6 +184,21 @@ public class UnitManager : MonoBehaviour
         }
     }
 
+    public List<Vector3Int> GetUnitByTeam(Squads squad)
+    {
+        List<Vector3Int> teamUnits = new List<Vector3Int>();
+
+        foreach (var kvp in _unitsOnTiles)
+        {
+            if (kvp.Value.GetSquad == squad) // Assuming BaseUnit has a Team property
+            {
+                teamUnits.Add(kvp.Value.CurrentPosition);
+            }
+        }
+
+        return teamUnits;
+    }
+
 
 }
 

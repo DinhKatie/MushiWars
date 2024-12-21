@@ -41,6 +41,11 @@ public class BaseUnit : MonoBehaviour
         movementRange -= moveCost;
         Debug.Log("Movement Range is now " + movementRange);
     }
+    public void IncrementMove(int move = 1)
+    {
+        movementRange += move;
+        Debug.Log("Movement Range is now " + movementRange);
+    }
 
 
     //Managers for easy calling
