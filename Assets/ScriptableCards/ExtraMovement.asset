@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce0988ae35e1d4544bb28f2d3fe4b37d, type: 3}
   m_Name: ExtraMovement
   m_EditorClassIdentifier: 
-  <CardName>k__BackingField: Extra Move
-  <CardDescription>k__BackingField: Add +1 Move to a Unit
-  <Image>k__BackingField: {fileID: 21300000, guid: 41337de281975324bb5718d3676b4cce, type: 3}
+  <CardName>k__BackingField: Hovercraft
+  <CardDescription>k__BackingField: Unit
+  <Image>k__BackingField: {fileID: 1789733360, guid: a12fdaa9424a688408d2df2e417daecd, type: 3}
   <Rarity>k__BackingField: 3

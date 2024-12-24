@@ -40,20 +40,11 @@ public class HandManager : MonoBehaviour
             // Position the card with dynamic spacing and centered
             float newXPosition = startX + (i * cardOffset.x);
             cardTransform.anchoredPosition = new Vector2(newXPosition, 0f);
+
+            CardSelectionHandler csh = handCards[i].GetComponent<CardSelectionHandler>();
+            csh.Reset();
+
         }
-    }
-
-    // Called when a card drag begins
-    public void NotifyCardBeginDrag(CardMovement cardMovement)
-    {
-        return;
-    }
-
-    // Called when a card drag ends
-    public void NotifyCardEndDrag(CardMovement cardMovement)
-    {
-        RectTransform cardRect = cardMovement.GetComponent<RectTransform>();
-        ArrangeCardsInHand();
     }
 
 }

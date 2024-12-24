@@ -1,18 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-[RequireComponent(typeof(CardUI))] //requires CardUI for each Card script
 [RequireComponent(typeof(CardMovement))]
 
 public class Card : MonoBehaviour
 {
     [field: SerializeField] public ScriptableCard cardData {  get; private set; }
 
+    [SerializeField] private Image _cardImage;
+
     public void SetUp(ScriptableCard data)
     {
         cardData = data;
-        GetComponent<CardUI>().SetCardUI();
+        _cardImage.sprite = cardData.Image; //Set image
     }
 
     public void PlayEffect()

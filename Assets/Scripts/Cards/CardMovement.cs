@@ -10,6 +10,7 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
     private Canvas _cardCanvas;
     private RectTransform _rectTransform;
     private Card _card;
+    private CardSelectionHandler _cardSelectionHandler;
 
     private Vector2 _originalPos;
 
@@ -21,13 +22,14 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
         _cardCanvas = GameObject.FindGameObjectWithTag(CANVAS_TAG).GetComponent<Canvas>();
         _rectTransform = GetComponent<RectTransform>();
         _card = GetComponent<Card>();
+        _cardSelectionHandler = GetComponent<CardSelectionHandler>();
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
         _isBeingDragged = true;
-        HandManager.Instance.NotifyCardBeginDrag(this);
         _originalPos = _rectTransform.position;
+        _cardSelectionHandler.ResetScale();
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -59,6 +61,5 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
         else
             _rectTransform.position = _originalPos;
 
-        HandManager.Instance.NotifyCardEndDrag(this);
     }
 }

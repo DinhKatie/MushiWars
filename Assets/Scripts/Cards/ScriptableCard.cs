@@ -9,7 +9,6 @@ public class ScriptableCard : ScriptableObject
     [field: SerializeField] public string CardName { get; private set; }
     [field: SerializeField, TextArea] public string CardDescription { get; private set; }
     [field: SerializeField] public Sprite Image { get; private set; }
-    [field: SerializeField] public CardRarity Rarity { get; private set; }
 
     // Define a delegate for card effects
     public System.Action OnPlayEffect;
@@ -18,15 +17,4 @@ public class ScriptableCard : ScriptableObject
     {
         OnPlayEffect?.Invoke();
     }
-
-    public enum CardRarity
-    { 
-        Basic,
-        Common,
-        Rare,
-        Epic,
-        Legendary,
-    }
-
-
 }
