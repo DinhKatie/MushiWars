@@ -34,6 +34,7 @@ public class GridManager : MonoBehaviour
     private Vector3Int _previousHoverTilePosition;
 
     private Vector3Int _previousTileSelection = new Vector3Int(-1, -1, -1); //Default if no tile is selected
+    public bool avoidSelect = false; // For cases where a selection coincides with another selection (e.g. cards like Blast Stomp)
 
     public static GridManager Instance;
 
@@ -119,6 +120,7 @@ public class GridManager : MonoBehaviour
 
     private void SelectTile(Vector3Int tilePosition)
     {
+        if (avoidSelect) { avoidSelect = false; return; }
         // Deselect previous tile
         if (_previousTileSelection != tilePosition)
             _outlineTilemap.SetTile(_previousTileSelection, null);

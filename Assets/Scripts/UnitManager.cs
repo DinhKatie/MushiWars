@@ -190,10 +190,8 @@ public class UnitManager : MonoBehaviour
 
         foreach (var kvp in _unitsOnTiles)
         {
-            if (kvp.Value.GetSquad == squad) // Assuming BaseUnit has a Team property
-            {
+            if (kvp.Value.GetSquad == squad)
                 teamUnits.Add(kvp.Value.CurrentPosition);
-            }
         }
 
         return teamUnits;

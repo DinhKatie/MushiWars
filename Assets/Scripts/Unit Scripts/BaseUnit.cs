@@ -146,6 +146,11 @@ public class BaseUnit : MonoBehaviour
         Grid.Deselect();
     }
 
+    public void TakeDamage()
+    {
+        OnHit();
+    }
+
     public List<Vector3Int> CalculateValidAttacks()
     {
         List<Vector3Int> attackRanges = GetAttackRange();
