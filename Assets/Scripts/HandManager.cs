@@ -42,7 +42,7 @@ public class HandManager : MonoBehaviour
             cardTransform.anchoredPosition = new Vector2(newXPosition, 0f);
 
             CardSelectionHandler csh = handCards[i].GetComponent<CardSelectionHandler>();
-            csh.Reset();
+            csh.ResetCard();
 
         }
     }

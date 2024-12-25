@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ce0988ae35e1d4544bb28f2d3fe4b37d, type: 3}
-  m_Name: Card2 3
+  m_Name: Hovercraft
   m_EditorClassIdentifier: 
-  <CardName>k__BackingField: Card 2
-  <CardDescription>k__BackingField: 
-  <Image>k__BackingField: {fileID: 21300000, guid: 32c3dfb0c4ab00d49b8c0ad2ce3398e0, type: 3}
-  <Rarity>k__BackingField: 4
+  <CardName>k__BackingField: Hovercraft
+  <CardDescription>k__BackingField: Unit
+  <Image>k__BackingField: {fileID: 1789733360, guid: a12fdaa9424a688408d2df2e417daecd, type: 3}
+  <Rarity>k__BackingField: 3

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,24 +6,34 @@ using UnityEngine.UIElements;
 
 public class CardEffectInitializer : MonoBehaviour
 {
-    [SerializeField] private ScriptableCard moveCard;
+    [SerializeField] private ScriptableCard hovercraft;
 
     private void Awake()
     {
         // Assign specific effects to ScriptableCards
-        moveCard.OnPlayEffect = () => AddMove();
+        hovercraft.OnPlayEffect = () => Hovercraft();
     }
 
-    private void AddMove(int amount = 1)
+    private void Hovercraft()
     {
-        Coroutine unitSelection;
-        Debug.Log($"Adding {amount} of move range to unit.");
+        Debug.Log("Adding +1 move range to unit.");
         Squads currentSquad = TurnManager.Instance.GetCurrentSquad();
-        UnitManager.Instance.GetUnitByTeam(currentSquad);
-        unitSelection = StartCoroutine(SelectUnit(UnitManager.Instance.GetUnitByTeam(currentSquad), amount));
+        List<Vector3Int> validTiles = UnitManager.Instance.GetUnitByTeam(currentSquad);
+
+        StartCoroutine(SelectUnit(validTiles, selectedTile => //Select a unit, then execute the following function with its return value
+        {
+            BaseUnit unit = UnitManager.Instance.GetUnitAtTile(selectedTile);
+            if (unit != null)
+            {
+                unit.IncrementMove();
+                Debug.Log($"Unit at {selectedTile} received 1 additional move range.");
+            }
+            GridManager.Instance.Deselect();
+            GridManager.Instance.ClearValidMoves();
+        }));
     }
 
-    private IEnumerator SelectUnit(List<Vector3Int> validTiles, int amount)
+    private IEnumerator SelectUnit(List<Vector3Int> validTiles, Action<Vector3Int> onSelection)
     {
         GridManager.Instance.HighlightOutlineTiles(validTiles);
         Vector3Int selectedTile;
@@ -39,21 +50,14 @@ public class CardEffectInitializer : MonoBehaviour
                     break;
                 }
             }
-            else if (Input.GetMouseButtonDown(1)) //Deselect, but allow revival again.
+            else if (Input.GetMouseButtonDown(1)) //Deselect
             {
                 GridManager.Instance.Deselect();
                 yield break;
             }
             yield return null;
         }
-        BaseUnit unit = UnitManager.Instance.GetUnitAtTile(selectedTile);
-        if (unit != null)
-        {
-            unit.IncrementMove(amount);
-            Debug.Log($"Unit at {selectedTile} received {amount} additional move range.");
-        }
-        GridManager.Instance.Deselect();
-        GridManager.Instance.ClearValidMoves();
-        yield return null;
+
+        onSelection?.Invoke(selectedTile); //Pass the selected tile to the callback
     }
 }

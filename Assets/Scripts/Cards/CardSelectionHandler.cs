@@ -23,6 +23,11 @@ public class CardSelectionHandler : MonoBehaviour, IPointerEnterHandler, IPointe
 
     private IEnumerator MoveCard(bool startingAnim)
     {
+        if (GetComponent<CardMovement>()._isBeingDragged)
+        {
+            yield break;
+        }
+
         Vector3 endPos = startingAnim ? _startPos + new Vector3(0f, _verticalMoveAmount, 0f) : _startPos;
         Vector3 endScale = startingAnim ? _startScale * _scaleAmount : _startScale;
 
@@ -44,7 +49,7 @@ public class CardSelectionHandler : MonoBehaviour, IPointerEnterHandler, IPointe
         transform.localScale = _startScale;
     }
 
-    public void Reset()
+    public void ResetCard()
     {
         _startPos = transform.position;
         _startScale = transform.localScale;

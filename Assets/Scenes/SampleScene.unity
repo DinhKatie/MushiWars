@@ -153,7 +153,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardParent: {fileID: 2073559832}
-  cardOffset: {x: 200, y: 0}
+  cardOffset: {x: 350, y: 0}
 --- !u!4 &16916340
 Transform:
   m_ObjectHideFlags: 0

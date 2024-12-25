@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragHandler
 {
 
-    private bool _isBeingDragged;
+    public bool _isBeingDragged;
     private Canvas _cardCanvas;
     private RectTransform _rectTransform;
     private Card _card;

@@ -10,9 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ce0988ae35e1d4544bb28f2d3fe4b37d, type: 3}
-  m_Name: ExtraMovement
+  m_Name: Blast Stomp
   m_EditorClassIdentifier: 
-  <CardName>k__BackingField: Hovercraft
-  <CardDescription>k__BackingField: Unit
-  <Image>k__BackingField: {fileID: 1789733360, guid: a12fdaa9424a688408d2df2e417daecd, type: 3}
-  <Rarity>k__BackingField: 3
+  <CardName>k__BackingField: 
+  <CardDescription>k__BackingField: 
+  <Image>k__BackingField: {fileID: 0}
