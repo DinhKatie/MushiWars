@@ -8,6 +8,7 @@ public class HandManager : MonoBehaviour
     [SerializeField] private Vector2 cardOffset = new Vector2(100f, 0f); // The distance between each card
 
     private List<Card> handCards => Deck.Instance.HandCards;
+    private int MAX_HAND_SIZE = 3;
 
     public static HandManager Instance;
 

@@ -11,6 +11,7 @@ public class CardEffectInitializer : MonoBehaviour
     [SerializeField] private ScriptableCard healthOrb;
     [SerializeField] private ScriptableCard blastStomp;
     [SerializeField] private ScriptableCard smite;
+    [SerializeField] private ScriptableCard forcefield;
 
     private void Awake()
     {
@@ -19,6 +20,7 @@ public class CardEffectInitializer : MonoBehaviour
         healthOrb.OnPlayEffect = () => HealthOrb();
         blastStomp.OnPlayEffect = () => BlastStomp();
         smite.OnPlayEffect = () => Smite();
+        forcefield.OnPlayEffect = () => Forcefield();
     }
 
     private void Hovercraft()
@@ -43,7 +45,7 @@ public class CardEffectInitializer : MonoBehaviour
     {
         Squads currSquad = TurnManager.Instance.GetCurrentSquad();
         BaseHero hero = TurnManager.Instance.GetHeroOfSquad(currSquad);
-        hero.IncrementHealth();
+        hero?.IncrementHealth();
         Debug.Log($"Health of {hero} incremented by 1. New health: {hero.Health}");
     }
 
@@ -69,7 +71,7 @@ public class CardEffectInitializer : MonoBehaviour
             }
             GridManager.Instance.Deselect();
             GridManager.Instance.avoidSelect = false;
-            
+            Debug.Log("Used Blast Stomp.");
         }));
        
     }
@@ -117,6 +119,18 @@ public class CardEffectInitializer : MonoBehaviour
         }));
     }
 
+    private void Forcefield()
+    {
+        GridManager.Instance.avoidSelect = true;
+        List<Vector3Int> validUnits = CurrentSquadUnits();
+        StartCoroutine(SelectUnit(validUnits, selectedTile =>
+        {
+            UnitManager.Instance.GetUnitAtTile(selectedTile)?.SetImmune(true);
+            Debug.Log($"Applied Forcefield");
+            GridManager.Instance.avoidSelect = false;
+            GridManager.Instance.Deselect();
+        }));
+    }
     private List<Vector3Int> GetValidTiles(BaseUnit unit, bool includesDiagonals, int range = 1)
     {
         Vector3Int currPosition = unit.CurrentPosition;

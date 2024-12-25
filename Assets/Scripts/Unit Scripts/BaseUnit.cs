@@ -15,6 +15,7 @@ public class BaseUnit : MonoBehaviour
     protected int health;
     protected bool dead = false;
     public bool justRevived = false;
+    public bool isImmune = false;
 
     public Squads squad;
     protected UnitPrefabs prefab = UnitPrefabs.unit;
@@ -27,6 +28,7 @@ public class BaseUnit : MonoBehaviour
     public int Health => health;
     public bool isDead => dead;
     public Squads GetSquad => squad;
+    public bool Immune => isImmune;
     public UnitPrefabs GetPrefab => prefab;
 
     //Setters
@@ -46,7 +48,10 @@ public class BaseUnit : MonoBehaviour
         movementRange += move;
         Debug.Log("Movement Range is now " + movementRange);
     }
-
+    public void SetImmune(bool immune)
+    {
+        isImmune = immune;
+    }
 
     //Managers for easy calling
     private GridManager Grid => GridManager.Instance;
@@ -70,6 +75,7 @@ public class BaseUnit : MonoBehaviour
         movementRange = 2;
         attackRange = 1;
         hasAttacked = false;
+        isImmune = false;
     }
 
     public virtual void Reset() => ResetStats();
@@ -140,21 +146,18 @@ public class BaseUnit : MonoBehaviour
     // ------ ATTACKING -------
     public virtual void Attack(BaseUnit enemy)
     {
+        if (enemy.isImmune)
+        {
+            Debug.Log("Enemy is Immune!");
+            Grid.Deselect();
+            return;
+        }
         enemy.OnHit();
         hasAttacked = true;
         HighlightValidMoves();
         Grid.Deselect();
     }
 
-    public void TakeDamage()
-    {
-        OnHit();
-    }
-
-    public void AutoDie()
-    {
-        OnDeath();
-    }
 
     public List<Vector3Int> CalculateValidAttacks()
     {
@@ -184,6 +187,28 @@ public class BaseUnit : MonoBehaviour
             currPosition + Vector3Int.left * attackRange,
             currPosition + Vector3Int.right * attackRange
         };
+    }
+
+    // ----- CARD EFFECTS -------
+
+    public void TakeDamage()
+    {
+        if (isImmune)
+        {
+            Debug.Log("Immune! (Take Damage)");
+            return;
+        }
+        OnHit();
+    }
+
+    public void AutoDie()
+    {
+        if (isImmune)
+        {
+            Debug.Log("Immune! (AutoDie)");
+            return;
+        }
+        OnDeath();
     }
 
 
