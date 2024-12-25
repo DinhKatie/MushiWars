@@ -189,6 +189,15 @@ public class TurnManager : MonoBehaviourPunCallbacks
         return null;
     }
 
+    public BaseHero GetHeroOfSquad(Squads squad)
+    {
+        foreach (var u in squadsDict[squad])
+        {
+            if (u is BaseHero hero) return hero;
+        }
+        return null;
+    }
+
     public HeroTypes GetHeroType(Squads squad)
     {
         foreach (var unit in squadsDict[squad])

@@ -7,11 +7,13 @@ using UnityEngine.UIElements;
 public class CardEffectInitializer : MonoBehaviour
 {
     [SerializeField] private ScriptableCard hovercraft;
+    [SerializeField] private ScriptableCard healthOrb;
 
     private void Awake()
     {
         // Assign specific effects to ScriptableCards
         hovercraft.OnPlayEffect = () => Hovercraft();
+        healthOrb.OnPlayEffect = () => HealthOrb();
     }
 
     private void Hovercraft()
@@ -31,6 +33,14 @@ public class CardEffectInitializer : MonoBehaviour
             GridManager.Instance.Deselect();
             GridManager.Instance.ClearValidMoves();
         }));
+    }
+
+    private void HealthOrb()
+    {
+        Squads currSquad = TurnManager.Instance.GetCurrentSquad();
+        BaseHero hero = TurnManager.Instance.GetHeroOfSquad(currSquad);
+        hero.IncrementHealth();
+        Debug.Log($"Health of {hero} incremented by 1. New health: {hero.Health}");
     }
 
     private IEnumerator SelectUnit(List<Vector3Int> validTiles, Action<Vector3Int> onSelection)

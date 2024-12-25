@@ -43,7 +43,7 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
             out worldPointerPosition
         );
 
-        // Apply world position and offset to the card's anchored position
+        // Apply world position and offset to the card's anchored position (position in relation to its parent)
         _rectTransform.position = worldPointerPosition;
     }
 
@@ -61,5 +61,6 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
         else
             _rectTransform.position = _originalPos;
 
+        HandManager.Instance.ArrangeCardsInHand();
     }
 }

@@ -12,6 +12,11 @@ public abstract class BaseHero : BaseUnit
         health = 3;
     }
 
+    public void IncrementHealth(int amount = 1)
+    {
+        health += 1;
+    }
+
     public abstract void UseAbility();
 
     protected override void OnDeath()
