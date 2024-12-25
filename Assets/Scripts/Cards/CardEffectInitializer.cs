@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 using UnityEngine.UIElements;
 
 public class CardEffectInitializer : MonoBehaviour
@@ -9,6 +10,7 @@ public class CardEffectInitializer : MonoBehaviour
     [SerializeField] private ScriptableCard hovercraft;
     [SerializeField] private ScriptableCard healthOrb;
     [SerializeField] private ScriptableCard blastStomp;
+    [SerializeField] private ScriptableCard smite;
 
     private void Awake()
     {
@@ -16,6 +18,7 @@ public class CardEffectInitializer : MonoBehaviour
         hovercraft.OnPlayEffect = () => Hovercraft();
         healthOrb.OnPlayEffect = () => HealthOrb();
         blastStomp.OnPlayEffect = () => BlastStomp();
+        smite.OnPlayEffect = () => Smite();
     }
 
     private void Hovercraft()
@@ -65,9 +68,15 @@ public class CardEffectInitializer : MonoBehaviour
                 }
             }
             GridManager.Instance.Deselect();
+            GridManager.Instance.avoidSelect = false;
             
         }));
        
+    }
+
+    private void Smite()
+    {
+
     }
 
     private List<Vector3Int> GetValidTiles(BaseUnit unit, bool includesDiagonals, int range = 1)
@@ -100,6 +109,7 @@ public class CardEffectInitializer : MonoBehaviour
 
     private IEnumerator SelectUnit(List<Vector3Int> validTiles, Action<Vector3Int> onSelection)
     {
+        GridManager.Instance.avoidSelect = true;
         GridManager.Instance.HighlightOutlineTiles(validTiles);
         Vector3Int selectedTile;
 
@@ -124,11 +134,21 @@ public class CardEffectInitializer : MonoBehaviour
         }
 
         onSelection?.Invoke(selectedTile); //Pass the selected tile to the callback
+        GridManager.Instance.avoidSelect = false;
     }
 
     private List<Vector3Int> CurrentSquadUnits()
     {
         Squads currentSquad = TurnManager.Instance.GetCurrentSquad();
-        return UnitManager.Instance.GetUnitByTeam(currentSquad);
+        List<Vector3Int> team = UnitManager.Instance.GetTeam(currentSquad);
+
+        //Remove campfire from the list, since campfire can't be targeted by cards
+        team.RemoveAll(tile =>
+        {
+            BaseUnit unit = UnitManager.Instance.GetUnitAtTile(tile);
+            return unit != null && unit is Campfire;
+        });
+
+        return team;
     }
 }

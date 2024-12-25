@@ -120,7 +120,6 @@ public class GridManager : MonoBehaviour
 
     private void SelectTile(Vector3Int tilePosition)
     {
-        if (avoidSelect) { avoidSelect = false; return; }
         // Deselect previous tile
         if (_previousTileSelection != tilePosition)
             _outlineTilemap.SetTile(_previousTileSelection, null);
@@ -132,6 +131,8 @@ public class GridManager : MonoBehaviour
         BaseUnit previousUnit = UnitManager.Instance.GetUnitAtTile(_previousTileSelection);
         BaseUnit newUnit = UnitManager.Instance.GetUnitAtTile(tilePosition);
         _previousTileSelection = tilePosition;
+
+        if (avoidSelect) { return; }
 
         //if (!TurnManager.Instance._playerControlsOn) return;
 

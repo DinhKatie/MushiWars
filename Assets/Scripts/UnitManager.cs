@@ -184,7 +184,7 @@ public class UnitManager : MonoBehaviour
         }
     }
 
-    public List<Vector3Int> GetUnitByTeam(Squads squad)
+    public List<Vector3Int> GetTeam(Squads squad)
     {
         List<Vector3Int> teamUnits = new List<Vector3Int>();
 
