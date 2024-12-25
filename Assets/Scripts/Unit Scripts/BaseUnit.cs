@@ -151,6 +151,11 @@ public class BaseUnit : MonoBehaviour
         OnHit();
     }
 
+    public void AutoDie()
+    {
+        OnDeath();
+    }
+
     public List<Vector3Int> CalculateValidAttacks()
     {
         List<Vector3Int> attackRanges = GetAttackRange();

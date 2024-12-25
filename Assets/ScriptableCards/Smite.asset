@@ -15,4 +15,4 @@ MonoBehaviour:
   <CardName>k__BackingField: Smite
   <CardDescription>k__BackingField: Instantly kill any mushi within 2 spaces, excluding
     heroes and fires.
-  <Image>k__BackingField: {fileID: 0}
+  <Image>k__BackingField: {fileID: 21300000, guid: bdf4fa8399376a34a92418b79139db2d, type: 3}

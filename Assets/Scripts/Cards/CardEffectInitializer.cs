@@ -76,7 +76,45 @@ public class CardEffectInitializer : MonoBehaviour
 
     private void Smite()
     {
+        List<Vector3Int> validUnits = CurrentSquadUnits();
+        GridManager.Instance.avoidSelect = true;
+        GridManager.Instance.Deselect();
 
+        StartCoroutine(SelectUnit(validUnits, selectedTile =>
+        {
+            BaseUnit unit = UnitManager.Instance.GetUnitAtTile(selectedTile);
+            if (unit == null) return; //Invalid unit selection
+
+            List<Vector3Int> validTiles = GetValidTiles(unit, true, 2);
+            List<Vector3Int> validEnemyUnits = new List<Vector3Int>();
+
+            foreach (Vector3Int tile in validTiles) //Loop through each tile and check if an enemy unit exists on it
+            {
+                BaseUnit unitInRange = UnitManager.Instance.GetUnitAtTile(tile);
+                //Add valid enemy units for later selection (an enemy unit, is not a hero or campfire)
+                if (unitInRange != null && !TurnManager.Instance.isUnitInCurrentSquad(unitInRange) &&
+                    !(unitInRange is BaseHero || unitInRange is Campfire))
+                    validEnemyUnits.Add(unitInRange.CurrentPosition);
+            }
+
+            if (validEnemyUnits.Count == 0)
+            {
+                GridManager.Instance.avoidSelect = false; // Allow normal interaction if no enemies are available
+                return;
+            }
+
+            StartCoroutine(SelectUnit(validEnemyUnits, selectedTile =>
+            {
+                BaseUnit enemy = UnitManager.Instance.GetUnitAtTile(selectedTile);
+                if (enemy == null) return;
+
+                enemy.AutoDie();
+                Debug.Log($"Smited {enemy}");
+
+                GridManager.Instance.Deselect();
+                GridManager.Instance.avoidSelect = false;
+            }));
+        }));
     }
 
     private List<Vector3Int> GetValidTiles(BaseUnit unit, bool includesDiagonals, int range = 1)
@@ -109,7 +147,7 @@ public class CardEffectInitializer : MonoBehaviour
 
     private IEnumerator SelectUnit(List<Vector3Int> validTiles, Action<Vector3Int> onSelection)
     {
-        GridManager.Instance.avoidSelect = true;
+        GridManager.Instance.Deselect();
         GridManager.Instance.HighlightOutlineTiles(validTiles);
         Vector3Int selectedTile;
 
@@ -128,13 +166,13 @@ public class CardEffectInitializer : MonoBehaviour
             else if (Input.GetMouseButtonDown(1)) //Deselect
             {
                 GridManager.Instance.Deselect();
+                GridManager.Instance.avoidSelect = false;
                 yield break;
             }
             yield return null;
         }
 
         onSelection?.Invoke(selectedTile); //Pass the selected tile to the callback
-        GridManager.Instance.avoidSelect = false;
     }
 
     private List<Vector3Int> CurrentSquadUnits()

@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce0988ae35e1d4544bb28f2d3fe4b37d, type: 3}
   m_Name: Blast Stomp
   m_EditorClassIdentifier: 
-  <CardName>k__BackingField: 
-  <CardDescription>k__BackingField: 
-  <Image>k__BackingField: {fileID: 0}
+  <CardName>k__BackingField: Blast Stomp
+  <CardDescription>k__BackingField: Deal 1 dmg to any mushi within 2 tiles.
+  <Image>k__BackingField: {fileID: 21300000, guid: 8757689e22fab6a439eb18a490297fc7, type: 3}

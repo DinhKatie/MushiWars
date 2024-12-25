@@ -5490,6 +5490,7 @@ MonoBehaviour:
   _logObstaclePrefab: {fileID: 7999287454322203500, guid: be97bde07f3ed8144a68eb662e41aade, type: 3}
   _bambooObstaclePrefab: {fileID: 5129286513371253570, guid: e66e9aa95a8c1cf4cb6f1946c03c0051, type: 3}
   _obstacles: []
+  avoidSelect: 0
 --- !u!1 &1167332268
 GameObject:
   m_ObjectHideFlags: 0
@@ -7649,7 +7650,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f0653f9ac8779e4899dad2017512427, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveCard: {fileID: 11400000, guid: 81199b01f0a4b314f9aae6a64536579b, type: 2}
+  hovercraft: {fileID: 11400000, guid: 81199b01f0a4b314f9aae6a64536579b, type: 2}
+  healthOrb: {fileID: 11400000, guid: dd250dcc18f99b747ad26c182cd6473a, type: 2}
+  blastStomp: {fileID: 11400000, guid: db8f99e86e3f4c140b648be1036f3a50, type: 2}
+  smite: {fileID: 11400000, guid: 62cef4e6c7dfb3444bb66dda91897021, type: 2}
 --- !u!1 &1719808069
 GameObject:
   m_ObjectHideFlags: 0
@@ -7982,7 +7986,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0, g: 0, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
