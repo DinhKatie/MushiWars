@@ -14,7 +14,7 @@ public abstract class BaseHero : BaseUnit
 
     public void IncrementHealth(int amount = 1)
     {
-        health += 1;
+        health += amount;
     }
 
     public abstract void UseAbility();

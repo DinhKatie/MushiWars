@@ -7654,6 +7654,7 @@ MonoBehaviour:
   healthOrb: {fileID: 11400000, guid: dd250dcc18f99b747ad26c182cd6473a, type: 2}
   blastStomp: {fileID: 11400000, guid: db8f99e86e3f4c140b648be1036f3a50, type: 2}
   smite: {fileID: 11400000, guid: 62cef4e6c7dfb3444bb66dda91897021, type: 2}
+  forcefield: {fileID: 11400000, guid: 5375beb92aaafe3499e827f11d50fc63, type: 2}
 --- !u!1 &1719808069
 GameObject:
   m_ObjectHideFlags: 0

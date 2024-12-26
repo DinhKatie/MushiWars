@@ -171,7 +171,7 @@ public class BaseUnit : MonoBehaviour
             if (unit == null || TurnManager.Instance.isUnitInCurrentSquad(unit))
                 toRemove.Add(attack);
         }
-        //Remove in-attackable tiles from the highlights
+        //Remove un-attackable tiles from the highlights
         foreach (var attack in toRemove)
             attackRanges.Remove(attack);
 
@@ -180,13 +180,7 @@ public class BaseUnit : MonoBehaviour
 
     protected virtual List<Vector3Int> GetAttackRange()
     {
-        return new List<Vector3Int>
-        {
-            currPosition + Vector3Int.up * attackRange,
-            currPosition + Vector3Int.down * attackRange,
-            currPosition + Vector3Int.left * attackRange,
-            currPosition + Vector3Int.right * attackRange
-        };
+        return Utilities.GetValidTiles(this, false, attackRange);
     }
 
     // ----- CARD EFFECTS -------

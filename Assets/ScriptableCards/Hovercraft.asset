@@ -14,5 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <CardName>k__BackingField: Hovercraft
   <CardDescription>k__BackingField: Unit
-  <Image>k__BackingField: {fileID: 1789733360, guid: a12fdaa9424a688408d2df2e417daecd, type: 3}
-  <Rarity>k__BackingField: 3
+  <Image>k__BackingField: {fileID: 21300000, guid: 47bcb10d882666145924f84acd1d92da, type: 3}

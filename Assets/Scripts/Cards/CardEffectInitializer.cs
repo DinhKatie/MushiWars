@@ -28,13 +28,12 @@ public class CardEffectInitializer : MonoBehaviour
         Debug.Log("Adding +1 move range to unit.");
         List<Vector3Int> validUnits = CurrentSquadUnits();
 
-        StartCoroutine(SelectUnit(validUnits, selectedTile => //Select a unit, then execute the following function with its return value
+        StartCoroutine(SelectUnit(validUnits, unit => //Select a unit, then execute the following function with its return value
         {
-            BaseUnit unit = UnitManager.Instance.GetUnitAtTile(selectedTile);
             if (unit != null)
             {
                 unit.IncrementMove();
-                Debug.Log($"Unit at {selectedTile} received 1 additional move range.");
+                Debug.Log($"{unit} received 1 additional move range.");
             }
             GridManager.Instance.Deselect();
             GridManager.Instance.ClearValidMoves();
@@ -55,12 +54,11 @@ public class CardEffectInitializer : MonoBehaviour
         GridManager.Instance.avoidSelect = true;
         GridManager.Instance.Deselect();
 
-        StartCoroutine(SelectUnit(validUnits, selectedTile =>
+        StartCoroutine(SelectUnit(validUnits, unit =>
         {
-            BaseUnit unit = UnitManager.Instance.GetUnitAtTile(selectedTile);
             if (unit == null) return; //Invalid unit selection
             
-            List<Vector3Int> validTiles = GetValidTiles(unit, true);
+            List<Vector3Int> validTiles = Utilities.GetValidTiles(unit, true);
             foreach (Vector3Int tile in validTiles) //Loop through each tile and check if an enemy unit exists on it
             {
                 BaseUnit unitInRange = UnitManager.Instance.GetUnitAtTile(tile);
@@ -82,12 +80,11 @@ public class CardEffectInitializer : MonoBehaviour
         GridManager.Instance.avoidSelect = true;
         GridManager.Instance.Deselect();
 
-        StartCoroutine(SelectUnit(validUnits, selectedTile =>
+        StartCoroutine(SelectUnit(validUnits, unit =>
         {
-            BaseUnit unit = UnitManager.Instance.GetUnitAtTile(selectedTile);
             if (unit == null) return; //Invalid unit selection
 
-            List<Vector3Int> validTiles = GetValidTiles(unit, true, 2);
+            List<Vector3Int> validTiles = Utilities.GetValidTiles(unit, true, 2);
             List<Vector3Int> validEnemyUnits = new List<Vector3Int>();
 
             foreach (Vector3Int tile in validTiles) //Loop through each tile and check if an enemy unit exists on it
@@ -102,12 +99,13 @@ public class CardEffectInitializer : MonoBehaviour
             if (validEnemyUnits.Count == 0)
             {
                 GridManager.Instance.avoidSelect = false; // Allow normal interaction if no enemies are available
+                GridManager.Instance.Deselect();
+                Debug.Log("No valid enemies to smite.");
                 return;
             }
 
-            StartCoroutine(SelectUnit(validEnemyUnits, selectedTile =>
+            StartCoroutine(SelectUnit(validEnemyUnits, enemy =>
             {
-                BaseUnit enemy = UnitManager.Instance.GetUnitAtTile(selectedTile);
                 if (enemy == null) return;
 
                 enemy.AutoDie();
@@ -123,43 +121,16 @@ public class CardEffectInitializer : MonoBehaviour
     {
         GridManager.Instance.avoidSelect = true;
         List<Vector3Int> validUnits = CurrentSquadUnits();
-        StartCoroutine(SelectUnit(validUnits, selectedTile =>
+        StartCoroutine(SelectUnit(validUnits, unit =>
         {
-            UnitManager.Instance.GetUnitAtTile(selectedTile)?.SetImmune(true);
+            unit?.SetImmune(true);
             Debug.Log($"Applied Forcefield");
             GridManager.Instance.avoidSelect = false;
             GridManager.Instance.Deselect();
         }));
     }
-    private List<Vector3Int> GetValidTiles(BaseUnit unit, bool includesDiagonals, int range = 1)
-    {
-        Vector3Int currPosition = unit.CurrentPosition;
-        List<Vector3Int> tiles = new List<Vector3Int>();
 
-        //Orthogonals
-        for (int i = 1; i <= range; i++)
-        {
-            tiles.Add(currPosition + Vector3Int.up * i);
-            tiles.Add(currPosition + Vector3Int.down * i);
-            tiles.Add(currPosition + Vector3Int.left * i);
-            tiles.Add(currPosition + Vector3Int.right * i);
-        }
-
-        if (includesDiagonals)
-        {
-            for (int i = 1; i <= range; i++)
-            {
-                tiles.Add(currPosition + (Vector3Int.up + Vector3Int.left) * i);
-                tiles.Add(currPosition + (Vector3Int.up + Vector3Int.right) * i);
-                tiles.Add(currPosition + (Vector3Int.down + Vector3Int.left) * i);
-                tiles.Add(currPosition + (Vector3Int.down + Vector3Int.right) * i);
-            }
-        }
-
-        return tiles;
-    }
-
-    private IEnumerator SelectUnit(List<Vector3Int> validTiles, Action<Vector3Int> onSelection)
+    private IEnumerator SelectUnit(List<Vector3Int> validTiles, Action<BaseUnit> onSelection)
     {
         GridManager.Instance.Deselect();
         GridManager.Instance.HighlightOutlineTiles(validTiles);
@@ -186,7 +157,7 @@ public class CardEffectInitializer : MonoBehaviour
             yield return null;
         }
 
-        onSelection?.Invoke(selectedTile); //Pass the selected tile to the callback
+        onSelection?.Invoke(UnitManager.Instance.GetUnitAtTile(selectedTile)); //Pass the selected tile to the callback
     }
 
     private List<Vector3Int> CurrentSquadUnits()
