@@ -46,7 +46,7 @@ public class UnitManager : MonoBehaviour
     public BaseUnit SpawnUnit(Vector3Int spawnTile, UnitPrefabs unitType, Squads squad)
     {
         // Check if the tile is valid and no unit is already there
-        if (_tilemap.GetTile(spawnTile) != null && !_unitsOnTiles.ContainsKey(spawnTile))
+        if (!GridManager.Instance.IsOccupied(spawnTile))
         {
             // Retrieve the prefab based on the enum type
             BaseUnit prefabToSpawn = unitPrefabsDict[unitType];
@@ -145,6 +145,24 @@ public class UnitManager : MonoBehaviour
         pusher.DecrementMove();
         pusher.HighlightValidMoves();
     }
+
+    // ----- CARD EFFECTS ------
+
+    public void TeleportUnit(BaseUnit unitToPort, Vector3Int newPosition)
+    {
+        if (GridManager.Instance.IsObstacleTile(newPosition) || GetUnitAtTile(newPosition) != null)
+        {
+            Debug.Log("There is an obstacle or unit on this square.");
+            return;
+        }
+
+        _unitsOnTiles.Remove(unitToPort.CurrentPosition);
+        _unitsOnTiles[newPosition] = unitToPort;
+
+        unitToPort.Teleport(newPosition);
+    }
+
+    // --------------------------------
 
     // Update highlights when grid changes
     public void UpdateUnitHighlights()

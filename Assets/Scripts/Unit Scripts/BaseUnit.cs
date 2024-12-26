@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Tilemaps;
@@ -129,9 +130,7 @@ public class BaseUnit : MonoBehaviour
                     continue;
 
                 // Check if the tile is valid (not an obstacle, no unit on it).
-                if (Grid.GetTileAtPosition(neighbor) != null &&
-                    UnitMan.GetUnitAtTile(neighbor) == null &&
-                    !Grid.IsObstacleTile(neighbor))
+                if (!GridManager.Instance.IsOccupied(neighbor))
                 {
                     // Mark the neighbor as visited and add it to the queue
                     queue.Enqueue(neighbor);
@@ -158,22 +157,13 @@ public class BaseUnit : MonoBehaviour
         Grid.Deselect();
     }
 
-
     public List<Vector3Int> CalculateValidAttacks()
     {
-        List<Vector3Int> attackRanges = GetAttackRange();
-        List<Vector3Int> toRemove = new List<Vector3Int>();
-        foreach (var attack in attackRanges)
+        List<Vector3Int> attackRanges = GetAttackRange().Where(attack =>
         {
             BaseUnit unit = UnitMan.GetUnitAtTile(attack);
-
-            //Do not designate as attackable tile if the tile is empty or if it is a unit within the team
-            if (unit == null || TurnManager.Instance.isUnitInCurrentSquad(unit))
-                toRemove.Add(attack);
-        }
-        //Remove un-attackable tiles from the highlights
-        foreach (var attack in toRemove)
-            attackRanges.Remove(attack);
+            return unit != null && !TurnManager.Instance.isUnitInCurrentSquad(unit); //Only attackable if the unit exists and is not in the current team
+        }).ToList();
 
         return attackRanges;
     }
@@ -203,6 +193,12 @@ public class BaseUnit : MonoBehaviour
             return;
         }
         OnDeath();
+    }
+
+    public void Teleport(Vector3Int newPosition)
+    {
+        currPosition = newPosition;
+        transform.position = Grid._tilemap.GetCellCenterWorld(newPosition);
     }
 
 

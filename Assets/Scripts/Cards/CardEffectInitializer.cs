@@ -2,8 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Tilemaps;
-using UnityEngine.UIElements;
 
 public class CardEffectInitializer : MonoBehaviour
 {
@@ -12,6 +10,7 @@ public class CardEffectInitializer : MonoBehaviour
     [SerializeField] private ScriptableCard blastStomp;
     [SerializeField] private ScriptableCard smite;
     [SerializeField] private ScriptableCard forcefield;
+    [SerializeField] private ScriptableCard teleportation;
 
     private void Awake()
     {
@@ -21,6 +20,7 @@ public class CardEffectInitializer : MonoBehaviour
         blastStomp.OnPlayEffect = () => BlastStomp();
         smite.OnPlayEffect = () => Smite();
         forcefield.OnPlayEffect = () => Forcefield();
+        teleportation.OnPlayEffect = () => Teleportation();
     }
 
     private void Hovercraft()
@@ -130,6 +130,24 @@ public class CardEffectInitializer : MonoBehaviour
         }));
     }
 
+    private void Teleportation()
+    {
+        GridManager.Instance.avoidSelect = true;
+        List<Vector3Int> validUnits = CurrentSquadUnits();
+        StartCoroutine(SelectUnit(validUnits, unit =>
+        {
+            //Find all tiles in the list that are not occupied
+            List<Vector3Int> validMoveTiles = Utilities.GetValidTiles(unit, true, 4).FindAll(tile => !GridManager.Instance.IsOccupied(tile));
+
+            StartCoroutine(SelectTile(validMoveTiles, tile =>
+            {
+                UnitManager.Instance.TeleportUnit(unit, tile);
+                GridManager.Instance.avoidSelect = false;
+                GridManager.Instance.Deselect();
+            }));
+        }));
+    }
+
     private IEnumerator SelectUnit(List<Vector3Int> validTiles, Action<BaseUnit> onSelection)
     {
         GridManager.Instance.Deselect();
@@ -158,6 +176,36 @@ public class CardEffectInitializer : MonoBehaviour
         }
 
         onSelection?.Invoke(UnitManager.Instance.GetUnitAtTile(selectedTile)); //Pass the selected tile to the callback
+    }
+
+    private IEnumerator SelectTile(List<Vector3Int> validTiles, Action<Vector3Int> onSelection)
+    {
+        GridManager.Instance.Deselect();
+        GridManager.Instance.HighlightOutlineTiles(validTiles);
+        Vector3Int selectedTile;
+
+        while (true)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                Vector3Int clickedTile = GridManager.Instance.GetMouseTilePosition();
+
+                if (validTiles.Contains(clickedTile))
+                {
+                    selectedTile = clickedTile;
+                    break;
+                }
+            }
+            else if (Input.GetMouseButtonDown(1)) //Deselect
+            {
+                GridManager.Instance.Deselect();
+                GridManager.Instance.avoidSelect = false;
+                yield break;
+            }
+            yield return null;
+        }
+
+        onSelection?.Invoke(selectedTile); //Pass the selected tile to the callback
     }
 
     private List<Vector3Int> CurrentSquadUnits()

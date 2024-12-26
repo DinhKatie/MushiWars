@@ -218,8 +218,7 @@ public class GridManager : MonoBehaviour
         Vector3Int pushDirection = -(unit.CurrentPosition - fire.CurrentPosition);
         Vector3Int targetTile = fire.CurrentPosition + pushDirection;
 
-        if (UnitManager.Instance.GetUnitAtTile(targetTile) == null && GetTileAtPosition(targetTile) != null
-            && unit.MovementRange > 0 && !IsObstacleTile(targetTile))
+        if (!IsOccupied(targetTile) && unit.MovementRange > 0)
         {
             _validMovesMap.SetTile(fire.CurrentPosition, _campfirePushTile);
             return targetTile;
@@ -341,6 +340,12 @@ public class GridManager : MonoBehaviour
     public bool IsObstacleTile(Vector3Int tile)
     {
         return _obstacles.Contains(tile);
+    }
+
+
+    public bool IsOccupied(Vector3Int tile)
+    {
+        return (IsObstacleTile(tile) || UnitManager.Instance.GetUnitAtTile(tile) != null || GetTileAtPosition(tile) == null);
     }
 
     // Get the tile at the specified grid position
