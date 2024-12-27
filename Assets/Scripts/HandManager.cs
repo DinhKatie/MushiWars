@@ -16,6 +16,7 @@ public class HandManager : MonoBehaviour
 
     public int numCards() => handCards.Count;
     public bool DisableCardEffects() => discardingForCardEffect;
+    public bool hasMaxHandSize() => handCards.Count >= MAX_HAND_SIZE;
 
 
     private void Start()

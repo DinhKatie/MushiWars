@@ -12,6 +12,7 @@ public class CardEffectInitializer : MonoBehaviour
     [SerializeField] private ScriptableCard forcefield;
     [SerializeField] private ScriptableCard teleportation;
     [SerializeField] private ScriptableCard partyTime;
+    [SerializeField] private ScriptableCard educate;
 
     private void Awake()
     {
@@ -23,6 +24,7 @@ public class CardEffectInitializer : MonoBehaviour
         forcefield.OnPlayEffect = () => Forcefield();
         teleportation.OnPlayEffect = () => Teleportation();
         partyTime.OnPlayEffect = () => PartyTime();
+        educate.OnPlayEffect = () => Educate();
     }
 
     private bool CantPlayCard() => HandManager.Instance.DisableCardEffects();
@@ -187,6 +189,18 @@ public class CardEffectInitializer : MonoBehaviour
         } else
         {
             Debug.Log("No other cards to discard. Cannot play PartyTime.");
+        }
+    }
+
+    private void Educate()
+    {
+        if (CantPlayCard()) return;
+
+        int counter = 0;
+        while (!HandManager.Instance.hasMaxHandSize() && counter < 2)
+        {
+            GetComponent<Deck>().DrawHand(1);
+            counter++;
         }
     }
 
