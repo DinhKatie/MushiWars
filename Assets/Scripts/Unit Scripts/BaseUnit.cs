@@ -201,6 +201,11 @@ public class BaseUnit : MonoBehaviour
         transform.position = Grid._tilemap.GetCellCenterWorld(newPosition);
     }
 
+    public virtual bool HasNotActed()
+    {
+        return (movementRange == 2 && attackRange == 1 && hasAttacked == false);
+    }
+
 
     // ----- ON HIT AND ON DEATH ------
     protected virtual void OnHit()

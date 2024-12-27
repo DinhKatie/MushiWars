@@ -59,7 +59,11 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
             _card.PlayEffect(); //Apply its effect
         }
         else
+        {
             _rectTransform.position = _originalPos;
+            _rectTransform.transform.SetSiblingIndex(_cardSelectionHandler._originalIndex);
+        }
+            
 
         HandManager.Instance.ArrangeCardsInHand();
     }

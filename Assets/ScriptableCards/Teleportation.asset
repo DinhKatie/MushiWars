@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce0988ae35e1d4544bb28f2d3fe4b37d, type: 3}
   m_Name: Teleportation
   m_EditorClassIdentifier: 
-  <CardName>k__BackingField: 
-  <CardDescription>k__BackingField: 
-  <Image>k__BackingField: {fileID: 0}
+  <CardName>k__BackingField: Teleportation
+  <CardDescription>k__BackingField: Move mushi 4 spaces + diagonally. Able to move
+    through obstacles. Mushi cannot move or attack prior or after teleportation.
+  <Image>k__BackingField: {fileID: 21300000, guid: 66818d9cea9330a418100810c547bfde, type: 3}

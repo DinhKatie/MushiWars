@@ -136,12 +136,20 @@ public class CardEffectInitializer : MonoBehaviour
         List<Vector3Int> validUnits = CurrentSquadUnits();
         StartCoroutine(SelectUnit(validUnits, unit =>
         {
+            if (!unit.HasNotActed())
+            {
+                Debug.Log("That unit has already acted this turn!"); //Teleportation can't be used if the unit has already acted in some way.
+                GridManager.Instance.avoidSelect = false;
+                GridManager.Instance.Deselect();
+                return;
+            }
             //Find all tiles in the list that are not occupied
             List<Vector3Int> validMoveTiles = Utilities.GetValidTiles(unit, true, 4).FindAll(tile => !GridManager.Instance.IsOccupied(tile));
 
             StartCoroutine(SelectTile(validMoveTiles, tile =>
             {
                 UnitManager.Instance.TeleportUnit(unit, tile);
+                unit.DisableMovementAndAttack();
                 GridManager.Instance.avoidSelect = false;
                 GridManager.Instance.Deselect();
             }));

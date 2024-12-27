@@ -10,7 +10,7 @@ public class CardSelectionHandler : MonoBehaviour, IPointerEnterHandler, IPointe
 
     private Vector3 _startPos;
     private Vector3 _startScale;
-    private int _originalIndex; //Sorting order
+    public int _originalIndex; //Sorting order
 
     private Coroutine _currentCoroutine;
 
