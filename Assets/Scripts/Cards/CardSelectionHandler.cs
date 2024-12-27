@@ -58,7 +58,9 @@ public class CardSelectionHandler : MonoBehaviour, IPointerEnterHandler, IPointe
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        eventData.selectedObject = gameObject;
+        if (_currentCoroutine != null)
+            StopCoroutine(_currentCoroutine);
+        _currentCoroutine = StartCoroutine(MoveCard(true));
 
         // Bring the card to the front
         transform.SetAsLastSibling();
@@ -66,7 +68,9 @@ public class CardSelectionHandler : MonoBehaviour, IPointerEnterHandler, IPointe
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        eventData.selectedObject = null;
+        if (_currentCoroutine != null)
+            StopCoroutine(_currentCoroutine);
+        _currentCoroutine = StartCoroutine(MoveCard(false));
 
         // Restore the card's original sibling index
         transform.SetSiblingIndex(_originalIndex);
@@ -74,15 +78,10 @@ public class CardSelectionHandler : MonoBehaviour, IPointerEnterHandler, IPointe
 
     public void OnSelect(BaseEventData eventData)
     {
-        if (_currentCoroutine != null)
-            StopCoroutine(_currentCoroutine);
-        _currentCoroutine = StartCoroutine(MoveCard(true));
+        
     }
 
     public void OnDeselect(BaseEventData eventData)
     {
-        if (_currentCoroutine != null)
-            StopCoroutine(_currentCoroutine);
-        _currentCoroutine = StartCoroutine(MoveCard(false));
     }
 }

@@ -12,6 +12,12 @@ public class HandManager : MonoBehaviour
 
     public static HandManager Instance;
 
+    public bool discardingForCardEffect = false;
+
+    public int numCards() => handCards.Count;
+    public bool DisableCardEffects() => discardingForCardEffect;
+
+
     private void Start()
     {
         if (Instance == null)
@@ -21,6 +27,7 @@ public class HandManager : MonoBehaviour
 
         ArrangeCardsInHand();
     }
+
 
     // Call this whenever the hand changes (e.g., after drawing, discarding, or end of a turn)
     public void ArrangeCardsInHand()

@@ -11,6 +11,7 @@ public class CardEffectInitializer : MonoBehaviour
     [SerializeField] private ScriptableCard smite;
     [SerializeField] private ScriptableCard forcefield;
     [SerializeField] private ScriptableCard teleportation;
+    [SerializeField] private ScriptableCard partyTime;
 
     private void Awake()
     {
@@ -21,14 +22,17 @@ public class CardEffectInitializer : MonoBehaviour
         smite.OnPlayEffect = () => Smite();
         forcefield.OnPlayEffect = () => Forcefield();
         teleportation.OnPlayEffect = () => Teleportation();
+        partyTime.OnPlayEffect = () => PartyTime();
     }
+
+    private bool CantPlayCard() => HandManager.Instance.DisableCardEffects();
 
     private void Hovercraft()
     {
+        if (CantPlayCard()) return;
         Debug.Log("Adding +1 move range to unit.");
-        List<Vector3Int> validUnits = CurrentSquadUnits();
 
-        StartCoroutine(SelectUnit(validUnits, unit => //Select a unit, then execute the following function with its return value
+        StartCoroutine(SelectUnit(CurrentSquadUnits(), unit => //Select a unit, then execute the following function with its return value
         {
             if (unit != null)
             {
@@ -42,6 +46,8 @@ public class CardEffectInitializer : MonoBehaviour
 
     private void HealthOrb()
     {
+        if (CantPlayCard()) return;
+
         Squads currSquad = TurnManager.Instance.GetCurrentSquad();
         BaseHero hero = TurnManager.Instance.GetHeroOfSquad(currSquad);
         hero?.IncrementHealth();
@@ -50,11 +56,12 @@ public class CardEffectInitializer : MonoBehaviour
 
     private void BlastStomp()
     {
-        List<Vector3Int> validUnits = CurrentSquadUnits();
+        if (CantPlayCard()) return;
+
         GridManager.Instance.avoidSelect = true;
         GridManager.Instance.Deselect();
 
-        StartCoroutine(SelectUnit(validUnits, unit =>
+        StartCoroutine(SelectUnit(CurrentSquadUnits(), unit =>
         {
             if (unit == null) return; //Invalid unit selection
             
@@ -76,11 +83,12 @@ public class CardEffectInitializer : MonoBehaviour
 
     private void Smite()
     {
-        List<Vector3Int> validUnits = CurrentSquadUnits();
+        if (CantPlayCard()) return;
+
         GridManager.Instance.avoidSelect = true;
         GridManager.Instance.Deselect();
 
-        StartCoroutine(SelectUnit(validUnits, unit =>
+        StartCoroutine(SelectUnit(CurrentSquadUnits(), unit =>
         {
             if (unit == null) return; //Invalid unit selection
 
@@ -119,9 +127,10 @@ public class CardEffectInitializer : MonoBehaviour
 
     private void Forcefield()
     {
+        if (CantPlayCard()) return;
+
         GridManager.Instance.avoidSelect = true;
-        List<Vector3Int> validUnits = CurrentSquadUnits();
-        StartCoroutine(SelectUnit(validUnits, unit =>
+        StartCoroutine(SelectUnit(CurrentSquadUnits(), unit =>
         {
             unit?.SetImmune(true);
             Debug.Log($"Applied Forcefield");
@@ -132,6 +141,8 @@ public class CardEffectInitializer : MonoBehaviour
 
     private void Teleportation()
     {
+        if (CantPlayCard()) return;
+
         GridManager.Instance.avoidSelect = true;
         List<Vector3Int> validUnits = CurrentSquadUnits();
         StartCoroutine(SelectUnit(validUnits, unit =>
@@ -154,6 +165,29 @@ public class CardEffectInitializer : MonoBehaviour
                 GridManager.Instance.Deselect();
             }));
         }));
+    }
+
+    private void PartyTime()
+    {
+        if (CantPlayCard()) return;
+
+        GridManager.Instance.avoidSelect = true;
+        //Discard another card. Party Time cannot be played if no other cards are available to discard.
+        if (HandManager.Instance.numCards() > 0)
+        {
+            StartCoroutine(WaitForDiscard(() =>
+            {
+                StartCoroutine(SelectUnit(CurrentSquadUnits(), unit =>
+                {
+                    unit.Reset();
+                    GridManager.Instance.avoidSelect = false;
+                    GridManager.Instance.Deselect();
+                }));
+            }));
+        } else
+        {
+            Debug.Log("No other cards to discard. Cannot play PartyTime.");
+        }
     }
 
     private IEnumerator SelectUnit(List<Vector3Int> validTiles, Action<BaseUnit> onSelection)
@@ -214,6 +248,31 @@ public class CardEffectInitializer : MonoBehaviour
         }
 
         onSelection?.Invoke(selectedTile); //Pass the selected tile to the callback
+    }
+
+    private IEnumerator WaitForDiscard(Action action)
+    {
+        //Inform the user to discard a card (update UI)
+        Debug.Log("Please discard a card.");
+
+        bool cardDiscarded = false;
+        Action discardListener = null;
+
+        HandManager.Instance.discardingForCardEffect = true;
+        discardListener = () =>
+        {
+            Debug.Log("Card discarded. Continuing effect...");
+            cardDiscarded = true;
+
+            action?.Invoke();
+
+            GetComponent<Deck>().OnCardDiscarded -= discardListener;
+        };
+
+        GetComponent<Deck>().OnCardDiscarded += discardListener;
+
+        // Wait until the card is discarded
+        yield return new WaitUntil(() => cardDiscarded);
     }
 
     private List<Vector3Int> CurrentSquadUnits()

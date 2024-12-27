@@ -95,7 +95,20 @@ public class Deck : MonoBehaviour
             HandCards.Remove(card);
             _discardPile.Add(card);
             card.gameObject.SetActive(false);
-            OnCardDiscarded?.Invoke();
+
+            if (HandManager.Instance.discardingForCardEffect)
+            {
+                OnCardDiscarded?.Invoke();
+                StartCoroutine(ResetDiscardFlag());
+            }
+
+                
         }
+    }
+
+    private IEnumerator ResetDiscardFlag()
+    {
+        yield return null; //Wait a frame to allow event to process
+        HandManager.Instance.discardingForCardEffect = false;
     }
 }
