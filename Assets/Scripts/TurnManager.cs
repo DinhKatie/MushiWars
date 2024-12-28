@@ -207,6 +207,21 @@ public class TurnManager : MonoBehaviourPunCallbacks
         }
         return HeroTypes.None;
     }
+
+    public List<BaseUnit> GetAllUnitsExcept(Squads squad)
+    {
+        List<BaseUnit> otherSquads = new List<BaseUnit>();
+
+        foreach(var s in squadsDict)
+        {
+            if (s.Key != squad)
+            {
+                otherSquads.AddRange(s.Value);
+            }
+        }
+
+        return otherSquads;
+    }
 }
 
 

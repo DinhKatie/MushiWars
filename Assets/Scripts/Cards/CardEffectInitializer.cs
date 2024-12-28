@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class CardEffectInitializer : MonoBehaviour
@@ -13,6 +14,7 @@ public class CardEffectInitializer : MonoBehaviour
     [SerializeField] private ScriptableCard teleportation;
     [SerializeField] private ScriptableCard partyTime;
     [SerializeField] private ScriptableCard educate;
+    [SerializeField] private ScriptableCard chillingWind;
 
     private void Awake()
     {
@@ -25,6 +27,7 @@ public class CardEffectInitializer : MonoBehaviour
         teleportation.OnPlayEffect = () => Teleportation();
         partyTime.OnPlayEffect = () => PartyTime();
         educate.OnPlayEffect = () => Educate();
+        chillingWind.OnPlayEffect= () => ChillingWind();
     }
 
     private bool CantPlayCard() => HandManager.Instance.DisableCardEffects();
@@ -204,6 +207,24 @@ public class CardEffectInitializer : MonoBehaviour
         }
     }
 
+    private void ChillingWind()
+    {
+        if (CantPlayCard()) return;
+
+        BaseHero currHero = TurnManager.Instance.GetHeroOfSquad(TurnManager.Instance.GetCurrentSquad());
+        List<Vector3Int> hexRange = GetHexRange(currHero, 4);
+        List<Vector3Int> enemyUnits = EnemySquadUnits();
+        List<Vector3Int> unitsWithinRange = enemyUnits.Where(unit => hexRange.Contains(unit)).ToList();
+
+        StartCoroutine(SelectUnit(unitsWithinRange, unit =>
+        {
+            unit.SetChilled(true);
+            Debug.Log($"Chilled {unit}");
+            GridManager.Instance.avoidSelect = false;
+            GridManager.Instance.Deselect();
+        }));
+    }
+
     private IEnumerator SelectUnit(List<Vector3Int> validTiles, Action<BaseUnit> onSelection)
     {
         GridManager.Instance.Deselect();
@@ -302,5 +323,25 @@ public class CardEffectInitializer : MonoBehaviour
         });
 
         return team;
+    }
+
+    private List<Vector3Int> EnemySquadUnits()
+    {
+        List<BaseUnit> otherTeams = TurnManager.Instance.GetAllUnitsExcept(TurnManager.Instance.GetCurrentSquad());
+        List<Vector3Int> positions = otherTeams.Select(unit => unit.CurrentPosition).ToList();
+
+        //Remove campfire from the list, since campfire can't be targeted by cards
+        positions.RemoveAll(tile =>
+        {
+            BaseUnit unit = UnitManager.Instance.GetUnitAtTile(tile);
+            return unit != null && unit is Campfire;
+        });
+
+        return positions;
+    }
+
+    private List<Vector3Int> GetHexRange(BaseHero hero, int range)
+    {
+        return Utilities.GetValidTiles(hero, true, range).FindAll(tile => GridManager.Instance.GetTileAtPosition(tile) != null);
     }
 }

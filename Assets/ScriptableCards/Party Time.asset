@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <CardName>k__BackingField: Party Time
   <CardDescription>k__BackingField: Refresh a mushi's actions. Discard another card.
-  <Image>k__BackingField: {fileID: 0}
+  <Image>k__BackingField: {fileID: 21300000, guid: ee421af4a44342b4d82529d9752e64f1, type: 3}
+  effectType: 0

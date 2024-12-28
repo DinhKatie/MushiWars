@@ -15,3 +15,4 @@ MonoBehaviour:
   <CardName>k__BackingField: Health Orb
   <CardDescription>k__BackingField: Give +1 health to hero, up to max full health.
   <Image>k__BackingField: {fileID: 21300000, guid: acb84e5a9279cb64d853fef6f4d27072, type: 3}
+  effectType: 2

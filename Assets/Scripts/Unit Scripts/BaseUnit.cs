@@ -16,7 +16,8 @@ public class BaseUnit : MonoBehaviour
     protected int health;
     protected bool dead = false;
     public bool justRevived = false;
-    public bool isImmune = false;
+    protected bool isImmune = false;
+    protected bool isChilled = false;
 
     public Squads squad;
     protected UnitPrefabs prefab = UnitPrefabs.unit;
@@ -30,6 +31,8 @@ public class BaseUnit : MonoBehaviour
     public bool isDead => dead;
     public Squads GetSquad => squad;
     public bool Immune => isImmune;
+    public bool Chilled => isChilled;
+    
     public UnitPrefabs GetPrefab => prefab;
 
     //Setters
@@ -53,6 +56,7 @@ public class BaseUnit : MonoBehaviour
     {
         isImmune = immune;
     }
+    public void SetChilled(bool chilled) {  isChilled = chilled; }
 
     //Managers for easy calling
     private GridManager Grid => GridManager.Instance;
@@ -73,6 +77,12 @@ public class BaseUnit : MonoBehaviour
 
     protected virtual void ResetStats()
     {
+        if (isChilled)
+        {
+            DisableMovementAndAttack();
+            isChilled = false;
+            return;
+        }
         movementRange = 2;
         attackRange = 1;
         hasAttacked = false;
@@ -84,6 +94,7 @@ public class BaseUnit : MonoBehaviour
     // ------ MOVEMENT ------
     public virtual void Move(Vector3Int newPosition)
     {
+        if (isChilled) { Debug.Log("Chilled!"); isChilled = false; return; }
         int moveCost = CalculateMoveCost(newPosition);
         if (moveCost <= movementRange)
         {
@@ -145,6 +156,7 @@ public class BaseUnit : MonoBehaviour
     // ------ ATTACKING -------
     public virtual void Attack(BaseUnit enemy)
     {
+        if (isChilled) { Debug.Log("Chilled!"); isChilled = false; return; }
         if (enemy.isImmune)
         {
             Debug.Log("Enemy is Immune!");

@@ -9,6 +9,7 @@ public class ScriptableCard : ScriptableObject
     [field: SerializeField] public string CardName { get; private set; }
     [field: SerializeField, TextArea] public string CardDescription { get; private set; }
     [field: SerializeField] public Sprite Image { get; private set; }
+    [SerializeField] public CardEffectType effectType;
 
     // Define a delegate for card effects
     public System.Action OnPlayEffect;
@@ -17,4 +18,11 @@ public class ScriptableCard : ScriptableObject
     {
         OnPlayEffect?.Invoke();
     }
+}
+
+public enum CardEffectType
+{
+    Skill,
+    Hex,
+    Support
 }

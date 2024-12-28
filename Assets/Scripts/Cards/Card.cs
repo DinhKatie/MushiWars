@@ -11,6 +11,8 @@ public class Card : MonoBehaviour
 
     [SerializeField] private Image _cardImage;
 
+    public CardEffectType cardType() => cardData.effectType;
+
     public void SetUp(ScriptableCard data)
     {
         cardData = data;
