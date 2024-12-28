@@ -18,6 +18,7 @@ public class BaseUnit : MonoBehaviour
     public bool justRevived = false;
     protected bool isImmune = false;
     protected bool isChilled = false;
+    protected bool disabledSkills = false;
 
     public Squads squad;
     protected UnitPrefabs prefab = UnitPrefabs.unit;
@@ -32,6 +33,7 @@ public class BaseUnit : MonoBehaviour
     public Squads GetSquad => squad;
     public bool Immune => isImmune;
     public bool Chilled => isChilled;
+    public bool SkillsDisabled => disabledSkills;
     
     public UnitPrefabs GetPrefab => prefab;
 
@@ -57,6 +59,7 @@ public class BaseUnit : MonoBehaviour
         isImmune = immune;
     }
     public void SetChilled(bool chilled) {  isChilled = chilled; }
+    public void DisableSkills(bool disable) { disabledSkills = disable; }
 
     //Managers for easy calling
     private GridManager Grid => GridManager.Instance;

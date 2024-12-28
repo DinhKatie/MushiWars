@@ -12,7 +12,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
     public List<BaseUnit> player1Squad;
     public List<BaseUnit> player2Squad;
 
-    private Dictionary<Squads, List<BaseUnit>> squadsDict;
+    public Dictionary<Squads, List<BaseUnit>> squadsDict;
     private List<List<BaseUnit>> squadsList;
 
     private Dictionary<Squads, Player> squadOwners = new Dictionary<Squads, Player>(); //Connect players to their squads

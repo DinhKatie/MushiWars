@@ -7659,7 +7659,8 @@ MonoBehaviour:
   teleportation: {fileID: 11400000, guid: 6526425afe2e63d4eacdd6ad23867491, type: 2}
   partyTime: {fileID: 11400000, guid: da7f7c98466d2e545b6dad4cfe98250d, type: 2}
   educate: {fileID: 11400000, guid: dbfddc8dbd7780642b638088d773158b, type: 2}
-  chillingWind: {fileID: 0}
+  chillingWind: {fileID: 11400000, guid: a1f87b1bc1be6d34a98ad228bb7dcc73, type: 2}
+  curse: {fileID: 11400000, guid: 50d7a6b2df7eda043865c8cfa0c8ae37, type: 2}
 --- !u!1 &1719808069
 GameObject:
   m_ObjectHideFlags: 0
