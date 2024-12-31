@@ -408,11 +408,4 @@ public class CardEffectInitializer : MonoBehaviour
         List<Vector3Int> enemyUnits = EnemySquadUnits();
         return enemyUnits.Where(unit => hexRange.Contains(unit)).ToList();
     }
-
-    private List<Vector3Int> GetUnitsInHexRange(BaseHero hero, int range)
-    {
-        List<Vector3Int> hexRange = GetHexRange(hero, range);
-        List<Vector3Int> enemyUnits = EnemySquadUnits();
-        return enemyUnits.Where(unit => hexRange.Contains(unit)).ToList();
-    }
 }
