@@ -128,6 +128,7 @@ public class GridManager : MonoBehaviour
 
         BaseUnit previousUnit = UnitManager.Instance.GetUnitAtTile(_previousTileSelection);
         BaseUnit newUnit = UnitManager.Instance.GetUnitAtTile(tilePosition);
+        Debug.Log($"{tilePosition} selected.");
         _previousTileSelection = tilePosition;
 
         if (avoidSelect) { return; }
