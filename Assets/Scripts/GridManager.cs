@@ -228,7 +228,7 @@ public class GridManager : MonoBehaviour
 
     public Campfire GetCampfireNearby(BaseUnit unit)
     {
-        List<Vector3Int> directions = Utilities.GetValidTiles(unit, false, 1);
+        List<Vector3Int> directions = Utilities.GetValidTiles(unit, "orthogonal", 1);
 
         foreach (Vector3Int dir in directions)
         {

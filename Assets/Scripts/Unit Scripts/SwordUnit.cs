@@ -12,6 +12,6 @@ public class SwordUnit : BaseUnit
     }
     protected override List<Vector3Int> GetAttackRange()
     {
-        return Utilities.GetValidTiles(this, true, attackRange);
+        return Utilities.GetValidTiles(this, "square", attackRange);
     }
 }

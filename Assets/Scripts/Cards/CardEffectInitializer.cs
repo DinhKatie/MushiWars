@@ -14,6 +14,7 @@ public class CardEffectInitializer : MonoBehaviour
     [SerializeField] private ScriptableCard forcefield;
     [SerializeField] private ScriptableCard teleportation;
     [SerializeField] private ScriptableCard partyTime;
+    [SerializeField] private ScriptableCard navigation;
 
     [Header("Supports")]
     [SerializeField] private ScriptableCard healthOrb;
@@ -36,6 +37,7 @@ public class CardEffectInitializer : MonoBehaviour
         educate.OnPlayEffect = () => Educate();
         chillingWind.OnPlayEffect= () => ChillingWind();
         curse.OnPlayEffect = () => Curse();
+        navigation.OnPlayEffect = () => Navigation();
     }
 
     private bool CantPlayCard() => HandManager.Instance.DisableCardEffects();
@@ -68,7 +70,7 @@ public class CardEffectInitializer : MonoBehaviour
         {
             if (unit == null) return; //Invalid unit selection
             
-            List<Vector3Int> validTiles = Utilities.GetValidTiles(unit, true);
+            List<Vector3Int> validTiles = Utilities.GetValidTiles(unit, "square", 1);
             foreach (Vector3Int tile in validTiles) //Loop through each tile and check if an enemy unit exists on it
             {
                 BaseUnit unitInRange = UnitManager.Instance.GetUnitAtTile(tile);
@@ -93,7 +95,7 @@ public class CardEffectInitializer : MonoBehaviour
         {
             if (unit == null) return; //Invalid unit selection
 
-            List<Vector3Int> validTiles = Utilities.GetValidTiles(unit, true, 2);
+            List<Vector3Int> validTiles = Utilities.GetValidTiles(unit, "square", 2);
             List<Vector3Int> validEnemyUnits = new List<Vector3Int>();
 
             foreach (Vector3Int tile in validTiles) //Loop through each tile and check if an enemy unit exists on it
@@ -147,11 +149,11 @@ public class CardEffectInitializer : MonoBehaviour
             if (!unit.HasNotActed())
             {
                 Debug.Log("That unit has already acted this turn!"); //Teleportation can't be used if the unit has already acted in some way.
-                AvoidSelection(false);
+                AvoidSelection(false); //CARD RETURN
                 return;
             }
             //Find all tiles in the list that are not occupied
-            List<Vector3Int> validMoveTiles = Utilities.GetValidTiles(unit, true, 4).FindAll(tile => !GridManager.Instance.IsOccupied(tile));
+            List<Vector3Int> validMoveTiles = Utilities.GetValidTiles(unit, "square", 4).FindAll(tile => !GridManager.Instance.IsOccupied(tile));
 
             StartCoroutine(Select(validMoveTiles, tile => tile, tile =>
             {
@@ -182,6 +184,37 @@ public class CardEffectInitializer : MonoBehaviour
         {
             Debug.Log("No other cards to discard. Cannot play PartyTime.");
         }
+    }
+
+    private void Navigation() //Clarify with Kevin
+    {
+        if (CantPlayCard()) return;
+
+        List<Vector3Int> currentSquadNotActed = CurrentSquadUnits()
+            .Where(tile => UnitManager.Instance.GetUnitAtTile(tile)?.HasNotActed() == true)
+            .ToList();
+
+        List<Vector3Int> actedUnits = CurrentSquadUnits()
+            .Where(tile => UnitManager.Instance.GetUnitAtTile(tile)?.HasNotActed() == false)
+            .ToList();
+        if (actedUnits.Count == 0) { Debug.Log($"No Units have acted this turn."); return; }
+
+        AvoidSelection(true);
+        //Select a Mushi that has not acted
+        StartCoroutine(Select(currentSquadNotActed, tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
+        {
+            Debug.Log($"{unit} selected as Navigator.");
+            unit.DisableMovementAndAttack();
+
+            //Select a Mushi that has already acted
+            StartCoroutine(Select(actedUnits, tile => UnitManager.Instance.GetUnitAtTile(tile), unit2 =>
+            {
+                Debug.Log($"{unit2} selected by Navigation. Incrementing move by 3.");
+                unit2.IncrementMove(3); //Up to 3? or exactly 3
+
+                AvoidSelection(false);
+            }));
+        }));
     }
 
     // ------------ SUPPORTS ---------------
@@ -366,7 +399,7 @@ public class CardEffectInitializer : MonoBehaviour
 
     private List<Vector3Int> GetHexRange(BaseHero hero, int range)
     {
-        return Utilities.GetValidTiles(hero, true, range).FindAll(tile => GridManager.Instance.GetTileAtPosition(tile) != null);
+        return Utilities.GetValidTiles(hero, "square", range).FindAll(tile => GridManager.Instance.GetTileAtPosition(tile) != null);
     }
 
     private List<Vector3Int> GetUnitsInHexRange(BaseHero hero, int range)

@@ -185,7 +185,7 @@ public class BaseUnit : MonoBehaviour
 
     protected virtual List<Vector3Int> GetAttackRange()
     {
-        return Utilities.GetValidTiles(this, false, attackRange);
+        return Utilities.GetValidTiles(this, "orthogonal", attackRange);
     }
 
     // ----- CARD EFFECTS -------
