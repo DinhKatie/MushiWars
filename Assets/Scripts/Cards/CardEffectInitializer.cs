@@ -6,14 +6,20 @@ using UnityEngine;
 
 public class CardEffectInitializer : MonoBehaviour
 {
+
+    [Header("Skills")]
     [SerializeField] private ScriptableCard hovercraft;
-    [SerializeField] private ScriptableCard healthOrb;
     [SerializeField] private ScriptableCard blastStomp;
     [SerializeField] private ScriptableCard smite;
     [SerializeField] private ScriptableCard forcefield;
     [SerializeField] private ScriptableCard teleportation;
     [SerializeField] private ScriptableCard partyTime;
+
+    [Header("Supports")]
+    [SerializeField] private ScriptableCard healthOrb;
     [SerializeField] private ScriptableCard educate;
+
+    [Header("Hexes")]
     [SerializeField] private ScriptableCard chillingWind;
     [SerializeField] private ScriptableCard curse;
 
@@ -34,17 +40,13 @@ public class CardEffectInitializer : MonoBehaviour
 
     private bool CantPlayCard() => HandManager.Instance.DisableCardEffects();
 
+    // ------------ SKILLS ----------------
     private void Hovercraft()
     {
         if (CantPlayCard()) return;
         Debug.Log("Adding +1 move range to unit.");
-        List<Vector3Int> validUnits = CurrentSquadUnits()
-            .Select(tile => UnitManager.Instance.GetUnitAtTile(tile)) // Convert tiles to BaseUnits
-            .Where(unit => unit != null && !unit.SkillsDisabled) // Filter non-null units with skills not disabled
-            .Select(unit => unit.CurrentPosition)
-            .ToList();
 
-        StartCoroutine(SelectUnit(validUnits, unit => //Select a unit, then execute the following function with its return value
+        StartCoroutine(Select(CurrentSquadUnits(), tile => UnitManager.Instance.GetUnitAtTile(tile), unit => //Select a unit, then execute the following function with its return value
         {
             if (unit != null)
             {
@@ -56,36 +58,13 @@ public class CardEffectInitializer : MonoBehaviour
         }));
     }
 
-    private void HealthOrb()
-    {
-        if (CantPlayCard()) return;
-
-        if (!TurnManager.Instance.GetHeroOfSquad(TurnManager.Instance.GetCurrentSquad()).UsesHexAndSupports)
-        {
-            Debug.Log("Hero cursed!");
-            return;
-        }
-
-        Squads currSquad = TurnManager.Instance.GetCurrentSquad();
-        BaseHero hero = TurnManager.Instance.GetHeroOfSquad(currSquad);
-        hero?.IncrementHealth();
-        Debug.Log($"Health of {hero} incremented by 1. New health: {hero.Health}");
-    }
-
     private void BlastStomp()
     {
         if (CantPlayCard()) return;
 
-        GridManager.Instance.avoidSelect = true;
-        GridManager.Instance.Deselect();
+        AvoidSelection(true);
 
-        List<Vector3Int> validUnits = CurrentSquadUnits()
-            .Select(tile => UnitManager.Instance.GetUnitAtTile(tile)) // Convert tiles to BaseUnits
-            .Where(unit => unit != null && !unit.SkillsDisabled) // Filter non-null units with skills not disabled
-            .Select(unit => unit.CurrentPosition)
-            .ToList();
-
-        StartCoroutine(SelectUnit(validUnits, unit =>
+        StartCoroutine(Select(CurrentSquadUnits(), tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
         {
             if (unit == null) return; //Invalid unit selection
             
@@ -98,8 +77,7 @@ public class CardEffectInitializer : MonoBehaviour
                     unitInRange.TakeDamage();
                 }
             }
-            GridManager.Instance.Deselect();
-            GridManager.Instance.avoidSelect = false;
+            AvoidSelection(false);
             Debug.Log("Used Blast Stomp.");
         }));
        
@@ -109,16 +87,9 @@ public class CardEffectInitializer : MonoBehaviour
     {
         if (CantPlayCard()) return;
 
-        GridManager.Instance.avoidSelect = true;
-        GridManager.Instance.Deselect();
+        AvoidSelection(true);
 
-        List<Vector3Int> validUnits = CurrentSquadUnits()
-            .Select(tile => UnitManager.Instance.GetUnitAtTile(tile)) // Convert tiles to BaseUnits
-            .Where(unit => unit != null && !unit.SkillsDisabled) // Filter non-null units with skills not disabled
-            .Select(unit => unit.CurrentPosition)
-            .ToList();
-
-        StartCoroutine(SelectUnit(validUnits, unit =>
+        StartCoroutine(Select(CurrentSquadUnits(), tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
         {
             if (unit == null) return; //Invalid unit selection
 
@@ -136,21 +107,19 @@ public class CardEffectInitializer : MonoBehaviour
 
             if (validEnemyUnits.Count == 0)
             {
-                GridManager.Instance.avoidSelect = false; // Allow normal interaction if no enemies are available
-                GridManager.Instance.Deselect();
+                AvoidSelection(false);
                 Debug.Log("No valid enemies to smite."); //CARD RETURN
                 return;
             }
 
-            StartCoroutine(SelectUnit(validEnemyUnits, enemy =>
+            StartCoroutine(Select(validEnemyUnits, tile => UnitManager.Instance.GetUnitAtTile(tile), enemy =>
             {
                 if (enemy == null) return;
 
                 enemy.AutoDie();
                 Debug.Log($"Smited {enemy}");
 
-                GridManager.Instance.Deselect();
-                GridManager.Instance.avoidSelect = false;
+                AvoidSelection(false);
             }));
         }));
     }
@@ -159,51 +128,36 @@ public class CardEffectInitializer : MonoBehaviour
     {
         if (CantPlayCard()) return;
 
-        List<Vector3Int> validUnits = CurrentSquadUnits()
-            .Select(tile => UnitManager.Instance.GetUnitAtTile(tile)) // Convert tiles to BaseUnits
-            .Where(unit => unit != null && !unit.SkillsDisabled) // Filter non-null units with skills not disabled
-            .Select(unit => unit.CurrentPosition)
-            .ToList();
-
-        GridManager.Instance.avoidSelect = true;
-        StartCoroutine(SelectUnit(validUnits, unit =>
+        AvoidSelection(true);
+        StartCoroutine(Select(CurrentSquadUnits(), tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
         {
             unit?.SetImmune(true);
             Debug.Log($"Applied Forcefield");
-            GridManager.Instance.avoidSelect = false;
-            GridManager.Instance.Deselect();
+            AvoidSelection(false);
         }));
     }
 
     private void Teleportation()
     {
         if (CantPlayCard()) return;
+        AvoidSelection(true);
 
-        List<Vector3Int> validUnits = CurrentSquadUnits()
-            .Select(tile => UnitManager.Instance.GetUnitAtTile(tile)) // Convert tiles to BaseUnits
-            .Where(unit => unit != null && !unit.SkillsDisabled) // Filter non-null units with skills not disabled
-            .Select(unit => unit.CurrentPosition)
-            .ToList();
-
-        GridManager.Instance.avoidSelect = true;
-        StartCoroutine(SelectUnit(validUnits, unit =>
+        StartCoroutine(Select(CurrentSquadUnits(), tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
         {
             if (!unit.HasNotActed())
             {
                 Debug.Log("That unit has already acted this turn!"); //Teleportation can't be used if the unit has already acted in some way.
-                GridManager.Instance.avoidSelect = false;
-                GridManager.Instance.Deselect();
+                AvoidSelection(false);
                 return;
             }
             //Find all tiles in the list that are not occupied
             List<Vector3Int> validMoveTiles = Utilities.GetValidTiles(unit, true, 4).FindAll(tile => !GridManager.Instance.IsOccupied(tile));
 
-            StartCoroutine(SelectTile(validMoveTiles, tile =>
+            StartCoroutine(Select(validMoveTiles, tile => tile, tile =>
             {
                 UnitManager.Instance.TeleportUnit(unit, tile);
                 unit.DisableMovementAndAttack();
-                GridManager.Instance.avoidSelect = false;
-                GridManager.Instance.Deselect();
+                AvoidSelection(false);
             }));
         }));
     }
@@ -212,29 +166,39 @@ public class CardEffectInitializer : MonoBehaviour
     {
         if (CantPlayCard()) return;
 
-        List<Vector3Int> validUnits = CurrentSquadUnits()
-            .Select(tile => UnitManager.Instance.GetUnitAtTile(tile)) // Convert tiles to BaseUnits
-            .Where(unit => unit != null && !unit.SkillsDisabled) // Filter non-null units with skills not disabled
-            .Select(unit => unit.CurrentPosition)
-            .ToList();
-
-        GridManager.Instance.avoidSelect = true;
+        AvoidSelection(true);
         //Discard another card. Party Time cannot be played if no other cards are available to discard.
         if (HandManager.Instance.numCards() > 0)
         {
             StartCoroutine(WaitForDiscard(() =>
             {
-                StartCoroutine(SelectUnit(validUnits, unit =>
+                StartCoroutine(Select(CurrentSquadUnits(), tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
                 {
                     unit.Reset();
-                    GridManager.Instance.avoidSelect = false;
-                    GridManager.Instance.Deselect();
+                    AvoidSelection(false);
                 }));
             }));
         } else
         {
             Debug.Log("No other cards to discard. Cannot play PartyTime.");
         }
+    }
+
+    // ------------ SUPPORTS ---------------
+    private void HealthOrb()
+    {
+        if (CantPlayCard()) return;
+
+        if (!TurnManager.Instance.GetHeroOfSquad(TurnManager.Instance.GetCurrentSquad()).UsesHexAndSupports)
+        {
+            Debug.Log("Hero cursed!");
+            return;
+        }
+
+        Squads currSquad = TurnManager.Instance.GetCurrentSquad();
+        BaseHero hero = TurnManager.Instance.GetHeroOfSquad(currSquad);
+        hero?.IncrementHealth();
+        Debug.Log($"Health of {hero} incremented by 1. New health: {hero.Health}");
     }
 
     private void Educate()
@@ -255,6 +219,7 @@ public class CardEffectInitializer : MonoBehaviour
         }
     }
 
+    // ------------ HEXES ---------------
     private void ChillingWind()
     {
         if (CantPlayCard()) return;
@@ -266,17 +231,14 @@ public class CardEffectInitializer : MonoBehaviour
         }
 
         BaseHero currHero = TurnManager.Instance.GetHeroOfSquad(TurnManager.Instance.GetCurrentSquad());
-        List<Vector3Int> hexRange = GetHexRange(currHero, 4);
-        List<Vector3Int> enemyUnits = EnemySquadUnits();
-        List<Vector3Int> unitsWithinRange = enemyUnits.Where(unit => hexRange.Contains(unit)).ToList();
+        List<Vector3Int> unitsWithinRange = GetUnitsInHexRange(currHero, 4);
 
-        GridManager.Instance.avoidSelect = true;
-        StartCoroutine(SelectUnit(unitsWithinRange, unit =>
+        AvoidSelection(true);
+        StartCoroutine(Select(unitsWithinRange, tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
         {
             unit.SetChilled(true);
             Debug.Log($"Chilled {unit}");
-            GridManager.Instance.avoidSelect = false;
-            GridManager.Instance.Deselect();
+            AvoidSelection(false);
         }));
     }
 
@@ -291,13 +253,11 @@ public class CardEffectInitializer : MonoBehaviour
         }
 
         BaseHero currHero = TurnManager.Instance.GetHeroOfSquad(TurnManager.Instance.GetCurrentSquad());
-        List<Vector3Int> hexRange = GetHexRange(currHero, 4);
-        List<Vector3Int> enemyUnits = EnemySquadUnits();
-        List<Vector3Int> unitsWithinRange = enemyUnits.Where(unit => hexRange.Contains(unit)).ToList();
+        List<Vector3Int> unitsWithinRange = GetUnitsInHexRange(currHero, 4);
 
-        GridManager.Instance.avoidSelect = true;
+        AvoidSelection(true);
 
-        StartCoroutine(SelectUnit(unitsWithinRange, unit =>
+        StartCoroutine(Select(unitsWithinRange, tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
         {
             //Disable selecting his unit for skills. If hero, disable support/hexes
             unit.DisableSkills(true);
@@ -307,7 +267,7 @@ public class CardEffectInitializer : MonoBehaviour
                 hero.SetCursed(true);
             }
 
-            StartCoroutine(SelectUnit(unitsWithinRange.Where(u => u != unit.CurrentPosition).ToList(), unit2 =>
+            StartCoroutine(Select(unitsWithinRange.Where(u => u != unit.CurrentPosition).ToList(), tile => UnitManager.Instance.GetUnitAtTile(tile), unit2 =>
             {
                 //Disable selecting this second unit for skills. If hero, disable support/hexes
                 unit2.DisableSkills(true);
@@ -317,13 +277,15 @@ public class CardEffectInitializer : MonoBehaviour
                     BaseHero hero = EnemyHeroUnits().FirstOrDefault(hero => hero == unit);
                     hero.SetCursed(true);
                 }
-                GridManager.Instance.avoidSelect = false;
-                GridManager.Instance.Deselect();
+                AvoidSelection(false);
             }));
         }));
     }
 
-    private IEnumerator SelectUnit(List<Vector3Int> validTiles, Action<BaseUnit> onSelection)
+
+    // ------------ HELPERS ----------------
+
+    private IEnumerator Select<T>(List<Vector3Int> validTiles, Func<Vector3Int, T> convertSelection, Action<T> onSelection)
     {
         GridManager.Instance.Deselect();
         GridManager.Instance.HighlightOutlineTiles(validTiles);
@@ -341,46 +303,15 @@ public class CardEffectInitializer : MonoBehaviour
                     break;
                 }
             }
-            else if (Input.GetMouseButtonDown(1)) //Deselect
+            else if (Input.GetMouseButtonDown(1)) // Deselect
             {
-                GridManager.Instance.Deselect();
-                GridManager.Instance.avoidSelect = false;
+                AvoidSelection(false);
                 yield break;
             }
             yield return null;
         }
 
-        onSelection?.Invoke(UnitManager.Instance.GetUnitAtTile(selectedTile)); //Pass the selected tile to the callback
-    }
-
-    private IEnumerator SelectTile(List<Vector3Int> validTiles, Action<Vector3Int> onSelection)
-    {
-        GridManager.Instance.Deselect();
-        GridManager.Instance.HighlightOutlineTiles(validTiles);
-        Vector3Int selectedTile;
-
-        while (true)
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                Vector3Int clickedTile = GridManager.Instance.GetMouseTilePosition();
-
-                if (validTiles.Contains(clickedTile))
-                {
-                    selectedTile = clickedTile;
-                    break;
-                }
-            }
-            else if (Input.GetMouseButtonDown(1)) //Deselect
-            {
-                GridManager.Instance.Deselect();
-                GridManager.Instance.avoidSelect = false;
-                yield break;
-            }
-            yield return null;
-        }
-
-        onSelection?.Invoke(selectedTile); //Pass the selected tile to the callback
+        onSelection?.Invoke(convertSelection(selectedTile));
     }
 
     private IEnumerator WaitForDiscard(Action action)
@@ -411,16 +342,18 @@ public class CardEffectInitializer : MonoBehaviour
     private List<Vector3Int> CurrentSquadUnits()
     {
         Squads currentSquad = TurnManager.Instance.GetCurrentSquad();
-        List<Vector3Int> team = UnitManager.Instance.GetTeam(currentSquad);
 
-        //Remove campfire from the list, since campfire can't be targeted by cards
-        team.RemoveAll(tile =>
-        {
-            BaseUnit unit = UnitManager.Instance.GetUnitAtTile(tile);
-            return unit != null && unit is Campfire;
-        });
-
-        return team;
+        return UnitManager.Instance
+            .GetTeam(currentSquad) //Get all tiles for the squad
+            .Where(tile =>
+            {
+                BaseUnit unit = UnitManager.Instance.GetUnitAtTile(tile);
+                return unit != null &&
+                       !(unit is Campfire) && //Exclude Campfire units
+                       !unit.SkillsDisabled;  //Exclude units with disabled skills
+            })
+            .Select(tile => UnitManager.Instance.GetUnitAtTile(tile).CurrentPosition) //Return a Vector3Int List
+            .ToList();
     }
 
     private List<Vector3Int> EnemySquadUnits()
@@ -445,8 +378,21 @@ public class CardEffectInitializer : MonoBehaviour
             .OfType<BaseHero>().ToList();
     }
 
+    private void AvoidSelection(bool isAvoidingSelect)
+    {
+        GridManager.Instance.avoidSelect = isAvoidingSelect; // Allow normal interaction if no enemies are available
+        GridManager.Instance.Deselect();
+    }
+
     private List<Vector3Int> GetHexRange(BaseHero hero, int range)
     {
         return Utilities.GetValidTiles(hero, true, range).FindAll(tile => GridManager.Instance.GetTileAtPosition(tile) != null);
+    }
+
+    private List<Vector3Int> GetUnitsInHexRange(BaseHero hero, int range)
+    {
+        List<Vector3Int> hexRange = GetHexRange(hero, range);
+        List<Vector3Int> enemyUnits = EnemySquadUnits();
+        return enemyUnits.Where(unit => hexRange.Contains(unit)).ToList();
     }
 }
