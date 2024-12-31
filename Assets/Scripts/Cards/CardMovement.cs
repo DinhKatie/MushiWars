@@ -6,10 +6,11 @@ using UnityEngine.EventSystems;
 public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragHandler
 {
 
-    private bool _isBeingDragged;
+    public bool _isBeingDragged;
     private Canvas _cardCanvas;
     private RectTransform _rectTransform;
     private Card _card;
+    private CardSelectionHandler _cardSelectionHandler;
 
     private Vector2 _originalPos;
 
@@ -21,13 +22,14 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
         _cardCanvas = GameObject.FindGameObjectWithTag(CANVAS_TAG).GetComponent<Canvas>();
         _rectTransform = GetComponent<RectTransform>();
         _card = GetComponent<Card>();
+        _cardSelectionHandler = GetComponent<CardSelectionHandler>();
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
         _isBeingDragged = true;
-        HandManager.Instance.NotifyCardBeginDrag(this);
         _originalPos = _rectTransform.position;
+        _cardSelectionHandler.ResetScale();
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -41,7 +43,7 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
             out worldPointerPosition
         );
 
-        // Apply world position and offset to the card's anchored position
+        // Apply world position and offset to the card's anchored position (position in relation to its parent)
         _rectTransform.position = worldPointerPosition;
     }
 
@@ -52,10 +54,17 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
 
         // Check if the card is outside the hand canvas
         if (!RectTransformUtility.RectangleContainsScreenPoint(handRect, Input.mousePosition, eventData.pressEventCamera))
+        {
             Deck.Instance.DiscardCard(_card);
+            _card.PlayEffect(); //Apply its effect
+        }
         else
+        {
             _rectTransform.position = _originalPos;
+            _rectTransform.transform.SetSiblingIndex(_cardSelectionHandler._originalIndex);
+        }
+            
 
-        HandManager.Instance.NotifyCardEndDrag(this);
+        HandManager.Instance.ArrangeCardsInHand();
     }
 }

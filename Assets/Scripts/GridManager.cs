@@ -1,10 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
-using static UnityEngine.UI.CanvasScaler;
 
 public class GridManager : MonoBehaviour
 {
@@ -34,6 +32,7 @@ public class GridManager : MonoBehaviour
     private Vector3Int _previousHoverTilePosition;
 
     private Vector3Int _previousTileSelection = new Vector3Int(-1, -1, -1); //Default if no tile is selected
+    public bool avoidSelect = false; // For cases where a selection coincides with another selection (e.g. cards like Blast Stomp)
 
     public static GridManager Instance;
 
@@ -114,6 +113,7 @@ public class GridManager : MonoBehaviour
         _outlineTilemap.ClearAllTiles();
         ClearValidMoves();
         _previousTileSelection = new Vector3Int(-1, -1, -1);
+        StopAllCoroutines();
     }
 
     private void SelectTile(Vector3Int tilePosition)
@@ -128,7 +128,10 @@ public class GridManager : MonoBehaviour
 
         BaseUnit previousUnit = UnitManager.Instance.GetUnitAtTile(_previousTileSelection);
         BaseUnit newUnit = UnitManager.Instance.GetUnitAtTile(tilePosition);
+        Debug.Log($"{tilePosition} selected.");
         _previousTileSelection = tilePosition;
+
+        if (avoidSelect) { return; }
 
         //if (!TurnManager.Instance._playerControlsOn) return;
 
@@ -216,8 +219,7 @@ public class GridManager : MonoBehaviour
         Vector3Int pushDirection = -(unit.CurrentPosition - fire.CurrentPosition);
         Vector3Int targetTile = fire.CurrentPosition + pushDirection;
 
-        if (UnitManager.Instance.GetUnitAtTile(targetTile) == null && GetTileAtPosition(targetTile) != null
-            && unit.MovementRange > 0 && !IsObstacleTile(targetTile))
+        if (!IsOccupied(targetTile) && unit.MovementRange > 0)
         {
             _validMovesMap.SetTile(fire.CurrentPosition, _campfirePushTile);
             return targetTile;
@@ -227,18 +229,11 @@ public class GridManager : MonoBehaviour
 
     public Campfire GetCampfireNearby(BaseUnit unit)
     {
-        Vector3Int[] directions =
-        {
-            Vector3Int.up,
-            Vector3Int.down,
-            Vector3Int.left,
-            Vector3Int.right
-        };
+        List<Vector3Int> directions = Utilities.GetValidTiles(unit, "orthogonal", 1);
 
         foreach (Vector3Int dir in directions)
         {
-            Vector3Int adjacentPos = unit.CurrentPosition + dir;
-            Campfire campfire = GetCampfireAtPosition(adjacentPos);
+            Campfire campfire = GetCampfireAtPosition(dir);
 
             if (campfire != null)
             {
@@ -348,6 +343,12 @@ public class GridManager : MonoBehaviour
         return _obstacles.Contains(tile);
     }
 
+
+    public bool IsOccupied(Vector3Int tile)
+    {
+        return (IsObstacleTile(tile) || UnitManager.Instance.GetUnitAtTile(tile) != null || GetTileAtPosition(tile) == null);
+    }
+
     // Get the tile at the specified grid position
     public TileBase GetTileAtPosition(Vector3Int position)
     {
@@ -358,6 +359,12 @@ public class GridManager : MonoBehaviour
     public void SetTileAtPosition(Vector3Int position, TileBase tile)
     {
         _tilemap.SetTile(position, tile); // Set a tile at the specified position
+    }
+
+    public void HighlightOutlineTiles(List<Vector3Int> outlines)
+    {
+        foreach (var tile in outlines)
+            _validMovesMap.SetTile(tile, _outlineTile);
     }
 }
 

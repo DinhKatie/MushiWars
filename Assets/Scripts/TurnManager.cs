@@ -12,7 +12,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
     public List<BaseUnit> player1Squad;
     public List<BaseUnit> player2Squad;
 
-    private Dictionary<Squads, List<BaseUnit>> squadsDict;
+    public Dictionary<Squads, List<BaseUnit>> squadsDict;
     private List<List<BaseUnit>> squadsList;
 
     private Dictionary<Squads, Player> squadOwners = new Dictionary<Squads, Player>(); //Connect players to their squads
@@ -189,6 +189,15 @@ public class TurnManager : MonoBehaviourPunCallbacks
         return null;
     }
 
+    public BaseHero GetHeroOfSquad(Squads squad)
+    {
+        foreach (var u in squadsDict[squad])
+        {
+            if (u is BaseHero hero) return hero;
+        }
+        return null;
+    }
+
     public HeroTypes GetHeroType(Squads squad)
     {
         foreach (var unit in squadsDict[squad])
@@ -197,6 +206,21 @@ public class TurnManager : MonoBehaviourPunCallbacks
                 return hero.heroType;
         }
         return HeroTypes.None;
+    }
+
+    public List<BaseUnit> GetAllUnitsExcept(Squads squad)
+    {
+        List<BaseUnit> otherSquads = new List<BaseUnit>();
+
+        foreach(var s in squadsDict)
+        {
+            if (s.Key != squad)
+            {
+                otherSquads.AddRange(s.Value);
+            }
+        }
+
+        return otherSquads;
     }
 }
 

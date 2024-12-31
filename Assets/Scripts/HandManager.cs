@@ -8,8 +8,16 @@ public class HandManager : MonoBehaviour
     [SerializeField] private Vector2 cardOffset = new Vector2(100f, 0f); // The distance between each card
 
     private List<Card> handCards => Deck.Instance.HandCards;
+    private int MAX_HAND_SIZE = 3;
 
     public static HandManager Instance;
+
+    public bool discardingForCardEffect = false;
+
+    public int numCards() => handCards.Count;
+    public bool DisableCardEffects() => discardingForCardEffect;
+    public bool hasMaxHandSize() => handCards.Count >= MAX_HAND_SIZE;
+
 
     private void Start()
     {
@@ -20,6 +28,7 @@ public class HandManager : MonoBehaviour
 
         ArrangeCardsInHand();
     }
+
 
     // Call this whenever the hand changes (e.g., after drawing, discarding, or end of a turn)
     public void ArrangeCardsInHand()
@@ -40,47 +49,11 @@ public class HandManager : MonoBehaviour
             // Position the card with dynamic spacing and centered
             float newXPosition = startX + (i * cardOffset.x);
             cardTransform.anchoredPosition = new Vector2(newXPosition, 0f);
+
+            CardSelectionHandler csh = handCards[i].GetComponent<CardSelectionHandler>();
+            csh.ResetCard();
+
         }
-    }
-
-    private void OnEnable()
-    {
-        Deck.Instance.OnCardDrawn += ArrangeCardsInHand;
-        Deck.Instance.OnCardDiscarded += ArrangeCardsInHand;
-    }
-
-    private void OnDisable()
-    {
-        Deck.Instance.OnCardDrawn -= ArrangeCardsInHand;
-        Deck.Instance.OnCardDiscarded -= ArrangeCardsInHand;
-    }
-
-    // Called when a card drag begins
-    public void NotifyCardBeginDrag(CardMovement cardMovement)
-    {
-        return;
-    }
-
-    // Called when a card drag ends
-    public void NotifyCardEndDrag(CardMovement cardMovement)
-    {
-        RectTransform cardRect = cardMovement.GetComponent<RectTransform>();
-        ArrangeCardsInHand();
-
-        // Check if the card was dragged into the discard area
-        //if (RectTransformUtility.RectangleContainsScreenPoint(discardArea, cardRect.position))
-        //{
-            // If dragged into discard area, discard the card
-        //    Deck.Instance.DiscardCard(cardMovement.GetComponent<Card>());
-        //}
-        //else
-        //{
-            // If not, re-arrange the cards in hand
-        //    ArrangeCardsInHand();
-        //}
-
-        // Hide discard area after drag ends
-        //discardArea.gameObject.SetActive(false);
     }
 
 }

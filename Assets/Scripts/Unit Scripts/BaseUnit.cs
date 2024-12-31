@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Tilemaps;
@@ -15,6 +16,9 @@ public class BaseUnit : MonoBehaviour
     protected int health;
     protected bool dead = false;
     public bool justRevived = false;
+    protected bool isImmune = false;
+    protected bool isChilled = false;
+    protected bool disabledSkills = false;
 
     public Squads squad;
     protected UnitPrefabs prefab = UnitPrefabs.unit;
@@ -27,6 +31,10 @@ public class BaseUnit : MonoBehaviour
     public int Health => health;
     public bool isDead => dead;
     public Squads GetSquad => squad;
+    public bool Immune => isImmune;
+    public bool Chilled => isChilled;
+    public bool SkillsDisabled => disabledSkills;
+    
     public UnitPrefabs GetPrefab => prefab;
 
     //Setters
@@ -41,7 +49,17 @@ public class BaseUnit : MonoBehaviour
         movementRange -= moveCost;
         Debug.Log("Movement Range is now " + movementRange);
     }
-
+    public void IncrementMove(int move = 1)
+    {
+        movementRange += move;
+        Debug.Log("Movement Range is now " + movementRange);
+    }
+    public void SetImmune(bool immune)
+    {
+        isImmune = immune;
+    }
+    public void SetChilled(bool chilled) {  isChilled = chilled; }
+    public void DisableSkills(bool disable) { disabledSkills = disable; }
 
     //Managers for easy calling
     private GridManager Grid => GridManager.Instance;
@@ -62,9 +80,16 @@ public class BaseUnit : MonoBehaviour
 
     protected virtual void ResetStats()
     {
+        if (isChilled)
+        {
+            DisableMovementAndAttack();
+            isChilled = false;
+            return;
+        }
         movementRange = 2;
         attackRange = 1;
         hasAttacked = false;
+        isImmune = false;
     }
 
     public virtual void Reset() => ResetStats();
@@ -72,6 +97,7 @@ public class BaseUnit : MonoBehaviour
     // ------ MOVEMENT ------
     public virtual void Move(Vector3Int newPosition)
     {
+        if (isChilled) { Debug.Log("Chilled!"); isChilled = false; return; }
         int moveCost = CalculateMoveCost(newPosition);
         if (moveCost <= movementRange)
         {
@@ -118,9 +144,7 @@ public class BaseUnit : MonoBehaviour
                     continue;
 
                 // Check if the tile is valid (not an obstacle, no unit on it).
-                if (Grid.GetTileAtPosition(neighbor) != null &&
-                    UnitMan.GetUnitAtTile(neighbor) == null &&
-                    !Grid.IsObstacleTile(neighbor))
+                if (!GridManager.Instance.IsOccupied(neighbor))
                 {
                     // Mark the neighbor as visited and add it to the queue
                     queue.Enqueue(neighbor);
@@ -135,6 +159,13 @@ public class BaseUnit : MonoBehaviour
     // ------ ATTACKING -------
     public virtual void Attack(BaseUnit enemy)
     {
+        if (isChilled) { Debug.Log("Chilled!"); isChilled = false; return; }
+        if (enemy.isImmune)
+        {
+            Debug.Log("Enemy is Immune!");
+            Grid.Deselect();
+            return;
+        }
         enemy.OnHit();
         hasAttacked = true;
         HighlightValidMoves();
@@ -143,32 +174,51 @@ public class BaseUnit : MonoBehaviour
 
     public List<Vector3Int> CalculateValidAttacks()
     {
-        List<Vector3Int> attackRanges = GetAttackRange();
-        List<Vector3Int> toRemove = new List<Vector3Int>();
-        foreach (var attack in attackRanges)
+        List<Vector3Int> attackRanges = GetAttackRange().Where(attack =>
         {
             BaseUnit unit = UnitMan.GetUnitAtTile(attack);
-
-            //Do not designate as attackable tile if the tile is empty or if it is a unit within the team
-            if (unit == null || TurnManager.Instance.isUnitInCurrentSquad(unit))
-                toRemove.Add(attack);
-        }
-        //Remove in-attackable tiles from the highlights
-        foreach (var attack in toRemove)
-            attackRanges.Remove(attack);
+            return unit != null && !TurnManager.Instance.isUnitInCurrentSquad(unit); //Only attackable if the unit exists and is not in the current team
+        }).ToList();
 
         return attackRanges;
     }
 
     protected virtual List<Vector3Int> GetAttackRange()
     {
-        return new List<Vector3Int>
+        return Utilities.GetValidTiles(this, "orthogonal", attackRange);
+    }
+
+    // ----- CARD EFFECTS -------
+
+    public void TakeDamage()
+    {
+        if (isImmune)
         {
-            currPosition + Vector3Int.up * attackRange,
-            currPosition + Vector3Int.down * attackRange,
-            currPosition + Vector3Int.left * attackRange,
-            currPosition + Vector3Int.right * attackRange
-        };
+            Debug.Log("Immune! (Take Damage)");
+            return;
+        }
+        OnHit();
+    }
+
+    public void AutoDie()
+    {
+        if (isImmune)
+        {
+            Debug.Log("Immune! (AutoDie)");
+            return;
+        }
+        OnDeath();
+    }
+
+    public void Teleport(Vector3Int newPosition)
+    {
+        currPosition = newPosition;
+        transform.position = Grid._tilemap.GetCellCenterWorld(newPosition);
+    }
+
+    public virtual bool HasNotActed()
+    {
+        return (movementRange == 2 && attackRange == 1 && hasAttacked == false);
     }
 
 

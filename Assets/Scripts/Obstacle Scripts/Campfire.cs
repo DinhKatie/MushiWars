@@ -134,9 +134,7 @@ public class Campfire : BaseUnit
 
         // Do not spawn on invalid tiles
         validTiles = validTiles.Where(tile =>
-            GridManager.Instance.GetTileAtPosition(tile) &&
-            UnitManager.Instance.GetUnitAtTile(tile) == null &&
-            !GridManager.Instance.IsObstacleTile(tile)
+            !GridManager.Instance.IsOccupied(tile)
         ).ToList();
 
         return validTiles;

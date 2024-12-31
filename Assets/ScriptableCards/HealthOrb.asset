@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce0988ae35e1d4544bb28f2d3fe4b37d, type: 3}
+  m_Name: HealthOrb
+  m_EditorClassIdentifier: 
+  <CardName>k__BackingField: Health Orb
+  <CardDescription>k__BackingField: Give +1 health to hero, up to max full health.
+  <Image>k__BackingField: {fileID: 21300000, guid: acb84e5a9279cb64d853fef6f4d27072, type: 3}
+  effectType: 2

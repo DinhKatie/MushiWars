@@ -16,6 +16,7 @@ public class GunUnit : BaseUnit
         movementRange = 1;
         attackRange = 2; //Except not point blank
         hasAttacked = false;
+        isImmune = false;
     }
 
     protected override List<Vector3Int> GetAttackRange()
@@ -32,5 +33,10 @@ public class GunUnit : BaseUnit
             currPosition + new Vector3Int(attackRange, -attackRange, 0)   
         };
         return attackRanges;
+    }
+
+    public override bool HasNotActed()
+    {
+        return (movementRange == 1 && attackRange == 2 && hasAttacked == false);
     }
 }
