@@ -70,11 +70,11 @@ public class GridManager : MonoBehaviour
 
     private void InitializeDefaultObstacles()
     {
-        SpawnObstacle(new Vector3Int(-2, -1, 0), Obstacle.rock);
-        SpawnObstacle(new Vector3Int(2, 2, 0), Obstacle.log, RotationState.Horizontal);
-        SpawnObstacle(new Vector3Int(-4, 3, 0), Obstacle.log, RotationState.Vertical);
-        SpawnObstacle(new Vector3Int(0, -4, 0), Obstacle.tree);
-        SpawnObstacle(new Vector3Int(2, 0, 0), Obstacle.bamboo);
+        SpawnObstacle(new Vector3Int(2, 4, 0), Obstacle.rock);
+        SpawnObstacle(new Vector3Int(6, 7, 0), Obstacle.log, RotationState.Horizontal);
+        SpawnObstacle(new Vector3Int(0, 8, 0), Obstacle.log, RotationState.Vertical);
+        SpawnObstacle(new Vector3Int(4, 1, 0), Obstacle.tree);
+        SpawnObstacle(new Vector3Int(6, 5, 0), Obstacle.bamboo);
     }
 
     private void HandleTileHover()

@@ -64,14 +64,14 @@ public class GameManager : MonoBehaviour
 
     private void SpawnSquad1()
     {
-        Vector3Int campfireTile = new Vector3Int(-4, -4, 0);
-        Vector3Int heroSpawnTile = new Vector3Int(-5, -5, 0);
-        Vector3Int swordTile = new Vector3Int(0, 0, 0);
-        Vector3Int gunTile = new Vector3Int(-4, -3, 0);
+        Vector3Int campfireTile = new Vector3Int(1, 1, 0);
+        Vector3Int heroSpawnTile = new Vector3Int(0, 0, 0);
+        Vector3Int swordTile = new Vector3Int(4, 5, 0);
+        Vector3Int gunTile = new Vector3Int(1, 2, 0);
         List<Vector3Int> normalUnits = new List<Vector3Int>
         {
-            new Vector3Int(-3, -5, 0),
-            new Vector3Int(-5, -3, 0),
+            new Vector3Int(2, 0, 0),
+            new Vector3Int(0, 2, 0),
         };
 
         SpawnSquad(campfireTile, heroSpawnTile, swordTile, gunTile, normalUnits, Squads.one);
@@ -79,14 +79,14 @@ public class GameManager : MonoBehaviour
 
     private void SpawnSquad2()
     {
-        Vector3Int campfireTile = new Vector3Int(4, 4, 0);
-        Vector3Int heroSpawnTile = new Vector3Int(5, 5, 0);
-        Vector3Int swordTile = new Vector3Int(0, 1, 0);
-        Vector3Int gunTile = new Vector3Int(4, 3, 0);
+        Vector3Int campfireTile = new Vector3Int(8, 8, 0);
+        Vector3Int heroSpawnTile = new Vector3Int(9, 9, 0);
+        Vector3Int swordTile = new Vector3Int(4, 6, 0);
+        Vector3Int gunTile = new Vector3Int(8, 7, 0);
         List<Vector3Int> normalUnits = new List<Vector3Int>
         {
-            new Vector3Int(3, 5, 0),
-            new Vector3Int(5, 3, 0),
+            new Vector3Int(7, 9, 0),
+            new Vector3Int(9, 7, 0),
         };
 
         SpawnSquad(campfireTile, heroSpawnTile, swordTile, gunTile, normalUnits, Squads.two);
