@@ -15,6 +15,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
     public Dictionary<Squads, List<BaseUnit>> squadsDict;
     private List<List<BaseUnit>> squadsList;
 
+    // For Player Syncing
     private Dictionary<Squads, Player> squadOwners = new Dictionary<Squads, Player>(); //Connect players to their squads
     public bool _playerControlsEnabled;
     public bool _playerControlsOn => _playerControlsEnabled;
@@ -25,7 +26,9 @@ public class TurnManager : MonoBehaviourPunCallbacks
     private int currentSquadIndex = 0;
 
     public Squads GetCurrentSquad() => currentSquad;
-    
+
+    private int currentRound = 0;
+    private int roundsPerShrink = 5;
 
     private void Awake()
     {
@@ -70,6 +73,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
         currentSquad = (Squads)(currentSquadIndex + 1);
         Debug.Log($"Switching Teams. Team {currentSquad}'s turn");
 
+
         /*// Check which Photon player owns the current squad
         if (squadOwners.TryGetValue(currentSquad, out Player owner))
         {
@@ -101,6 +105,18 @@ public class TurnManager : MonoBehaviourPunCallbacks
         currentSquadIndex = (currentSquadIndex + 1) % squadsList.Count;
         UnitManager.Instance.ResetTeam(squadsList[currentSquadIndex]);
         GridManager.Instance.Deselect();
+
+        if (currentSquadIndex == 0) //after the last player finishes their turn and we're back to player one
+        {
+            currentRound++;
+            Debug.Log($"Current Round: {currentRound}");
+            if (currentRound >= roundsPerShrink)
+            {
+                FindObjectOfType<ShrinkBoard>().BoardShrink();
+                currentRound = 0;
+            }
+        }
+
         StartTurn();
 
         /*if (PhotonNetwork.LocalPlayer == squadOwners[currentSquad])
