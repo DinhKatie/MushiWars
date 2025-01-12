@@ -37,6 +37,7 @@ public class ShrinkBoard : MonoBehaviour
 
     public void BoardShrink()
     {
+        if (boardSize == 0) return;
         Debug.Log($"MinX: {minX}, MaxX: {maxX}, MinY: {minY}, MaxY: {maxY}");
 
         //Remove the outer layer of tiles
