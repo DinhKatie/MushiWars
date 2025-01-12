@@ -148,7 +148,7 @@ public class Campfire : BaseUnit
 
     public override void Attack(BaseUnit enemy) { return; }
 
-    protected override void OnDeath()
+    public override void OnDeath()
     {
         graveyard = null;
         StopAllCoroutines();

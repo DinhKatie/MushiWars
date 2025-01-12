@@ -230,7 +230,7 @@ public class BaseUnit : MonoBehaviour
         if (health <= 0) OnDeath();
     }
 
-    protected virtual void OnDeath()
+    public virtual void OnDeath()
     {
         UnitMan.RemoveUnit(currPosition);
         dead = true;

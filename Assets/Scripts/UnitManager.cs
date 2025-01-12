@@ -146,6 +146,27 @@ public class UnitManager : MonoBehaviour
         pusher.HighlightValidMoves();
     }
 
+    public void UpdateUnitsAfterShrink()
+    {
+        List<BaseUnit> unitsToRemove = new List<BaseUnit>();
+        foreach (KeyValuePair<Vector3Int, BaseUnit> entry in _unitsOnTiles)
+        {
+            Vector3Int tile = entry.Key;
+            BaseUnit unit = entry.Value;
+
+            if (GridManager.Instance.GetTileAtPosition(tile) == null)
+            {
+                unitsToRemove.Add(unit);
+            }
+        }
+
+        foreach (BaseUnit unit in unitsToRemove)
+        {
+            unit.OnDeath();
+            RemoveUnit(unit.CurrentPosition);
+        }
+    }
+
     // ----- CARD EFFECTS ------
 
     public void TeleportUnit(BaseUnit unitToPort, Vector3Int newPosition)

@@ -28,7 +28,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
     public Squads GetCurrentSquad() => currentSquad;
 
     private int currentRound = 0;
-    private int roundsPerShrink = 5;
+    private int roundsPerShrink = 2;
 
     private void Awake()
     {
@@ -113,6 +113,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
             if (currentRound >= roundsPerShrink)
             {
                 FindObjectOfType<ShrinkBoard>().BoardShrink();
+                UnitManager.Instance.UpdateUnitsAfterShrink();
                 currentRound = 0;
             }
         }
