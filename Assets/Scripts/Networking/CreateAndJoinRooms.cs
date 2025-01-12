@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
 {
@@ -81,5 +82,46 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
             TMP_Text playerNameText = playerEntry.GetComponentInChildren<TMP_Text>();
             playerNameText.text = player.NickName;
         }
+    }
+
+    public void StartGame()
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers)
+            {
+                PhotonNetwork.LoadLevel("SampleScene");
+                SceneManager.sceneLoaded += OnSceneLoaded; //wait until the scene is fully loaded, then run OnSceneLoaded
+            }
+            else
+                Debug.LogError("Not enough players to start the game.");
+        }
+        else
+            Debug.LogError("Only the host can start the game.");
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == "SampleScene")
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+
+            //ensure TurnManager is initialized and then start the game
+            if (TurnManager.Instance != null)
+                TurnManager.Instance.StartGame();
+            else
+                Debug.LogError("TurnManager is null!");
+        }
+    }
+
+    public void OnClickLeaveRoom()
+    {
+        PhotonNetwork.LeaveRoom();
+    }
+
+    public override void OnLeftRoom()
+    {
+        roomPanel.SetActive(false);
+        createPanel.SetActive(true);
     }
 }

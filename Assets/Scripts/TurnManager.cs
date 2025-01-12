@@ -19,7 +19,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
     private Dictionary<Squads, Player> squadOwners = new Dictionary<Squads, Player>(); //Connect players to their squads
     public bool _playerControlsEnabled;
     public bool _playerControlsOn => _playerControlsEnabled;
-    private int expectedPlayerCount = 2;
 
     private Squads currentSquad; // The squad whose turn it is
 
@@ -33,7 +32,10 @@ public class TurnManager : MonoBehaviourPunCallbacks
     private void Awake()
     {
         if (Instance == null)
+        {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
         else
             Destroy(gameObject);
 
@@ -46,24 +48,23 @@ public class TurnManager : MonoBehaviourPunCallbacks
         squadsList = new List<List<BaseUnit>> { player1Squad, player2Squad };
     }
 
+    private void OnDestroy()
+    {
+        Debug.Log("TurnManager was destroyed.");
+    }
+
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
             EndTurn();
     }
 
-    public override void OnPlayerEnteredRoom(Player newPlayer)
-    {
-        Debug.Log($"Player {newPlayer.NickName} joined. Total players: {PhotonNetwork.PlayerList.Length}/{expectedPlayerCount}");
-
-        if (PhotonNetwork.PlayerList.Length == expectedPlayerCount && PhotonNetwork.IsMasterClient)
+    public void StartGame()
+    { 
+        if (PhotonNetwork.IsMasterClient)
         {
-            Debug.Log("All players have joined. Starting the game...");
-
             InitializeSquadOwners();
-            StartTurn(); // Start the first turn
-
-
+            StartTurn();
         }
     }
 
