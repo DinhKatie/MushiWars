@@ -133,7 +133,7 @@ public class GridManager : MonoBehaviour
 
         if (avoidSelect) { return; }
 
-        //if (!TurnManager.Instance._playerControlsOn) return;
+        if (!TurnManager.Instance._playerControlsOn) { Debug.Log("Player controls have been disabled"); return; }
 
         // If a unit is clicked and it's the current squad's turn
         if (newUnit != null)

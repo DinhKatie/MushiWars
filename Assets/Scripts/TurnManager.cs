@@ -74,7 +74,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
         Debug.Log($"Switching Teams. Team {currentSquad}'s turn");
 
 
-        /*// Check which Photon player owns the current squad
+        // Check which Photon player owns the current squad
         if (squadOwners.TryGetValue(currentSquad, out Player owner))
         {
             Debug.Log(owner);
@@ -83,7 +83,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
                 EnablePlayerControls();
             else
                 DisablePlayerControls();
-        }*/
+        }
     }
 
     public void EnablePlayerControls()
@@ -102,11 +102,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
     public void EndTurn()
     {
-        currentSquadIndex = (currentSquadIndex + 1) % squadsList.Count;
-        UnitManager.Instance.ResetTeam(squadsList[currentSquadIndex]);
-        GridManager.Instance.Deselect();
-
-        if (currentSquadIndex == 0) //after the last player finishes their turn and we're back to player one
+        /*if (currentSquadIndex == 0) //after the last player finishes their turn and we're back to player one
         {
             currentRound++;
             Debug.Log($"Current Round: {currentRound}");
@@ -116,16 +112,13 @@ public class TurnManager : MonoBehaviourPunCallbacks
                 UnitManager.Instance.UpdateUnitsAfterShrink();
                 currentRound = 0;
             }
-        }
-
-        StartTurn();
-
-        /*if (PhotonNetwork.LocalPlayer == squadOwners[currentSquad])
+        }*/
+        if (PhotonNetwork.LocalPlayer == squadOwners[currentSquad])
         {
             Debug.Log("End Turn RPC Sent.");
             PhotonView photonView = PhotonView.Get(this);
             photonView.RPC("EndTurnRPC", RpcTarget.All);
-        }*/
+        }
     }
 
     [PunRPC]
@@ -164,7 +157,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
     [PunRPC]
     public void SetSquadOwnerRPC(Squads squad, int ownerActorNumber)
     {
-        Debug.Log("Owner Actor Number: " + ownerActorNumber);
         Player owner = PhotonNetwork.CurrentRoom.GetPlayer(ownerActorNumber);
         if (owner != null)
         {
