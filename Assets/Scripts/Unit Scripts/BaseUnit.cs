@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -280,4 +281,59 @@ public class BaseUnit : MonoBehaviour
         Grid.isCampfirePushable(this);
     }
 
+    //DEALING WITH PHOTON ---------------------
+
+    public virtual object[] Serialize()
+    {
+        Debug.Log("Serializing.");
+        return new object[]
+        {
+        CurrentPosition.x,  // x position as integer
+        CurrentPosition.y,  // y position as integer
+        CurrentPosition.z,  // z position as integer
+        health,              // Health
+        dead,                // Dead status
+        justRevived,         // Just revived status
+        isImmune,            // Immune status
+        isChilled,           // Chilled status
+        disabledSkills,      // Skills disabled
+        (int)squad,          // Squad enum as int
+        (int)prefab          // Prefab enum as int
+        };
+    }
+
+    public virtual void Deserialize(object[] data)
+    {
+        Debug.Log("Deserializing.");
+
+        for (int i = 0; i < data.Length; i++)
+        {
+            Debug.Log($"data[{i}] = {data[i]} (Type: {data[i]?.GetType()})");
+        }
+
+        // Rebuild the Vector3Int from x, y, z integers
+        int x = (int)data[0];
+        int y = (int)data[1];
+        int z = (int)data[2];
+        SetCurrentPosition(new Vector3Int(x, y, z));  // Rebuild Vector3Int
+
+        // Deserialize other properties
+        health = (int)data[3];
+        dead = (bool)data[4];
+        justRevived = (bool)data[5];
+        isImmune = (bool)data[6];
+        isChilled = (bool)data[7];
+        disabledSkills = (bool)data[8];
+        squad = (Squads)(int)data[9];
+        prefab = (UnitPrefabs)(int)data[10];
+    }
+
+    public static BaseUnit CreateUnitFromData(object[] data)
+    {
+        Debug.Log("Creaitng Unit from Data.");
+        BaseUnit unit = new BaseUnit();
+        unit.Deserialize(data);
+        return unit;
+    }
 }
+

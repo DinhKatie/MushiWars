@@ -2,8 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using Photon.Pun;
 
-public class UnitManager : MonoBehaviour
+public class UnitManager : MonoBehaviourPunCallbacks
 {
     public static UnitManager Instance;
     [SerializeField] private GridManager gridManager;
@@ -50,13 +51,14 @@ public class UnitManager : MonoBehaviour
         {
             // Retrieve the prefab based on the enum type
             BaseUnit prefabToSpawn = unitPrefabsDict[unitType];
+            
+            Vector3 spawnPosition = _tilemap.GetCellCenterWorld(spawnTile);
 
-            // Spawn Unit
-            BaseUnit newUnit;
-            if ((int) squad % 2 == 0)
-                newUnit = Instantiate(prefabToSpawn, _tilemap.GetCellCenterWorld(spawnTile), Quaternion.Euler(0, 180, 0));
-            else
-                newUnit = Instantiate(prefabToSpawn, _tilemap.GetCellCenterWorld(spawnTile), Quaternion.identity);
+            //Different rotation based on squad
+            Quaternion spawnRotation = (int)squad % 2 == 0 ? Quaternion.Euler(0, 180, 0) : Quaternion.identity;
+
+            GameObject unitGO = PhotonNetwork.Instantiate(prefabToSpawn.name, spawnPosition, spawnRotation);
+            BaseUnit newUnit = unitGO.GetComponent<BaseUnit>();
 
             newUnit.SetCurrentPosition(spawnTile);
             TurnManager.Instance.AddUnitToSquad(newUnit, squad);
@@ -67,11 +69,35 @@ public class UnitManager : MonoBehaviour
             Debug.Log($"Unit spawned on tile {spawnTile}");
             newUnit.name = "Mushi " + _unitsOnTiles.Count;
 
+            object[] unitData = newUnit.Serialize();
+            PhotonView.Get(this).RPC("RPC_UpdateBoardState", RpcTarget.Others, spawnTile.x, spawnTile.y, spawnTile.z, unitData);
+
             return newUnit;
         }
         Debug.Log($"Tile {spawnTile} is either invalid or already has a unit.");
         return null;
     }
+
+    [PunRPC]
+    public void RPC_UpdateBoardState(int x, int y, int z, object[] unitData)
+    {
+        Debug.Log("Starting the Update Board RPC");
+
+        // Deserialize the unit data
+        BaseUnit newUnit = BaseUnit.CreateUnitFromData(unitData);
+
+        // Rebuild the Vector3Int from the individual x, y, z integers
+        Vector3Int spawnTileInt = new Vector3Int(x, y, z);
+
+        // Update the unit's position
+        newUnit.SetCurrentPosition(spawnTileInt);
+
+        // Add the unit to the board state (assuming _unitsOnTiles is a dictionary)
+        _unitsOnTiles[spawnTileInt] = newUnit;
+
+        Debug.Log($"Unit updated on tile {spawnTileInt} via RPC.");
+    }
+
 
     public void RemoveUnit(Vector3Int unitTile)
     {
@@ -236,8 +262,47 @@ public class UnitManager : MonoBehaviour
         return teamUnits;
     }
 
+    public static object[] SerializeDictionary(Dictionary<Vector3Int, BaseUnit> boardState)
+    {
+        Debug.Log("Seralizing Dictionary.");
+        List<object> serializedData = new List<object>();
+
+        foreach (var kvp in boardState)
+        {
+            int[] positionArray = new int[] { kvp.Key.x, kvp.Key.y, kvp.Key.z };
+            object[] unitData = kvp.Value.Serialize();
+
+            serializedData.Add(new object[] { positionArray, unitData });
+        }
+
+        return serializedData.ToArray();
+    }
+
+    public static Dictionary<Vector3Int, BaseUnit> DeserializeDictionary(object[] serializedData)
+    {
+        Debug.Log("Deserializing Dictionary");
+        Dictionary<Vector3Int, BaseUnit> boardState = new Dictionary<Vector3Int, BaseUnit>();
+
+        foreach (object entry in serializedData)
+        {
+            object[] keyValuePair = (object[])entry;
+
+            // Deserialize position
+            int[] posArray = (int[])keyValuePair[0];
+            Vector3Int position = new Vector3Int(posArray[0], posArray[1], posArray[2]);
+
+            // Deserialize unit
+            BaseUnit unit = BaseUnit.CreateUnitFromData((object[])keyValuePair[1]);
+
+            boardState.Add(position, unit);
+        }
+
+        return boardState;
+    }
 
 }
+
+
 
 
 

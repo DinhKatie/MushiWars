@@ -1,3 +1,4 @@
+using Photon.Pun;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,13 +21,17 @@ public class GameManager : MonoBehaviour
             
         else
             Destroy(gameObject);
+
+        
     }
     // Start is called before the first frame update
     void Start()
     {
-        ChangeState(GameState.SpawnSquad1);
-        ChangeState(GameState.SpawnSquad2);
-        TurnManager.Instance.StartTurn();
+        if (PhotonNetwork.IsMasterClient)
+        {
+            ChangeState(GameState.SpawnSquad1);
+            ChangeState(GameState.SpawnSquad2);
+        }
     }
 
     public void ChangeState(GameState state)
@@ -90,6 +95,8 @@ public class GameManager : MonoBehaviour
         };
 
         SpawnSquad(campfireTile, heroSpawnTile, swordTile, gunTile, normalUnits, Squads.two);
+
+
     }
 
     public void GameEnd(Squads winningSquad)

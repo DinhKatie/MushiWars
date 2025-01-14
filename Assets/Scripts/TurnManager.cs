@@ -79,7 +79,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
         if (squadOwners.TryGetValue(currentSquad, out Player owner))
         {
             Debug.Log(owner);
-            Debug.Log("Trying");
             if (owner == PhotonNetwork.LocalPlayer)
                 EnablePlayerControls();
             else

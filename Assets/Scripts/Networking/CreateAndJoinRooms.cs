@@ -21,6 +21,10 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
     public Transform playerList;
     public GameObject playerNamePrefab;
 
+    private void Awake()
+    {
+        PhotonCustomTypes.Register();
+    }
     //set player nickname before joining/creating a room
     public void SetPlayerName()
     {
