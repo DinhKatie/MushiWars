@@ -96,7 +96,7 @@ public class GameManager : MonoBehaviour
 
         SpawnSquad(campfireTile, heroSpawnTile, swordTile, gunTile, normalUnits, Squads.two);
 
-
+        UnitManager.Instance.LogUnitsOnTiles();
     }
 
     public void GameEnd(Squads winningSquad)

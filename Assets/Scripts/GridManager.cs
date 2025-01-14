@@ -138,6 +138,7 @@ public class GridManager : MonoBehaviour
         // If a unit is clicked and it's the current squad's turn
         if (newUnit != null)
         {
+            Debug.Log("Handling Unit Selection");
             HandleUnitSelection(previousUnit, newUnit);
         }
         //Otherwise, if clicked a unit then clicked an empty tile, move the unit.
@@ -151,8 +152,10 @@ public class GridManager : MonoBehaviour
 
     private void HandleUnitSelection(BaseUnit previousUnit, BaseUnit newUnit)
     {
+        Debug.Log($"Initial Unit Selection: {IsInitialUnitSelection(previousUnit, newUnit)}");
         if (IsInitialUnitSelection(previousUnit, newUnit))
         {
+            Debug.Log("Highlighting Unit Options");
             HighlightUnitOptions(newUnit);
         }
         else if (IsCampfirePush(previousUnit, newUnit))
@@ -167,12 +170,14 @@ public class GridManager : MonoBehaviour
         }
         else if (TurnManager.Instance.isUnitInCurrentSquad(newUnit)) //New Unit clicked is in the current squad. Switch selection.
         {
+            Debug.Log("Highlighting Unit Options");
             HighlightUnitOptions(newUnit);
         }
     }
 
     private bool IsInitialUnitSelection(BaseUnit previousUnit, BaseUnit newUnit)
     {
+        Debug.Log($"Previous Unit = {previousUnit} and {TurnManager.Instance.isUnitInCurrentSquad(newUnit)}");
         return previousUnit == null && TurnManager.Instance.isUnitInCurrentSquad(newUnit);
     }
 

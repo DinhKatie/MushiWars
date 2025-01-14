@@ -48,11 +48,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
         squadsList = new List<List<BaseUnit>> { player1Squad, player2Squad };
     }
 
-    private void OnDestroy()
-    {
-        Debug.Log("TurnManager was destroyed.");
-    }
-
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))

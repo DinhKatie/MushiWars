@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Photon.Pun;
+using Unity.VisualScripting;
 
 public class UnitManager : MonoBehaviourPunCallbacks
 {
@@ -16,7 +17,7 @@ public class UnitManager : MonoBehaviourPunCallbacks
     [SerializeField] public BaseUnit fireHeroPrefab;
     [SerializeField] public BaseUnit _campfirePrefab;
 
-    private Dictionary<Vector3Int, BaseUnit> _unitsOnTiles = new Dictionary<Vector3Int, BaseUnit>();
+    private Dictionary<Vector3Int, int> _unitsOnTiles = new Dictionary<Vector3Int, int>();
     private Dictionary<UnitPrefabs, BaseUnit> unitPrefabsDict;
 
     private void Awake()
@@ -40,18 +41,17 @@ public class UnitManager : MonoBehaviourPunCallbacks
     {
         foreach (var entry in _unitsOnTiles)
         {
-            Debug.Log($"Tile: {entry.Key}, Unit: {entry.Value}");
+            GameObject unitGO = PhotonView.Find(entry.Value).gameObject;
+            BaseUnit unit = unitGO.GetComponent<BaseUnit>();
+            Debug.Log($"Tile: {entry.Key}, Unit: {entry.Value} Squad: {unit.GetSquad} Type: {unit.GetType()}");
         }
     }
 
     public BaseUnit SpawnUnit(Vector3Int spawnTile, UnitPrefabs unitType, Squads squad)
     {
-        // Check if the tile is valid and no unit is already there
         if (!GridManager.Instance.IsOccupied(spawnTile))
         {
-            // Retrieve the prefab based on the enum type
             BaseUnit prefabToSpawn = unitPrefabsDict[unitType];
-            
             Vector3 spawnPosition = _tilemap.GetCellCenterWorld(spawnTile);
 
             //Different rotation based on squad
@@ -63,14 +63,13 @@ public class UnitManager : MonoBehaviourPunCallbacks
             newUnit.SetCurrentPosition(spawnTile);
             TurnManager.Instance.AddUnitToSquad(newUnit, squad);
 
-            // Add the unit to the dictionary to track its position
-            _unitsOnTiles[spawnTile] = newUnit;
+            int viewID = newUnit.GetComponent<PhotonView>().ViewID;
+            _unitsOnTiles[spawnTile] = viewID;
 
             Debug.Log($"Unit spawned on tile {spawnTile}");
             newUnit.name = "Mushi " + _unitsOnTiles.Count;
 
-            object[] unitData = newUnit.Serialize();
-            PhotonView.Get(this).RPC("RPC_UpdateBoardState", RpcTarget.Others, spawnTile.x, spawnTile.y, spawnTile.z, unitData);
+            PhotonView.Get(this).RPC("RPC_UpdateBoardState", RpcTarget.Others, spawnTile.x, spawnTile.y, spawnTile.z, viewID, squad);
 
             return newUnit;
         }
@@ -79,23 +78,31 @@ public class UnitManager : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
-    public void RPC_UpdateBoardState(int x, int y, int z, object[] unitData)
+    public void RPC_UpdateBoardState(int x, int y, int z, int viewID, int squad)
     {
         Debug.Log("Starting the Update Board RPC");
 
-        // Deserialize the unit data
-        BaseUnit newUnit = BaseUnit.CreateUnitFromData(unitData);
-
-        // Rebuild the Vector3Int from the individual x, y, z integers
+        //rebuild the Vector3Int from the individual x, y, z integers
         Vector3Int spawnTileInt = new Vector3Int(x, y, z);
 
-        // Update the unit's position
+        //find the GameObject using the View ID
+        PhotonView view = PhotonView.Find(viewID);
+        if (view == null)
+        {
+            Debug.LogError($"No PhotonView found with ID {viewID}");
+            return;
+        }
+
+        GameObject unitGO = view.gameObject;
+        BaseUnit newUnit = unitGO.GetComponent<BaseUnit>();
+
         newUnit.SetCurrentPosition(spawnTileInt);
+        TurnManager.Instance.AddUnitToSquad(newUnit, (Squads)squad);
+        _unitsOnTiles[spawnTileInt] = viewID;
 
-        // Add the unit to the board state (assuming _unitsOnTiles is a dictionary)
-        _unitsOnTiles[spawnTileInt] = newUnit;
+        LogUnitsOnTiles();
 
-        Debug.Log($"Unit updated on tile {spawnTileInt} via RPC.");
+        //Debug.Log($"Unit updated on tile {spawnTileInt} via RPC.");
     }
 
 
@@ -110,11 +117,17 @@ public class UnitManager : MonoBehaviourPunCallbacks
         }
     }
 
-    // Method to get the unit at a specific tiles
     public BaseUnit GetUnitAtTile(Vector3Int tilePosition)
     {
-        _unitsOnTiles.TryGetValue(tilePosition, out BaseUnit unit);
-        return unit;
+        if (_unitsOnTiles.TryGetValue(tilePosition, out int viewID))
+        {
+            PhotonView view = PhotonView.Find(viewID);
+            if (view != null)
+            {
+                return view.GetComponent<BaseUnit>();
+            }
+        }
+        return null;
 
     }
 
@@ -128,7 +141,7 @@ public class UnitManager : MonoBehaviourPunCallbacks
         }
 
         _unitsOnTiles.Remove(unit.CurrentPosition);
-        _unitsOnTiles[newPosition] = unit;
+        _unitsOnTiles[newPosition] = unit.GetComponent<PhotonView>().ViewID;
 
         unit.Move(newPosition);
     }
@@ -165,8 +178,8 @@ public class UnitManager : MonoBehaviourPunCallbacks
         pusher.SetCurrentPosition(campfire.CurrentPosition);
         campfire.SetCurrentPosition(tileToPush);
 
-        _unitsOnTiles[campfire.CurrentPosition] = campfire;
-        _unitsOnTiles[pusher.CurrentPosition] = pusher;
+        _unitsOnTiles[campfire.CurrentPosition] = campfire.GetComponent<PhotonView>().ViewID;
+        _unitsOnTiles[pusher.CurrentPosition] = pusher.GetComponent<PhotonView>().ViewID;
 
         pusher.DecrementMove();
         pusher.HighlightValidMoves();
@@ -174,11 +187,11 @@ public class UnitManager : MonoBehaviourPunCallbacks
 
     public void UpdateUnitsAfterShrink()
     {
-        List<BaseUnit> unitsToRemove = new List<BaseUnit>();
-        foreach (KeyValuePair<Vector3Int, BaseUnit> entry in _unitsOnTiles)
+        List<int> unitsToRemove = new List<int>();
+        foreach (KeyValuePair<Vector3Int, int> entry in _unitsOnTiles)
         {
             Vector3Int tile = entry.Key;
-            BaseUnit unit = entry.Value;
+            int unit = entry.Value;
 
             if (GridManager.Instance.GetTileAtPosition(tile) == null)
             {
@@ -186,8 +199,11 @@ public class UnitManager : MonoBehaviourPunCallbacks
             }
         }
 
-        foreach (BaseUnit unit in unitsToRemove)
+        foreach (int viewID in unitsToRemove)
         {
+            GameObject unitGO = PhotonView.Find(viewID).gameObject;
+            BaseUnit unit = unitGO.GetComponent<BaseUnit>();
+
             unit.OnDeath();
             RemoveUnit(unit.CurrentPosition);
         }
@@ -204,7 +220,7 @@ public class UnitManager : MonoBehaviourPunCallbacks
         }
 
         _unitsOnTiles.Remove(unitToPort.CurrentPosition);
-        _unitsOnTiles[newPosition] = unitToPort;
+        _unitsOnTiles[newPosition] = unitToPort.GetComponent<PhotonView>().ViewID;
 
         unitToPort.Teleport(newPosition);
     }
@@ -214,10 +230,11 @@ public class UnitManager : MonoBehaviourPunCallbacks
     // Update highlights when grid changes
     public void UpdateUnitHighlights()
     {
-        foreach (var unit in _unitsOnTiles.Values)
+        foreach (var viewID in _unitsOnTiles.Values)
         {
-            if (unit != null)
-                unit.HighlightValidMoves();
+            GameObject unitGO = PhotonView.Find(viewID).gameObject;
+            BaseUnit unit = unitGO.GetComponent<BaseUnit>();
+            unit?.HighlightValidMoves();
         }
     }
 
@@ -255,49 +272,13 @@ public class UnitManager : MonoBehaviourPunCallbacks
 
         foreach (var kvp in _unitsOnTiles)
         {
-            if (kvp.Value.GetSquad == squad)
-                teamUnits.Add(kvp.Value.CurrentPosition);
+            GameObject unitGO = PhotonView.Find(kvp.Value).gameObject;
+            BaseUnit unit = unitGO.GetComponent<BaseUnit>();
+            if (unit.GetSquad == squad)
+                teamUnits.Add(unit.CurrentPosition);
         }
 
         return teamUnits;
-    }
-
-    public static object[] SerializeDictionary(Dictionary<Vector3Int, BaseUnit> boardState)
-    {
-        Debug.Log("Seralizing Dictionary.");
-        List<object> serializedData = new List<object>();
-
-        foreach (var kvp in boardState)
-        {
-            int[] positionArray = new int[] { kvp.Key.x, kvp.Key.y, kvp.Key.z };
-            object[] unitData = kvp.Value.Serialize();
-
-            serializedData.Add(new object[] { positionArray, unitData });
-        }
-
-        return serializedData.ToArray();
-    }
-
-    public static Dictionary<Vector3Int, BaseUnit> DeserializeDictionary(object[] serializedData)
-    {
-        Debug.Log("Deserializing Dictionary");
-        Dictionary<Vector3Int, BaseUnit> boardState = new Dictionary<Vector3Int, BaseUnit>();
-
-        foreach (object entry in serializedData)
-        {
-            object[] keyValuePair = (object[])entry;
-
-            // Deserialize position
-            int[] posArray = (int[])keyValuePair[0];
-            Vector3Int position = new Vector3Int(posArray[0], posArray[1], posArray[2]);
-
-            // Deserialize unit
-            BaseUnit unit = BaseUnit.CreateUnitFromData((object[])keyValuePair[1]);
-
-            boardState.Add(position, unit);
-        }
-
-        return boardState;
     }
 
 }
