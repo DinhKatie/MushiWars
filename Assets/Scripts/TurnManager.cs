@@ -29,6 +29,9 @@ public class TurnManager : MonoBehaviourPunCallbacks
     private int currentRound = 0;
     private int roundsPerShrink = 2;
 
+
+    #region Initialization
+
     private void Awake()
     {
         if (Instance == null)
@@ -75,12 +78,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
             SetPlayerControls(owner == PhotonNetwork.LocalPlayer);
     }
 
-    public void SetPlayerControls(bool enabled)
-    {
-        _playerControlsEnabled = enabled;
-        Debug.Log($"Player controls {(enabled ? "enabled" : "disabled")} for local player.");
-    }
-
     // End the current squad's turn and move to the next
     public void EndTurn()
     {
@@ -98,10 +95,33 @@ public class TurnManager : MonoBehaviourPunCallbacks
         if (isCurrentPlayer())
         {
             Debug.Log("End Turn RPC Sent.");
-            PhotonView photonView = PhotonView.Get(this);
-            photonView.RPC("EndTurnRPC", RpcTarget.All);
+            PhotonView.Get(this).RPC("EndTurnRPC", RpcTarget.All);
         }
     }
+
+    private void InitializeSquadOwners()
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        var players = PhotonNetwork.PlayerList;
+        for (int i = 0; i < players.Length && i < squadsDict.Count; i++)
+        {
+            squadOwners[(Squads)(i + 1)] = players[i];
+            PhotonView.Get(this).RPC("SetSquadOwnerRPC", RpcTarget.AllBuffered, (int)(Squads)(i + 1), players[i].ActorNumber);
+        }
+        Debug.Log("Squad Owners Initialized and Sent.");
+    }
+
+    public void SetPlayerControls(bool enabled)
+    {
+        _playerControlsEnabled = enabled;
+        Debug.Log($"Player controls {(enabled ? "enabled" : "disabled")} for local player.");
+    }
+
+    #endregion //--------------------------------------------------------------
+
+    #region Remote Procedure Calls (RPCs)
+
     [PunRPC]
     public void StartTurnRPC(int currSquad)
     {
@@ -118,29 +138,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
         StartTurn();
     }
 
-    private void InitializeSquadOwners()
-    {
-        if (!PhotonNetwork.IsMasterClient) return;
-
-        // Assign the first two players to the two squads
-        var players = PhotonNetwork.PlayerList;
-        if (players.Length >= 2)
-        {
-            squadOwners[Squads.one] = players[0];
-            squadOwners[Squads.two] = players[1];
-        }
-
-        // Copy squadOwners to a list to avoid modifying the dictionary during iteration
-        var squadOwnersList = new List<KeyValuePair<Squads, Player>>(squadOwners);
-
-        // Send the squadOwners to all clients
-        PhotonView photonView = PhotonView.Get(this);
-        foreach (var kvp in squadOwnersList)
-        {
-            photonView.RPC("SetSquadOwnerRPC", RpcTarget.AllBuffered, kvp.Key, kvp.Value.ActorNumber);
-        }
-        Debug.Log("Squad Owners Initialized and Sent.");
-    }
 
     [PunRPC]
     public void SetSquadOwnerRPC(Squads squad, int ownerActorNumber)
@@ -157,30 +154,20 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
     }
 
-    public bool isCurrentPlayer()
-    {
-        return PhotonNetwork.LocalPlayer == squadOwners[currentSquad];
-    }
+    #endregion // ---------------------------------------------------------
 
-    public bool isUnitInCurrentSquad(BaseUnit unit)
-    {
-        if (unit.GetSquad == currentSquad) return true;
-        return false;
-    }
+    public void RemoveUnitFromTurnSystem(BaseUnit unit) => squadsDict[unit.GetSquad]?.Remove(unit);
+
+    public bool isCurrentPlayer() => PhotonNetwork.LocalPlayer == squadOwners[currentSquad];
+
+    public bool isUnitInCurrentSquad(BaseUnit unit) => unit.GetSquad == currentSquad;
 
     public void AddUnitToSquad(BaseUnit unit, Squads team)
     {
-        List<BaseUnit> squad = squadsDict[team];
         unit.SetSquad(team);
-        squad.Add(unit);
+        squadsDict[team].Add(unit);
     }
 
-    public void RemoveUnitFromTurnSystem(BaseUnit unit)
-    {
-        List<BaseUnit> l = squadsDict[unit.GetSquad];
-        if (l.Contains(unit))
-            l.Remove(unit);
-    }
 
     public T GetUnitOfType<T>(Squads squad) where T : BaseUnit
     {
@@ -203,10 +190,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
         foreach(var s in squadsDict)
         {
-            if (s.Key != squad)
-            {
+            if (s.Key != squad) //If the squad number is not equal to the given squad, add all its units to the list
                 otherSquads.AddRange(s.Value);
-            }
         }
 
         return otherSquads;

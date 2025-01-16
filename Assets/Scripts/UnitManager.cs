@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Photon.Pun;
-using Unity.VisualScripting;
+using System.Linq;
 
 public class UnitManager : MonoBehaviourPunCallbacks
 {
@@ -37,6 +37,8 @@ public class UnitManager : MonoBehaviourPunCallbacks
         };
     }
 
+    #region Unit Spawning
+
     public void LogUnitsOnTiles()
     {
         foreach (var entry in _unitsOnTiles)
@@ -49,34 +51,37 @@ public class UnitManager : MonoBehaviourPunCallbacks
 
     public BaseUnit SpawnUnit(Vector3Int spawnTile, UnitPrefabs unitType, Squads squad)
     {
-        if (!GridManager.Instance.IsOccupied(spawnTile))
+        if (GridManager.Instance.IsOccupied(spawnTile))
         {
-            BaseUnit prefabToSpawn = unitPrefabsDict[unitType];
-            Vector3 spawnPosition = _tilemap.GetCellCenterWorld(spawnTile);
-
-            //Different rotation based on squad
-            Quaternion spawnRotation = (int)squad % 2 == 0 ? Quaternion.Euler(0, 180, 0) : Quaternion.identity;
-
-            GameObject unitGO = PhotonNetwork.Instantiate(prefabToSpawn.name, spawnPosition, spawnRotation);
-            BaseUnit newUnit = unitGO.GetComponent<BaseUnit>();
-
-            newUnit.SetCurrentPosition(spawnTile);
-            TurnManager.Instance.AddUnitToSquad(newUnit, squad);
-
-            int viewID = newUnit.GetComponent<PhotonView>().ViewID;
-            _unitsOnTiles[spawnTile] = viewID;
-
-            Debug.Log($"Unit spawned on tile {spawnTile}");
-            newUnit.name = "Mushi " + _unitsOnTiles.Count;
-
-            PhotonView.Get(this).RPC("RPC_UpdateBoardState", RpcTarget.Others, spawnTile.x, spawnTile.y, spawnTile.z, viewID, squad);
-
-            return newUnit;
+            Debug.Log($"Tile {spawnTile} is either invalid or already has a unit.");
+            return null;
         }
-        Debug.Log($"Tile {spawnTile} is either invalid or already has a unit.");
-        return null;
+
+        BaseUnit prefabToSpawn = unitPrefabsDict[unitType];
+        Vector3 spawnPosition = _tilemap.GetCellCenterWorld(spawnTile);
+        Quaternion spawnRotation = (int)squad % 2 == 0 ? Quaternion.Euler(0, 180, 0) : Quaternion.identity;         //Different rotation based on squad
+
+        GameObject unitGO = PhotonNetwork.Instantiate(prefabToSpawn.name, spawnPosition, spawnRotation);
+        BaseUnit newUnit = unitGO.GetComponent<BaseUnit>();
+
+        newUnit.SetCurrentPosition(spawnTile);
+        TurnManager.Instance.AddUnitToSquad(newUnit, squad);
+
+        int viewID = newUnit.GetComponent<PhotonView>().ViewID;
+        _unitsOnTiles[spawnTile] = viewID;
+
+        Debug.Log($"Unit spawned on tile {spawnTile}");
+        newUnit.name = "Mushi " + _unitsOnTiles.Count;
+
+        PhotonView.Get(this).RPC("RPC_UpdateBoardState", RpcTarget.Others, spawnTile.x, spawnTile.y, spawnTile.z, viewID, squad);
+
+        return newUnit;
+        
     }
 
+    #endregion
+
+    #region Remote Procedure Calls (RPCs)
     [PunRPC]
     public void RPC_UpdateBoardState(int x, int y, int z, int viewID, int squad)
     {
@@ -113,6 +118,9 @@ public class UnitManager : MonoBehaviourPunCallbacks
         }
     }
 
+    #endregion
+
+    #region Unit Management
 
     public void RemoveUnit(Vector3Int unitTile)
     {
@@ -123,20 +131,6 @@ public class UnitManager : MonoBehaviourPunCallbacks
             //Remove the killed unit from the turn system
             TurnManager.Instance.RemoveUnitFromTurnSystem(unit);
         }
-    }
-
-    public BaseUnit GetUnitAtTile(Vector3Int tilePosition)
-    {
-        if (_unitsOnTiles.TryGetValue(tilePosition, out int viewID))
-        {
-            PhotonView view = PhotonView.Find(viewID);
-            if (view != null)
-            {
-                return view.GetComponent<BaseUnit>();
-            }
-        }
-        return null;
-
     }
 
     public void MoveUnit(BaseUnit unit, Vector3Int newPosition)
@@ -173,6 +167,16 @@ public class UnitManager : MonoBehaviourPunCallbacks
             Debug.Log($"{hitUnit} is out of attack range");
     }
 
+    #endregion
+
+
+    public BaseUnit GetUnitAtTile(Vector3Int tilePosition)
+    {
+        return _unitsOnTiles.TryGetValue(tilePosition, out int viewID) //ternary
+            ? PhotonView.Find(viewID)?.GetComponent<BaseUnit>()
+            : null;
+    }
+
     public void PushCampfire(BaseUnit pusher, Campfire campfire, Vector3Int tileToPush)
     {
         if (pusher.MovementRange <= 0) return; 
@@ -196,16 +200,11 @@ public class UnitManager : MonoBehaviourPunCallbacks
     public void UpdateUnitsAfterShrink()
     {
         List<int> unitsToRemove = new List<int>();
-        foreach (KeyValuePair<Vector3Int, int> entry in _unitsOnTiles)
-        {
-            Vector3Int tile = entry.Key;
-            int unit = entry.Value;
 
-            if (GridManager.Instance.GetTileAtPosition(tile) == null)
-            {
-                unitsToRemove.Add(unit);
-            }
-        }
+        unitsToRemove = _unitsOnTiles
+        .Where(entry => GridManager.Instance.GetTileAtPosition(entry.Key) == null)
+        .Select(entry => entry.Value)  //Get the unit's viewID
+        .ToList();
 
         foreach (int viewID in unitsToRemove)
         {
@@ -235,6 +234,10 @@ public class UnitManager : MonoBehaviourPunCallbacks
 
     // --------------------------------
 
+    public void ResetTeam(List<BaseUnit> squad) => squad.ForEach(unit => unit.Reset());
+
+    public void UseHeroAbility(List<BaseUnit> squad) => squad.OfType<BaseHero>().FirstOrDefault()?.UseAbility();
+
     // Update highlights when grid changes
     public void UpdateUnitHighlights()
     {
@@ -254,25 +257,6 @@ public class UnitManager : MonoBehaviourPunCallbacks
         unit.HighlightValidMoves();
     }
 
-    public void ResetTeam(List<BaseUnit> squad)
-    {
-        foreach (var unit in squad)
-        {
-            unit.Reset();
-        }
-    }
-
-    public void UseHeroAbility(List<BaseUnit> squad)
-    {
-        foreach( var unit in squad)
-        {
-            if (unit is BaseHero hero)
-            {
-                hero.UseAbility();
-                break;
-            }
-        }
-    }
 
     public List<Vector3Int> GetTeam(Squads squad)
     {
