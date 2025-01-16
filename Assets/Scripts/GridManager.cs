@@ -152,7 +152,6 @@ public class GridManager : MonoBehaviour
 
     private void HandleUnitSelection(BaseUnit previousUnit, BaseUnit newUnit)
     {
-        Debug.Log($"Initial Unit Selection: {IsInitialUnitSelection(previousUnit, newUnit)}");
         if (IsInitialUnitSelection(previousUnit, newUnit))
         {
             Debug.Log("Highlighting Unit Options");
@@ -177,7 +176,6 @@ public class GridManager : MonoBehaviour
 
     private bool IsInitialUnitSelection(BaseUnit previousUnit, BaseUnit newUnit)
     {
-        Debug.Log($"Previous Unit = {previousUnit} and {TurnManager.Instance.isUnitInCurrentSquad(newUnit)}");
         return previousUnit == null && TurnManager.Instance.isUnitInCurrentSquad(newUnit);
     }
 

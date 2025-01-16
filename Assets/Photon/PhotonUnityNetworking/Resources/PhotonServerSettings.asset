@@ -45,6 +45,8 @@ MonoBehaviour:
   - SetSquadOwnerRPC
   - SyncUnitsOnTiles
   - RPC_UpdateBoardState
+  - RPC_MoveUnit
+  - StartTurnRPC
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

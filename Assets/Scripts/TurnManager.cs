@@ -67,34 +67,21 @@ public class TurnManager : MonoBehaviourPunCallbacks
     public void StartTurn()
     {
         currentSquad = (Squads)(currentSquadIndex + 1);
+        PhotonView.Get(this).RPC("StartTurnRPC", RpcTarget.All, (int)currentSquad);
         Debug.Log($"Switching Teams. Team {currentSquad}'s turn");
-
 
         // Check which Photon player owns the current squad
         if (squadOwners.TryGetValue(currentSquad, out Player owner))
-        {
-            Debug.Log(owner);
-            if (owner == PhotonNetwork.LocalPlayer)
-                EnablePlayerControls();
-            else
-                DisablePlayerControls();
-        }
+            SetPlayerControls(owner == PhotonNetwork.LocalPlayer);
     }
 
-    public void EnablePlayerControls()
+    public void SetPlayerControls(bool enabled)
     {
-        _playerControlsEnabled = true;
-        Debug.Log("Player controls enabled for local player.");
-    }
-
-    public void DisablePlayerControls()
-    {
-        _playerControlsEnabled = false;
-        Debug.Log("Player controls disabled for local player.");
+        _playerControlsEnabled = enabled;
+        Debug.Log($"Player controls {(enabled ? "enabled" : "disabled")} for local player.");
     }
 
     // End the current squad's turn and move to the next
-
     public void EndTurn()
     {
         /*if (currentSquadIndex == 0) //after the last player finishes their turn and we're back to player one
@@ -108,18 +95,24 @@ public class TurnManager : MonoBehaviourPunCallbacks
                 currentRound = 0;
             }
         }*/
-        if (PhotonNetwork.LocalPlayer == squadOwners[currentSquad])
+        if (isCurrentPlayer())
         {
             Debug.Log("End Turn RPC Sent.");
             PhotonView photonView = PhotonView.Get(this);
             photonView.RPC("EndTurnRPC", RpcTarget.All);
         }
     }
+    [PunRPC]
+    public void StartTurnRPC(int currSquad)
+    {
+        currentSquad = (Squads)currSquad;
+    }
 
     [PunRPC]
     public void EndTurnRPC()
     {
         currentSquadIndex = (currentSquadIndex + 1) % squadsList.Count;
+
         UnitManager.Instance.ResetTeam(squadsList[currentSquadIndex]);
         GridManager.Instance.Deselect();
         StartTurn();
@@ -164,6 +157,11 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
     }
 
+    public bool isCurrentPlayer()
+    {
+        return PhotonNetwork.LocalPlayer == squadOwners[currentSquad];
+    }
+
     public bool isUnitInCurrentSquad(BaseUnit unit)
     {
         if (unit.GetSquad == currentSquad) return true;
@@ -184,33 +182,20 @@ public class TurnManager : MonoBehaviourPunCallbacks
             l.Remove(unit);
     }
 
-    public Campfire GetCampfireOfSquad(Squads squad)
-    {
-        foreach (var u in squadsDict[squad])
-        {
-            if (u is Campfire camp) return camp;
-        }
-        return null;
-    }
-
-    public BaseHero GetHeroOfSquad(Squads squad)
-    {
-        foreach (var u in squadsDict[squad])
-        {
-            if (u is BaseHero hero) return hero;
-        }
-        return null;
-    }
-
-    public HeroTypes GetHeroType(Squads squad)
+    public T GetUnitOfType<T>(Squads squad) where T : BaseUnit
     {
         foreach (var unit in squadsDict[squad])
         {
-            if (unit is BaseHero hero)
-                return hero.heroType;
+            if (unit is T typeUnit) return typeUnit;
         }
-        return HeroTypes.None;
+        return null;
     }
+
+    public Campfire GetCampfireOfSquad(Squads squad) => GetUnitOfType<Campfire>(squad);
+
+    public BaseHero GetHeroOfSquad(Squads squad) => GetUnitOfType<BaseHero>(squad);
+
+    public HeroTypes GetHeroType(Squads squad) => GetHeroOfSquad(squad)?.heroType ?? HeroTypes.None;
 
     public List<BaseUnit> GetAllUnitsExcept(Squads squad)
     {

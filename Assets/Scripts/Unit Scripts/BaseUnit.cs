@@ -1,3 +1,4 @@
+using Photon.Pun;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -108,8 +109,17 @@ public class BaseUnit : MonoBehaviour
 
             Debug.Log($"Unit Move Cost: {moveCost}");
 
-            HighlightValidMoves();
+            if (TurnManager.Instance.isCurrentPlayer())
+                HighlightValidMoves();
         }
+    }
+
+    [PunRPC]
+    public void RPC_MoveUnit(int x, int y, int z)
+    {
+        Vector3Int newPosition = new Vector3Int(x,y, z);
+        UnitManager.Instance.UpdateUnitLocation(GetComponent<PhotonView>().ViewID, CurrentPosition, newPosition);
+        Move(newPosition);
     }
 
     public int CalculateMoveCost(Vector3Int newPosition)

@@ -100,9 +100,17 @@ public class UnitManager : MonoBehaviourPunCallbacks
         TurnManager.Instance.AddUnitToSquad(newUnit, (Squads)squad);
         _unitsOnTiles[spawnTileInt] = viewID;
 
-        LogUnitsOnTiles();
+        //LogUnitsOnTiles();
 
-        //Debug.Log($"Unit updated on tile {spawnTileInt} via RPC.");
+    }
+
+    public void UpdateUnitLocation(int viewID, Vector3Int oldPosition, Vector3Int newPosition)
+    {
+        if (GridManager.Instance.GetTileAtPosition(newPosition))
+        {
+            _unitsOnTiles[newPosition] = viewID;
+            _unitsOnTiles.Remove(oldPosition);
+        }
     }
 
 
@@ -143,7 +151,7 @@ public class UnitManager : MonoBehaviourPunCallbacks
         _unitsOnTiles.Remove(unit.CurrentPosition);
         _unitsOnTiles[newPosition] = unit.GetComponent<PhotonView>().ViewID;
 
-        unit.Move(newPosition);
+        unit.GetComponent<PhotonView>().RPC("RPC_MoveUnit", RpcTarget.All, newPosition.x, newPosition.y, newPosition.z);
     }
 
     public void AttackUnit(BaseUnit attacker, BaseUnit hitUnit)
