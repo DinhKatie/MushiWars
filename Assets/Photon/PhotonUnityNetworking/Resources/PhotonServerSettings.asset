@@ -47,6 +47,7 @@ MonoBehaviour:
   - RPC_UpdateBoardState
   - RPC_MoveUnit
   - StartTurnRPC
+  - PushCampfireRPC
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

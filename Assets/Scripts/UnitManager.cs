@@ -43,8 +43,7 @@ public class UnitManager : MonoBehaviourPunCallbacks
     {
         foreach (var entry in _unitsOnTiles)
         {
-            GameObject unitGO = PhotonView.Find(entry.Value).gameObject;
-            BaseUnit unit = unitGO.GetComponent<BaseUnit>();
+            BaseUnit unit = GetUnitByViewID(entry.Value);
             Debug.Log($"Tile: {entry.Key}, Unit: {entry.Value} Squad: {unit.GetSquad} Type: {unit.GetType()}");
         }
     }
@@ -91,15 +90,7 @@ public class UnitManager : MonoBehaviourPunCallbacks
         Vector3Int spawnTileInt = new Vector3Int(x, y, z);
 
         //find the GameObject using the View ID
-        PhotonView view = PhotonView.Find(viewID);
-        if (view == null)
-        {
-            Debug.LogError($"No PhotonView found with ID {viewID}");
-            return;
-        }
-
-        GameObject unitGO = view.gameObject;
-        BaseUnit newUnit = unitGO.GetComponent<BaseUnit>();
+        BaseUnit newUnit = GetUnitByViewID(viewID);
 
         newUnit.SetCurrentPosition(spawnTileInt);
         TurnManager.Instance.AddUnitToSquad(newUnit, (Squads)squad);
@@ -116,6 +107,26 @@ public class UnitManager : MonoBehaviourPunCallbacks
             _unitsOnTiles[newPosition] = viewID;
             _unitsOnTiles.Remove(oldPosition);
         }
+    }
+
+    [PunRPC]
+    public void PushCampfireRPC(int pusherViewID, int campfireViewID, int x, int y, int z)
+    {
+        BaseUnit pusher = GetUnitByViewID(pusherViewID);
+        BaseUnit campfire = GetUnitByViewID(campfireViewID);
+
+        _unitsOnTiles.Remove(pusher.CurrentPosition);
+        _unitsOnTiles.Remove(campfire.CurrentPosition);
+
+        pusher.SetCurrentPosition(campfire.CurrentPosition);
+        campfire.SetCurrentPosition(new Vector3Int(x,y,z));
+
+        _unitsOnTiles[campfire.CurrentPosition] = campfire.GetComponent<PhotonView>().ViewID;
+        _unitsOnTiles[pusher.CurrentPosition] = pusher.GetComponent<PhotonView>().ViewID;
+
+        pusher.DecrementMove();
+        pusher.HighlightValidMoves();
+
     }
 
     #endregion
@@ -173,28 +184,17 @@ public class UnitManager : MonoBehaviourPunCallbacks
     public BaseUnit GetUnitAtTile(Vector3Int tilePosition)
     {
         return _unitsOnTiles.TryGetValue(tilePosition, out int viewID) //ternary
-            ? PhotonView.Find(viewID)?.GetComponent<BaseUnit>()
+            ? GetUnitByViewID(viewID)
             : null;
     }
 
     public void PushCampfire(BaseUnit pusher, Campfire campfire, Vector3Int tileToPush)
     {
-        if (pusher.MovementRange <= 0) return; 
+        if (pusher.MovementRange <= 0) return;
+        int pusherViewID = pusher.GetComponent<PhotonView>().ViewID;
+        int campfireViewID = campfire.GetComponent<PhotonView>().ViewID;
 
-        Vector3Int pusherOldPos = pusher.CurrentPosition;
-        Vector3Int fireOldPos = campfire.CurrentPosition;
-
-        _unitsOnTiles.Remove(pusherOldPos);
-        _unitsOnTiles.Remove(fireOldPos);
-
-        pusher.SetCurrentPosition(campfire.CurrentPosition);
-        campfire.SetCurrentPosition(tileToPush);
-
-        _unitsOnTiles[campfire.CurrentPosition] = campfire.GetComponent<PhotonView>().ViewID;
-        _unitsOnTiles[pusher.CurrentPosition] = pusher.GetComponent<PhotonView>().ViewID;
-
-        pusher.DecrementMove();
-        pusher.HighlightValidMoves();
+        GetComponent<PhotonView>().RPC("PushCampfireRPC", RpcTarget.AllBuffered, pusherViewID, campfireViewID, tileToPush.x, tileToPush.y, tileToPush.z);
     }
 
     public void UpdateUnitsAfterShrink()
@@ -208,8 +208,7 @@ public class UnitManager : MonoBehaviourPunCallbacks
 
         foreach (int viewID in unitsToRemove)
         {
-            GameObject unitGO = PhotonView.Find(viewID).gameObject;
-            BaseUnit unit = unitGO.GetComponent<BaseUnit>();
+            BaseUnit unit = GetUnitByViewID(viewID);
 
             unit.OnDeath();
             RemoveUnit(unit.CurrentPosition);
@@ -238,13 +237,14 @@ public class UnitManager : MonoBehaviourPunCallbacks
 
     public void UseHeroAbility(List<BaseUnit> squad) => squad.OfType<BaseHero>().FirstOrDefault()?.UseAbility();
 
+    public BaseUnit GetUnitByViewID(int viewID) => PhotonView.Find(viewID).gameObject.GetComponent<BaseUnit>();
+
     // Update highlights when grid changes
     public void UpdateUnitHighlights()
     {
         foreach (var viewID in _unitsOnTiles.Values)
         {
-            GameObject unitGO = PhotonView.Find(viewID).gameObject;
-            BaseUnit unit = unitGO.GetComponent<BaseUnit>();
+            BaseUnit unit = GetUnitByViewID(viewID);
             unit?.HighlightValidMoves();
         }
     }
@@ -264,8 +264,7 @@ public class UnitManager : MonoBehaviourPunCallbacks
 
         foreach (var kvp in _unitsOnTiles)
         {
-            GameObject unitGO = PhotonView.Find(kvp.Value).gameObject;
-            BaseUnit unit = unitGO.GetComponent<BaseUnit>();
+            BaseUnit unit = GetUnitByViewID(kvp.Value);
             if (unit.GetSquad == squad)
                 teamUnits.Add(unit.CurrentPosition);
         }
