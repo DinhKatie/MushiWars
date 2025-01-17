@@ -100,15 +100,6 @@ public class UnitManager : MonoBehaviourPunCallbacks
 
     }
 
-    public void UpdateUnitLocation(int viewID, Vector3Int oldPosition, Vector3Int newPosition)
-    {
-        if (GridManager.Instance.GetTileAtPosition(newPosition))
-        {
-            _unitsOnTiles[newPosition] = viewID;
-            _unitsOnTiles.Remove(oldPosition);
-        }
-    }
-
     [PunRPC]
     public void PushCampfireRPC(int pusherViewID, int campfireViewID, int x, int y, int z)
     {
@@ -123,9 +114,6 @@ public class UnitManager : MonoBehaviourPunCallbacks
 
         _unitsOnTiles[campfire.CurrentPosition] = campfire.GetComponent<PhotonView>().ViewID;
         _unitsOnTiles[pusher.CurrentPosition] = pusher.GetComponent<PhotonView>().ViewID;
-
-        pusher.DecrementMove();
-        pusher.HighlightValidMoves();
 
     }
 
@@ -181,6 +169,15 @@ public class UnitManager : MonoBehaviourPunCallbacks
     #endregion
 
 
+    public void UpdateUnitLocation(int viewID, Vector3Int oldPosition, Vector3Int newPosition)
+    {
+        if (GridManager.Instance.GetTileAtPosition(newPosition))
+        {
+            _unitsOnTiles[newPosition] = viewID;
+            _unitsOnTiles.Remove(oldPosition);
+        }
+    }
+
     public BaseUnit GetUnitAtTile(Vector3Int tilePosition)
     {
         return _unitsOnTiles.TryGetValue(tilePosition, out int viewID) //ternary
@@ -195,6 +192,8 @@ public class UnitManager : MonoBehaviourPunCallbacks
         int campfireViewID = campfire.GetComponent<PhotonView>().ViewID;
 
         GetComponent<PhotonView>().RPC("PushCampfireRPC", RpcTarget.AllBuffered, pusherViewID, campfireViewID, tileToPush.x, tileToPush.y, tileToPush.z);
+        pusher.DecrementMove();
+        pusher.HighlightValidMoves();
     }
 
     public void UpdateUnitsAfterShrink()

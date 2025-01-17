@@ -144,13 +144,9 @@ public class TurnManager : MonoBehaviourPunCallbacks
     {
         Player owner = PhotonNetwork.CurrentRoom.GetPlayer(ownerActorNumber);
         if (owner != null)
-        {
             squadOwners[squad] = owner;
-        }
         else
-        {
             Debug.LogError("Player not found with actor number: " + ownerActorNumber);
-        }
 
     }
 

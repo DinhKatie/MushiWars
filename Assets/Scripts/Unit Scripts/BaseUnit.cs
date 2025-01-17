@@ -177,7 +177,8 @@ public class BaseUnit : MonoBehaviour
             Grid.Deselect();
             return;
         }
-        enemy.OnHit();
+
+        enemy.OnHit(1);
         hasAttacked = true;
         HighlightValidMoves();
         Grid.Deselect();
@@ -208,7 +209,7 @@ public class BaseUnit : MonoBehaviour
             Debug.Log("Immune! (Take Damage)");
             return;
         }
-        OnHit();
+        OnHit(1);
     }
 
     public void AutoDie()
@@ -234,11 +235,34 @@ public class BaseUnit : MonoBehaviour
 
 
     // ----- ON HIT AND ON DEATH ------
-    protected virtual void OnHit()
+    protected virtual void OnHit(int damage)
     {
-        health -= 1;
+        if (dead) return;
+
+        Debug.Log("Applying Damage");
+        health -= damage;
         Debug.Log($"{name} has been hit! Health: {health}");
-        if (health <= 0) OnDeath();
+        GetComponent<PhotonView>().RPC("OnHitRPC", RpcTarget.OthersBuffered, health);
+
+        if (health <= 0)
+        {
+            OnDeath();
+            GetComponent<PhotonView>().RPC("OnDeathRPC", RpcTarget.OthersBuffered);
+        }
+    }
+
+    [PunRPC]
+    public void OnHitRPC(int newHealth)
+    {
+        Debug.Log($"New Health of {name}: {newHealth}");
+        health = newHealth;
+    }
+
+    [PunRPC]
+    public void OnDeathRPC()
+    {
+        Debug.Log("Calling OnDeath RPC");
+        OnDeath();
     }
 
     public virtual void OnDeath()
@@ -258,7 +282,6 @@ public class BaseUnit : MonoBehaviour
         currPosition = new Vector3Int(-1, -1, -1);
         this.enabled = false;
 
-        //Notify campfire to signify revival
         TurnManager.Instance.GetCampfireOfSquad(squad)?.RegisterDeadUnit(this);
     }
 

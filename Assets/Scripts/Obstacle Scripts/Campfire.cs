@@ -1,3 +1,4 @@
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,13 @@ public class Campfire : BaseUnit
 
     private void Update()
     {
-        if (revivalSelection == null && canRevive && graveyard.Count > 0 && TurnManager.Instance.GetCurrentSquad() == squad)
+        //Debug.Log($"Campfire: {name}, Player: {TurnManager.Instance.isCurrentPlayer()}, Revival: {revivalSelection}, " +
+            //$"CanRevive: {canRevive}, GraveYard Count: {graveyard.Count}, Squad: {TurnManager.Instance.GetCurrentSquad() == squad}");
+
+        if (TurnManager.Instance.isCurrentPlayer() && revivalSelection == null
+        && canRevive
+        && graveyard.Count > 0
+        && TurnManager.Instance.GetCurrentSquad() == squad)
         {
             TryRevive();
         }
@@ -43,12 +50,8 @@ public class Campfire : BaseUnit
 
     private void TryRevive()
     {
-        if (!canRevive || graveyard.Count == 0) return;
-        
         ListGraveyard();
-
-        if (revivalSelection == null)
-            revivalSelection = StartCoroutine(WaitForReviveSelection());
+        revivalSelection = StartCoroutine(WaitForReviveSelection());
     }
 
     private IEnumerator WaitForReviveSelection()
