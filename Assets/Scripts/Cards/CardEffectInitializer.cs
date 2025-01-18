@@ -234,7 +234,7 @@ public class CardEffectInitializer : MonoBehaviour
         int counter = 0;
         while (!HandManager.Instance.hasMaxHandSize() && counter < 2)
         {
-            GetComponent<Deck>().DrawHand(1);
+            HandManager.Instance.DrawACard();
             counter++;
         }
     }

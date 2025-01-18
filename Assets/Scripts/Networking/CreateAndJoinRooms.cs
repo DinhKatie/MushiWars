@@ -84,7 +84,7 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
         }
     }
 
-    public void StartGame()
+    public void StartGame() //Start Game Button
     {
         if (PhotonNetwork.IsMasterClient)
         {

@@ -4,10 +4,11 @@ using UnityEngine;
 
 public class HandManager : MonoBehaviour
 {
+    public Deck deck;
     [SerializeField] private Transform cardParent;
     [SerializeField] private Vector2 cardOffset = new Vector2(100f, 0f); // The distance between each card
 
-    private List<Card> handCards => Deck.Instance.HandCards;
+    private List<Card> handCards => deck.HandCards;
     private int MAX_HAND_SIZE = 3;
 
     public static HandManager Instance;
@@ -18,15 +19,26 @@ public class HandManager : MonoBehaviour
     public bool DisableCardEffects() => discardingForCardEffect;
     public bool hasMaxHandSize() => handCards.Count >= MAX_HAND_SIZE;
 
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+            Destroy(gameObject);
+    }
 
     private void Start()
     {
-        if (Instance == null)
-            Instance = this;
-        else
-            Destroy(gameObject);
-
         ArrangeCardsInHand();
+    }
+
+    public void DrawACard()
+    {
+        if (handCards.Count < MAX_HAND_SIZE)
+            StartCoroutine(deck.DrawHand(1));   
     }
 
 

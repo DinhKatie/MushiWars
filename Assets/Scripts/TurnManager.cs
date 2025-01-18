@@ -62,7 +62,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
         if (PhotonNetwork.IsMasterClient)
         {
             InitializeSquadOwners();
-            StartTurn();
+            StartTurn(); 
         }
     }
 
@@ -72,6 +72,9 @@ public class TurnManager : MonoBehaviourPunCallbacks
         currentSquad = (Squads)(currentSquadIndex + 1);
         PhotonView.Get(this).RPC("StartTurnRPC", RpcTarget.All, (int)currentSquad);
         Debug.Log($"Switching Teams. Team {currentSquad}'s turn");
+
+        if (isCurrentPlayer())
+            HandManager.Instance.DrawACard();
 
         // Check which Photon player owns the current squad
         if (squadOwners.TryGetValue(currentSquad, out Player owner))

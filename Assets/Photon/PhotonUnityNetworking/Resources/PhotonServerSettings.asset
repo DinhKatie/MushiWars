@@ -51,6 +51,12 @@ MonoBehaviour:
   - AttackRPC
   - OnDeathRPC
   - OnHitRPC
+  - DrawCardRPC
+  - ShuffleRPC
+  - DiscardCardRPC
+  - UpdateDeckState
+  - SetUpDeckRPC
+  - SetUpCardRPC
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1
