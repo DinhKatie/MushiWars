@@ -69,7 +69,7 @@ public class UnitManager : MonoBehaviourPunCallbacks
         int viewID = newUnit.GetComponent<PhotonView>().ViewID;
         _unitsOnTiles[spawnTile] = viewID;
 
-        Debug.Log($"Unit spawned on tile {spawnTile}");
+        //Debug.Log($"Unit spawned on tile {spawnTile}");
         newUnit.name = "Mushi " + _unitsOnTiles.Count;
 
         PhotonView.Get(this).RPC("RPC_UpdateBoardState", RpcTarget.Others, spawnTile.x, spawnTile.y, spawnTile.z, viewID, squad);
@@ -84,7 +84,7 @@ public class UnitManager : MonoBehaviourPunCallbacks
     [PunRPC]
     public void RPC_UpdateBoardState(int x, int y, int z, int viewID, int squad)
     {
-        Debug.Log("Starting the Update Board RPC");
+        //Debug.Log("Starting the Update Board RPC");
 
         //rebuild the Vector3Int from the individual x, y, z integers
         Vector3Int spawnTileInt = new Vector3Int(x, y, z);

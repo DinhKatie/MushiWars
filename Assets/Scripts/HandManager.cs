@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 public class HandManager : MonoBehaviour
 {
@@ -15,7 +16,7 @@ public class HandManager : MonoBehaviour
 
     public bool discardingForCardEffect = false;
 
-    public int numCards() => handCards.Count;
+    public int numCards => handCards.Count;
     public bool DisableCardEffects() => discardingForCardEffect;
     public bool hasMaxHandSize() => handCards.Count >= MAX_HAND_SIZE;
 
@@ -37,8 +38,15 @@ public class HandManager : MonoBehaviour
 
     public void DrawACard()
     {
-        if (handCards.Count < MAX_HAND_SIZE)
-            StartCoroutine(deck.DrawHand(1));   
+        if (numCards < MAX_HAND_SIZE)
+        {
+            StartCoroutine(deck.DrawHand(1));
+        }
+    }
+
+    public void UpdateCardCount()
+    {
+        GetComponent<OpponentHand>().UpdateHandCount(PhotonNetwork.LocalPlayer.ActorNumber, numCards);
     }
 
 

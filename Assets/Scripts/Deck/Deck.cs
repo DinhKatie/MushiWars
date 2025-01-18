@@ -78,6 +78,7 @@ public class Deck : MonoBehaviour
             if (_deckPile.Count > 0)
             {
                 HandCards.Add(_deckPile[0]);
+                HandManager.Instance.UpdateCardCount();
                 _deckPile[0].gameObject.SetActive(true);
                 GetComponent<PhotonView>().RPC("DrawCardRPC", RpcTarget.All);
                 OnCardDrawn?.Invoke();
@@ -90,9 +91,9 @@ public class Deck : MonoBehaviour
     [PunRPC]
     public void DrawCardRPC()
     {
-        Debug.Log($"[DrawCardRPC] Removing {_deckPile[0]} from deck. Cards remaining: {_deckPile.Count}");
+        //Debug.Log($"[DrawCardRPC] Removing {_deckPile[0]} from deck. Cards remaining: {_deckPile.Count}");
         _deckPile.RemoveAt(0);
-        Debug.Log($"[DrawCardRPC] Card drawn. Cards remaining: {_deckPile.Count}");
+        //Debug.Log($"[DrawCardRPC] Card drawn. Cards remaining: {_deckPile.Count}");
     }
 
     [PunRPC]
@@ -100,15 +101,15 @@ public class Deck : MonoBehaviour
     {
         if (PhotonNetwork.IsMasterClient)
         {
-            Debug.Log("[ShuffleRPC] Master client shuffling the deck...");
-            Debug.Log($"[ShuffleRPC] Deck size before shuffle: {_deckPile.Count}. Discard pile size: {_discardPile.Count}");
+            //Debug.Log("[ShuffleRPC] Master client shuffling the deck...");
+            //Debug.Log($"[ShuffleRPC] Deck size before shuffle: {_deckPile.Count}. Discard pile size: {_discardPile.Count}");
 
             _deckPile.AddRange(_discardPile);
             _discardPile.Clear();
             Shuffle();
             SendCardIDs();
 
-            Debug.Log($"[ShuffleRPC] Deck shuffled. New deck size: {_deckPile.Count}. Discard pile is now empty.");
+            //Debug.Log($"[ShuffleRPC] Deck shuffled. New deck size: {_deckPile.Count}. Discard pile is now empty.");
 
             Debug.Log("[ShuffleRPC] New deck order:");
             for (int i = 0; i < _deckPile.Count; i++)
@@ -186,6 +187,7 @@ public class Deck : MonoBehaviour
             HandCards.Remove(card);
             GetComponent<PhotonView>().RPC("DiscardCardRPC", RpcTarget.MasterClient, card.GetComponent<PhotonView>().ViewID);
             card.gameObject.SetActive(false);
+            HandManager.Instance.UpdateCardCount();
 
             if (HandManager.Instance.discardingForCardEffect)
             {

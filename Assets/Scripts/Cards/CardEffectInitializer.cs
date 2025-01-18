@@ -170,7 +170,7 @@ public class CardEffectInitializer : MonoBehaviour
 
         AvoidSelection(true);
         //Discard another card. Party Time cannot be played if no other cards are available to discard.
-        if (HandManager.Instance.numCards() > 0)
+        if (HandManager.Instance.numCards > 0)
         {
             StartCoroutine(WaitForDiscard(() =>
             {
