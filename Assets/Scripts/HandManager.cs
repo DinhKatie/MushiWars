@@ -41,6 +41,7 @@ public class HandManager : MonoBehaviour
         if (numCards < MAX_HAND_SIZE)
         {
             StartCoroutine(deck.DrawHand(1));
+            UpdateCardCount();
         }
     }
 

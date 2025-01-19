@@ -78,7 +78,6 @@ public class Deck : MonoBehaviour
             if (_deckPile.Count > 0)
             {
                 HandCards.Add(_deckPile[0]);
-                HandManager.Instance.UpdateCardCount();
                 _deckPile[0].gameObject.SetActive(true);
                 GetComponent<PhotonView>().RPC("DrawCardRPC", RpcTarget.All);
                 OnCardDrawn?.Invoke();
@@ -159,25 +158,32 @@ public class Deck : MonoBehaviour
     {
         Debug.Log($"[DiscardCardRPC] Discarding card with PhotonView ID {viewID}");
 
-        PhotonView photonView = PhotonView.Find(viewID);
-        if (photonView != null)
+        Card card = PhotonView.Find(viewID)?.gameObject.GetComponent<Card>();
+        if (card != null)
         {
-            Card card = photonView.gameObject.GetComponent<Card>();
-            if (card != null)
-            {
-                _discardPile.Add(card);
-                Debug.Log($"[DiscardCardRPC] Card discarded. Discard pile size: {_discardPile.Count}");
-            }
-            else
-            {
-                Debug.LogWarning("[DiscardCardRPC] Card is null!");
-            }
+            _discardPile.Add(card);
+            Debug.Log($"[DiscardCardRPC] Card discarded. Discard pile size: {_discardPile.Count}");
         }
         else
+            Debug.LogWarning("[DiscardCardRPC] Card is null!");
+    }
+
+    [PunRPC]
+    public void DisplayCardToPlayersRPC(int viewID)
+    {
+        PhotonView cardView = PhotonView.Find(viewID);
+        if (cardView != null)
         {
-            Debug.LogWarning("[DiscardCardRPC] PhotonView is null!");
+            Card card = cardView.GetComponent<Card>();
+            ShowPlayedCard(card);
         }
     }
+
+    void ShowPlayedCard(Card card)
+    {
+        GetComponent<PlayedCardDisplay>().DisplayCard(card);
+    }
+
     //No cards can be discarded from deck to discard
     //Only from hand to discard
     public void DiscardCard(Card card)
@@ -186,6 +192,8 @@ public class Deck : MonoBehaviour
         {
             HandCards.Remove(card);
             GetComponent<PhotonView>().RPC("DiscardCardRPC", RpcTarget.MasterClient, card.GetComponent<PhotonView>().ViewID);
+            GetComponent<PhotonView>().RPC("DisplayCardToPlayersRPC", RpcTarget.All, card.GetComponent<PhotonView>().ViewID);
+
             card.gameObject.SetActive(false);
             HandManager.Instance.UpdateCardCount();
 
