@@ -46,11 +46,11 @@ TagManager:
   - name: Floor
     uniqueID: 1104620567
     locked: 0
-  - name: Unit
-    uniqueID: 3150119437
-    locked: 0
   - name: Collision
     uniqueID: 2553817625
+    locked: 0
+  - name: Unit
+    uniqueID: 3150119437
     locked: 0
   - name: Top
     uniqueID: 2452963921
