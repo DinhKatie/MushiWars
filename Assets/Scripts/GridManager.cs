@@ -82,7 +82,6 @@ public class GridManager : MonoBehaviour
 
     private void HandleTileHover()
     {
-        // Detect tiles the mouse is over
         Vector3Int tilePosition = GetMouseTilePosition();
 
         // Deselect the previously hovered tile
@@ -95,6 +94,13 @@ public class GridManager : MonoBehaviour
             _highlightTilemap.SetTile(tilePosition, _highlightTile);
         }
 
+        if (UnitManager.Instance.GetUnitAtTile(tilePosition) is BaseHero hero)
+        {
+            Tooltips.Instance.ShowHeroHealthTooltip(hero);
+            return;
+        }
+
+        Tooltips.Instance.HideHeroHealthTooltip();
     }
 
     private void HandleTileSelection()

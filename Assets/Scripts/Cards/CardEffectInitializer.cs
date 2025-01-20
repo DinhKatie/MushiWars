@@ -1,3 +1,4 @@
+using Photon.Pun;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,6 +25,9 @@ public class CardEffectInitializer : MonoBehaviour
     [SerializeField] private ScriptableCard chillingWind;
     [SerializeField] private ScriptableCard curse;
 
+    private CardEffectRPCs cardRPCs;
+    private PhotonView photonView;
+
     private void Awake()
     {
         // Assign specific effects to ScriptableCards
@@ -38,6 +42,9 @@ public class CardEffectInitializer : MonoBehaviour
         chillingWind.OnPlayEffect= () => ChillingWind();
         curse.OnPlayEffect = () => Curse();
         navigation.OnPlayEffect = () => Navigation();
+
+        cardRPCs = GetComponent<CardEffectRPCs>();
+        photonView = GetComponent<PhotonView>();
     }
 
     private bool CantPlayCard() => HandManager.Instance.DisableCardEffects();
@@ -225,6 +232,7 @@ public class CardEffectInitializer : MonoBehaviour
         BaseHero hero = TurnManager.Instance.GetHeroOfSquad(TurnManager.Instance.GetCurrentSquad());
         hero?.IncrementHealth();
         Debug.Log($"Health of {hero} incremented by 1. New health: {hero.Health}");
+        photonView.RPC("HealthOrbRPC", RpcTarget.Others, hero.GetComponent<PhotonView>().ViewID);
     }
 
     private void Educate()

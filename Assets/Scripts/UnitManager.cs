@@ -236,7 +236,7 @@ public class UnitManager : MonoBehaviourPunCallbacks
 
     public void UseHeroAbility(List<BaseUnit> squad) => squad.OfType<BaseHero>().FirstOrDefault()?.UseAbility();
 
-    public BaseUnit GetUnitByViewID(int viewID) => PhotonView.Find(viewID).gameObject.GetComponent<BaseUnit>();
+    private BaseUnit GetUnitByViewID(int viewID) => Utilities.GetUnitByViewID(viewID);
 
     // Update highlights when grid changes
     public void UpdateUnitHighlights()

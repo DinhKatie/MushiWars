@@ -9,12 +9,7 @@ public class PlayedCardDisplay : MonoBehaviour
 
     public void DisplayCard(Card card)
     {
-        Debug.Log($"card.cardData.Image: {card.cardData.Image}");
         cardImage.sprite = card.cardData.Image;
-        if (cardImage.sprite == null)
-            Debug.Log("Sprite is null.");
-        //cardImage.transform.localScale = Vector3.one * 2;
-
         cardImage.gameObject.SetActive(true);
         StartCoroutine(HideCardAfterDelay(3f));
     }
