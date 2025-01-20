@@ -63,6 +63,9 @@ MonoBehaviour:
   - HealthOrbRPC
   - HovercraftRPC
   - ForcefieldRPC
+  - NavigationRPC
+  - PartyTimeRPC
+  - TeleportRPC
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

@@ -25,4 +25,24 @@ public class CardEffectRPCs : MonoBehaviour
         BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
         unit?.SetImmune(true);
     }
+
+    [PunRPC]
+    public void TeleportRPC(int unitViewID, int newX, int newY, int newZ)
+    {
+        UnitManager.Instance.TeleportUnit(Utilities.GetUnitByViewID(unitViewID), new Vector3Int(newX, newY, newZ));
+    }
+
+    [PunRPC]
+    public void PartyTimeRPC(int unitViewID)
+    {
+        BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
+        unit.Reset();
+    }
+
+    [PunRPC]
+    public void NavigationRPC(int unitViewID)
+    {
+        BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
+        unit?.IncrementMove(3);
+    }
 }

@@ -54,6 +54,7 @@ public class HandManager : MonoBehaviour
     // Call this whenever the hand changes (e.g., after drawing, discarding, or end of a turn)
     public void ArrangeCardsInHand()
     {
+        Debug.Log("ARranging cards in hand.");
         if (handCards.Count == 0) return;
 
         // Determine the total width for the cards, based on how many are in the hand

@@ -77,12 +77,21 @@ public class Deck : MonoBehaviour
 
             if (_deckPile.Count > 0)
             {
+                Debug.Log("Is there an aerrror here????");
                 HandCards.Add(_deckPile[0]);
                 _deckPile[0].gameObject.SetActive(true);
                 GetComponent<PhotonView>().RPC("DrawCardRPC", RpcTarget.All);
                 OnCardDrawn?.Invoke();
             }
-            
+
+            if (_deckPile.Count <= 0)
+            {
+                GetComponent<PhotonView>().RPC("ShuffleRPC", RpcTarget.MasterClient);
+
+                //Wait for reshuffle to complete
+                yield return new WaitUntil(() => _deckPile.Count > 0);
+            }
+
         }
         HandManager.Instance.ArrangeCardsInHand();
     }

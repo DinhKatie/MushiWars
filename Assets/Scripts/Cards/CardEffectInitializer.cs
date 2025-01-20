@@ -167,6 +167,7 @@ public class CardEffectInitializer : MonoBehaviour
             StartCoroutine(Select(validMoveTiles, tile => tile, tile =>
             {
                 UnitManager.Instance.TeleportUnit(unit, tile);
+                photonView.RPC("TeleportRPC", RpcTarget.Others, unit.GetComponent<PhotonView>().ViewID, tile.x, tile.y, tile.z);
                 unit.DisableMovementAndAttack();
                 AvoidSelection(false);
             }));
@@ -186,6 +187,7 @@ public class CardEffectInitializer : MonoBehaviour
                 StartCoroutine(Select(CurrentSquadUnits(), tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
                 {
                     unit.Reset();
+                    photonView.RPC("PartyTimeRPC", RpcTarget.Others, unit.GetComponent<PhotonView>().ViewID);
                     AvoidSelection(false);
                 }));
             }));
@@ -220,6 +222,7 @@ public class CardEffectInitializer : MonoBehaviour
             {
                 Debug.Log($"{unit2} selected by Navigation. Incrementing move by 3.");
                 unit2.IncrementMove(3); //Up to 3? or exactly 3
+                photonView.RPC("NavigationRPC", RpcTarget.Others, unit2.GetComponent<PhotonView>().ViewID);
 
                 AvoidSelection(false);
             }));
