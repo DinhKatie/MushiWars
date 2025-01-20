@@ -61,6 +61,7 @@ public class CardEffectInitializer : MonoBehaviour
             {
                 unit.IncrementMove();
                 Debug.Log($"{unit} received 1 additional move range.");
+                photonView.RPC("HovercraftRPC", RpcTarget.Others, unit.GetComponent<PhotonView>().ViewID);
             }
             GridManager.Instance.Deselect();
             GridManager.Instance.ClearValidMoves();
@@ -141,6 +142,7 @@ public class CardEffectInitializer : MonoBehaviour
         StartCoroutine(Select(CurrentSquadUnits(), tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
         {
             unit?.SetImmune(true);
+            photonView.RPC("ForcefieldRPC", RpcTarget.Others, unit.GetComponent<PhotonView>().ViewID);
             Debug.Log($"Applied Forcefield");
             AvoidSelection(false);
         }));

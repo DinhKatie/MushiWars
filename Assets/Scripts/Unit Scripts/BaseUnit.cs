@@ -117,6 +117,7 @@ public class BaseUnit : MonoBehaviour
     [PunRPC]
     public void RPC_MoveUnit(int x, int y, int z)
     {
+        Debug.Log("Called RPC_MoveUnit");
         Vector3Int newPosition = new Vector3Int(x,y, z);
         UnitManager.Instance.UpdateUnitLocation(GetComponent<PhotonView>().ViewID, CurrentPosition, newPosition);
         Move(newPosition);
@@ -219,7 +220,7 @@ public class BaseUnit : MonoBehaviour
             Debug.Log("Immune! (AutoDie)");
             return;
         }
-        OnDeath();
+        GetComponent<PhotonView>().RPC("OnDeathRPC", RpcTarget.All);
     }
 
     public void Teleport(Vector3Int newPosition)
@@ -246,8 +247,7 @@ public class BaseUnit : MonoBehaviour
 
         if (health <= 0)
         {
-            OnDeath();
-            GetComponent<PhotonView>().RPC("OnDeathRPC", RpcTarget.OthersBuffered);
+            GetComponent<PhotonView>().RPC("OnDeathRPC", RpcTarget.All);
         }
     }
 
