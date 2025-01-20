@@ -56,16 +56,23 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
         // Check if the card is outside the hand canvas
         if (!RectTransformUtility.RectangleContainsScreenPoint(handRect, Input.mousePosition, eventData.pressEventCamera))
         {
-            deck.DiscardCard(_card);
-            _card.PlayEffect(); //Apply its effect
+            if (!TurnManager.Instance.isCurrentPlayer())
+            {
+                ResetCardPosition();
+                Debug.Log("Not the current player!");
+            }
+            else
+                deck.DiscardCard(_card);
         }
         else
-        {
-            _rectTransform.position = _originalPos;
-            _rectTransform.transform.SetSiblingIndex(_cardSelectionHandler._originalIndex);
-        }
-            
+            ResetCardPosition();
 
         HandManager.Instance.ArrangeCardsInHand();
+    }
+
+    private void ResetCardPosition()
+    {
+        _rectTransform.position = _originalPos;
+        _rectTransform.transform.SetSiblingIndex(_cardSelectionHandler._originalIndex);
     }
 }

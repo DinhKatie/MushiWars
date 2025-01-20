@@ -45,4 +45,26 @@ public class CardEffectRPCs : MonoBehaviour
         BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
         unit?.IncrementMove(3);
     }
+
+    [PunRPC]
+    public void ChillingWindRPC(int unitViewID)
+    {
+        BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
+        unit.SetChilled(true);
+    }
+
+    [PunRPC]
+    public void MushiCurseRPC(int unitViewID)
+    {
+        BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
+        unit.DisableSkills(true);
+    }
+
+    [PunRPC]
+    public void HeroCurseRPC(int heroViewID)
+    {
+        BaseHero hero = (BaseHero)Utilities.GetUnitByViewID(heroViewID);
+        hero.SetCursed(true);
+        hero.DisableSkills(true);
+    }
 }

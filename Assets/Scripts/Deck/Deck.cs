@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
+using System;
 
 public class Deck : MonoBehaviour
 {
@@ -52,7 +53,7 @@ public class Deck : MonoBehaviour
     {
         for (int i = _deckPile.Count - 1; i > 0; i--)
         {
-            int j = Random.Range(0, i+1);
+            int j = UnityEngine.Random.Range(0, i+1);
             var temp = _deckPile[i];
             _deckPile[i] = _deckPile[j];
             _deckPile[j] = temp;
@@ -77,7 +78,6 @@ public class Deck : MonoBehaviour
 
             if (_deckPile.Count > 0)
             {
-                Debug.Log("Is there an aerrror here????");
                 HandCards.Add(_deckPile[0]);
                 _deckPile[0].gameObject.SetActive(true);
                 GetComponent<PhotonView>().RPC("DrawCardRPC", RpcTarget.All);
@@ -87,8 +87,6 @@ public class Deck : MonoBehaviour
             if (_deckPile.Count <= 0)
             {
                 GetComponent<PhotonView>().RPC("ShuffleRPC", RpcTarget.MasterClient);
-
-                //Wait for reshuffle to complete
                 yield return new WaitUntil(() => _deckPile.Count > 0);
             }
 
@@ -144,19 +142,14 @@ public class Deck : MonoBehaviour
     {
         Debug.Log("[UpdateDeckState] Updating deck state on all clients...");
         Debug.Log($"[UpdateDeckState] Received card IDs. Count: {cardIds.Length}");
-
         _deckPile.Clear();
         foreach (int id in cardIds)
         {
             var card = PhotonView.Find(id)?.gameObject.GetComponent<Card>();
             if (card != null)
-            {
                 _deckPile.Add(card);
-            }
             else
-            {
                 Debug.LogWarning($"[UpdateDeckState] Card with PhotonView ID {id} not found.");
-            }
         }
 
         Debug.Log($"[UpdateDeckState] Deck updated. New deck size: {_deckPile.Count}");
@@ -210,7 +203,9 @@ public class Deck : MonoBehaviour
             {
                 OnCardDiscarded?.Invoke();
                 StartCoroutine(ResetDiscardFlag());
-            }  
+            }
+
+            card.PlayEffect(); //Apply its effect
         }
     }
 
