@@ -283,13 +283,12 @@ public class CardEffectInitializer : MonoBehaviour
         StartCoroutine(Select(unitsWithinRange, tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
         {
             //Disable selecting this unit for skills. If hero, disable support/hexes
-            unit.DisableSkills(true);
-            photonView.RPC("MushiCurseRPC", RpcTarget.Others, unit.GetComponent<PhotonView>().ViewID);
+            photonView.RPC("MushiCurseRPC", RpcTarget.All, unit.GetComponent<PhotonView>().ViewID);
             if (EnemyHeroUnits().Contains(unit))
             {
                 BaseHero hero = EnemyHeroUnits().FirstOrDefault(hero => hero == unit);
                 hero.SetCursed(true);
-                photonView.RPC("HeroCurseRPC", RpcTarget.Others, hero.GetComponent<PhotonView>().ViewID);
+                photonView.RPC("HeroCurseRPC", RpcTarget.All, hero.GetComponent<PhotonView>().ViewID);
             }
 
             List<Vector3Int> remainingUnitsInRange = unitsWithinRange.Where(u => u != unit.CurrentPosition).ToList();
@@ -298,13 +297,12 @@ public class CardEffectInitializer : MonoBehaviour
             StartCoroutine(Select(remainingUnitsInRange, tile => UnitManager.Instance.GetUnitAtTile(tile), unit2 =>
             {
                 //Disable selecting this second unit for skills. If hero, disable support/hexes
-                unit2.DisableSkills(true);
-                photonView.RPC("MushiCurseRPC", RpcTarget.Others, unit2.GetComponent<PhotonView>().ViewID);
+                photonView.RPC("MushiCurseRPC", RpcTarget.All, unit2.GetComponent<PhotonView>().ViewID);
                 if (EnemyHeroUnits().Contains(unit))
                 {
                     BaseHero hero = EnemyHeroUnits().FirstOrDefault(hero => hero == unit2); //Possible error here
                     hero.SetCursed(true);
-                    photonView.RPC("HeroCurseRPC", RpcTarget.Others, hero.GetComponent<PhotonView>().ViewID);
+                    photonView.RPC("HeroCurseRPC", RpcTarget.All, hero.GetComponent<PhotonView>().ViewID);
                 }
                 AvoidSelection(false);
             }));

@@ -4,8 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
-using UnityEngine.Tilemaps;
 
 public class BaseUnit : MonoBehaviour
 {
@@ -24,6 +22,7 @@ public class BaseUnit : MonoBehaviour
 
     public Squads squad;
     protected UnitPrefabs prefab = UnitPrefabs.unit;
+    protected Animator unitAnim;
 
     // Getters
     public Vector3Int CurrentPosition => currPosition;
@@ -36,7 +35,8 @@ public class BaseUnit : MonoBehaviour
     public bool Immune => isImmune;
     public bool Chilled => isChilled;
     public bool SkillsDisabled => disabledSkills;
-    
+    public Animator UnitAnimator => unitAnim;
+
     public UnitPrefabs GetPrefab => prefab;
 
     //Setters
@@ -70,6 +70,7 @@ public class BaseUnit : MonoBehaviour
     // Start is called before the first frame update
     protected virtual void Start()
     {
+        unitAnim = GetComponent<Animator>();
         health = 1;
         if (justRevived)
         {

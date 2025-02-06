@@ -58,6 +58,7 @@ public class CardEffectRPCs : MonoBehaviour
     {
         BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
         unit.DisableSkills(true);
+        AnimationController.PlayCurseAnim(unit.UnitAnimator);
     }
 
     [PunRPC]
@@ -66,5 +67,6 @@ public class CardEffectRPCs : MonoBehaviour
         BaseHero hero = (BaseHero)Utilities.GetUnitByViewID(heroViewID);
         hero.SetCursed(true);
         hero.DisableSkills(true);
+        AnimationController.PlayCurseAnim(hero.UnitAnimator);
     }
 }
