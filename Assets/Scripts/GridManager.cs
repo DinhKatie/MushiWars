@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
@@ -77,9 +78,10 @@ public class GridManager : MonoBehaviour
         SpawnObstacle(new Vector3Int(6, 5, 0), Obstacle.bamboo);
     }
 
+    #region Tile Selection
+
     private void HandleTileHover()
     {
-        // Detect tiles the mouse is over
         Vector3Int tilePosition = GetMouseTilePosition();
 
         // Deselect the previously hovered tile
@@ -92,6 +94,13 @@ public class GridManager : MonoBehaviour
             _highlightTilemap.SetTile(tilePosition, _highlightTile);
         }
 
+        if (UnitManager.Instance.GetUnitAtTile(tilePosition) is BaseHero hero)
+        {
+            Tooltips.Instance.ShowHeroHealthTooltip(hero);
+            return;
+        }
+
+        Tooltips.Instance.HideHeroHealthTooltip();
     }
 
     private void HandleTileSelection()
@@ -133,11 +142,12 @@ public class GridManager : MonoBehaviour
 
         if (avoidSelect) { return; }
 
-        //if (!TurnManager.Instance._playerControlsOn) return;
+        if (!TurnManager.Instance._playerControlsOn) { Debug.Log("Player controls have been disabled"); return; }
 
         // If a unit is clicked and it's the current squad's turn
         if (newUnit != null)
         {
+            Debug.Log("Handling Unit Selection");
             HandleUnitSelection(previousUnit, newUnit);
         }
         //Otherwise, if clicked a unit then clicked an empty tile, move the unit.
@@ -145,14 +155,13 @@ public class GridManager : MonoBehaviour
         {
             UnitManager.Instance.MoveUnit(previousUnit, tilePosition);
         }
-        
-
     }
 
     private void HandleUnitSelection(BaseUnit previousUnit, BaseUnit newUnit)
     {
         if (IsInitialUnitSelection(previousUnit, newUnit))
         {
+            Debug.Log("Highlighting Unit Options");
             HighlightUnitOptions(newUnit);
         }
         else if (IsCampfirePush(previousUnit, newUnit))
@@ -167,6 +176,7 @@ public class GridManager : MonoBehaviour
         }
         else if (TurnManager.Instance.isUnitInCurrentSquad(newUnit)) //New Unit clicked is in the current squad. Switch selection.
         {
+            Debug.Log("Highlighting Unit Options");
             HighlightUnitOptions(newUnit);
         }
     }
@@ -194,8 +204,9 @@ public class GridManager : MonoBehaviour
         Debug.Log($"{unit.name} selected. Highlighting move options.");
     }
 
+    #endregion
 
-    //----- CAMPFIRE LOGIC ------
+    #region Campfire Logic
 
     private void AttemptCampfirePush(BaseUnit previousUnit, Campfire campfire)
     {
@@ -249,47 +260,30 @@ public class GridManager : MonoBehaviour
         return UnitManager.Instance.GetUnitAtTile(position) as Campfire;
     }
 
-    // ----------------------------------
+    #endregion 
 
+    #region Tile Highlighting and Accessing
+    // Get the tile at the specified grid position
+    public TileBase GetTileAtPosition(Vector3Int position) => _tilemap.GetTile(position);
 
-    private bool IsValidMove(BaseUnit previousUnit, BaseUnit newUnit)
-    {
-        return previousUnit != null && newUnit == null && TurnManager.Instance.isUnitInCurrentSquad(previousUnit);
-    }
+    // Set a tile at a specific position
+    public void SetTileAtPosition(Vector3Int position, TileBase tile) => _tilemap.SetTile(position, tile);
 
+    public void HighlightValidTiles(List<Vector3Int> tiles, TileBase tileType) => tiles.ForEach(tile => _validMovesMap.SetTile(tile, tileType));
 
-    public Vector3Int GetMouseTilePosition()
-    {
-        Vector3 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        return _tilemap.WorldToCell(mouseWorldPosition);
-    }
+    public void HighlightValidMoves(List<Vector3Int> moves) => HighlightValidTiles(moves, _validMoveTile);
 
-    public void HighlightValidMoves(List<Vector3Int> moves)
-    {
-        foreach (var move in moves)
-        {
-            _validMovesMap.SetTile(move, _validMoveTile);
-        }
-    }
+    public void HighlightValidAttacks(List<Vector3Int> attacks) => HighlightValidTiles(attacks, _validAttackTile);
 
-    public void HighlightValidAttacks(List<Vector3Int> attacks)
-    {
-        foreach (var att in attacks)
-        {
-            _validMovesMap.SetTile(att, _validAttackTile);
-        }
-    }
+    public void HighlightRevivalTiles(List<Vector3Int> revivals) => HighlightValidTiles(revivals, _outlineTile);
 
-    public void HighlightRevivalTiles(List<Vector3Int> revivals)
-    {
-        foreach (var tile in revivals)
-            _validMovesMap.SetTile(tile, _outlineTile);
-    }
+    public void HighlightOutlineTiles(List<Vector3Int> outlines) => HighlightValidTiles(outlines, _outlineTile);
 
-    public void ClearValidMoves()
-    {
-        _validMovesMap.ClearAllTiles();
-    }
+    public void ClearValidMoves() => _validMovesMap.ClearAllTiles();
+
+    #endregion
+
+    #region Obstacle Management
 
     // Instantiate obstacle and add to obstacles list
     public void SpawnObstacle(Vector3Int spawnTile, Obstacle prefabToSpawn, RotationState? rotationState = null)
@@ -325,17 +319,10 @@ public class GridManager : MonoBehaviour
 
     public void UpdateObstacleList(List<Vector3Int> oldTiles, List<Vector3Int> newTiles)
     {
-        foreach (var tile in oldTiles)
-        {
-            if (_obstacles.Contains(tile))
-                _obstacles.Remove(tile);
-        }
-
-        foreach (var tile in newTiles)
-        {
-            if (!_obstacles.Contains(tile))
-                _obstacles.Add(tile);
-        }
+        _obstacles = _obstacles
+            .Except(oldTiles)  //remove old obstacles
+            .Union(newTiles)   //add new obstacles
+            .ToList();
     }
 
     public bool IsObstacleTile(Vector3Int tile)
@@ -343,29 +330,27 @@ public class GridManager : MonoBehaviour
         return _obstacles.Contains(tile);
     }
 
+    #endregion 
+
+
+    private bool IsValidMove(BaseUnit previousUnit, BaseUnit newUnit)
+    {
+        return previousUnit != null && newUnit == null && TurnManager.Instance.isUnitInCurrentSquad(previousUnit);
+    }
+
+
+    public Vector3Int GetMouseTilePosition()
+    {
+        Vector3 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        return _tilemap.WorldToCell(mouseWorldPosition);
+    }
 
     public bool IsOccupied(Vector3Int tile)
     {
         return (IsObstacleTile(tile) || UnitManager.Instance.GetUnitAtTile(tile) != null || GetTileAtPosition(tile) == null);
     }
 
-    // Get the tile at the specified grid position
-    public TileBase GetTileAtPosition(Vector3Int position)
-    {
-        return _tilemap.GetTile(position); 
-    }
-
-    // Set a tile at a specific position
-    public void SetTileAtPosition(Vector3Int position, TileBase tile)
-    {
-        _tilemap.SetTile(position, tile); // Set a tile at the specified position
-    }
-
-    public void HighlightOutlineTiles(List<Vector3Int> outlines)
-    {
-        foreach (var tile in outlines)
-            _validMovesMap.SetTile(tile, _outlineTile);
-    }
+    
 }
 
 

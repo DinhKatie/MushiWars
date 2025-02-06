@@ -1,3 +1,4 @@
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -32,4 +33,6 @@ public class Utilities : MonoBehaviour
 
         return tiles;
     }
+
+    public static BaseUnit GetUnitByViewID(int viewID) => PhotonView.Find(viewID).gameObject.GetComponent<BaseUnit>();
 }

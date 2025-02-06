@@ -2,8 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using Photon.Pun;
+using System.Linq;
 
-public class UnitManager : MonoBehaviour
+public class UnitManager : MonoBehaviourPunCallbacks
 {
     public static UnitManager Instance;
     [SerializeField] private GridManager gridManager;
@@ -15,7 +17,7 @@ public class UnitManager : MonoBehaviour
     [SerializeField] public BaseUnit fireHeroPrefab;
     [SerializeField] public BaseUnit _campfirePrefab;
 
-    private Dictionary<Vector3Int, BaseUnit> _unitsOnTiles = new Dictionary<Vector3Int, BaseUnit>();
+    private Dictionary<Vector3Int, int> _unitsOnTiles = new Dictionary<Vector3Int, int>();
     private Dictionary<UnitPrefabs, BaseUnit> unitPrefabsDict;
 
     private void Awake()
@@ -35,43 +37,89 @@ public class UnitManager : MonoBehaviour
         };
     }
 
+    #region Unit Spawning
+
     public void LogUnitsOnTiles()
     {
         foreach (var entry in _unitsOnTiles)
         {
-            Debug.Log($"Tile: {entry.Key}, Unit: {entry.Value}");
+            BaseUnit unit = GetUnitByViewID(entry.Value);
+            Debug.Log($"Tile: {entry.Key}, Unit: {entry.Value} Squad: {unit.GetSquad} Type: {unit.GetType()}");
         }
     }
 
     public BaseUnit SpawnUnit(Vector3Int spawnTile, UnitPrefabs unitType, Squads squad)
     {
-        // Check if the tile is valid and no unit is already there
-        if (!GridManager.Instance.IsOccupied(spawnTile))
+        if (GridManager.Instance.IsOccupied(spawnTile))
         {
-            // Retrieve the prefab based on the enum type
-            BaseUnit prefabToSpawn = unitPrefabsDict[unitType];
-
-            // Spawn Unit
-            BaseUnit newUnit;
-            if ((int) squad % 2 == 0)
-                newUnit = Instantiate(prefabToSpawn, _tilemap.GetCellCenterWorld(spawnTile), Quaternion.Euler(0, 180, 0));
-            else
-                newUnit = Instantiate(prefabToSpawn, _tilemap.GetCellCenterWorld(spawnTile), Quaternion.identity);
-
-            newUnit.SetCurrentPosition(spawnTile);
-            TurnManager.Instance.AddUnitToSquad(newUnit, squad);
-
-            // Add the unit to the dictionary to track its position
-            _unitsOnTiles[spawnTile] = newUnit;
-
-            Debug.Log($"Unit spawned on tile {spawnTile}");
-            newUnit.name = "Mushi " + _unitsOnTiles.Count;
-
-            return newUnit;
+            Debug.Log($"Tile {spawnTile} is either invalid or already has a unit.");
+            return null;
         }
-        Debug.Log($"Tile {spawnTile} is either invalid or already has a unit.");
-        return null;
+
+        BaseUnit prefabToSpawn = unitPrefabsDict[unitType];
+        Vector3 spawnPosition = _tilemap.GetCellCenterWorld(spawnTile);
+        Quaternion spawnRotation = (int)squad % 2 == 0 ? Quaternion.Euler(0, 180, 0) : Quaternion.identity;         //Different rotation based on squad
+
+        GameObject unitGO = PhotonNetwork.Instantiate(prefabToSpawn.name, spawnPosition, spawnRotation);
+        BaseUnit newUnit = unitGO.GetComponent<BaseUnit>();
+
+        newUnit.SetCurrentPosition(spawnTile);
+        TurnManager.Instance.AddUnitToSquad(newUnit, squad);
+
+        int viewID = newUnit.GetComponent<PhotonView>().ViewID;
+        _unitsOnTiles[spawnTile] = viewID;
+
+        //Debug.Log($"Unit spawned on tile {spawnTile}");
+        newUnit.name = "Mushi " + _unitsOnTiles.Count;
+
+        PhotonView.Get(this).RPC("RPC_UpdateBoardState", RpcTarget.Others, spawnTile.x, spawnTile.y, spawnTile.z, viewID, squad);
+
+        return newUnit;
+        
     }
+
+    #endregion
+
+    #region Remote Procedure Calls (RPCs)
+    [PunRPC]
+    public void RPC_UpdateBoardState(int x, int y, int z, int viewID, int squad)
+    {
+        //Debug.Log("Starting the Update Board RPC");
+
+        //rebuild the Vector3Int from the individual x, y, z integers
+        Vector3Int spawnTileInt = new Vector3Int(x, y, z);
+
+        //find the GameObject using the View ID
+        BaseUnit newUnit = GetUnitByViewID(viewID);
+
+        newUnit.SetCurrentPosition(spawnTileInt);
+        TurnManager.Instance.AddUnitToSquad(newUnit, (Squads)squad);
+        _unitsOnTiles[spawnTileInt] = viewID;
+
+        //LogUnitsOnTiles();
+
+    }
+
+    [PunRPC]
+    public void PushCampfireRPC(int pusherViewID, int campfireViewID, int x, int y, int z)
+    {
+        BaseUnit pusher = GetUnitByViewID(pusherViewID);
+        BaseUnit campfire = GetUnitByViewID(campfireViewID);
+
+        _unitsOnTiles.Remove(pusher.CurrentPosition);
+        _unitsOnTiles.Remove(campfire.CurrentPosition);
+
+        pusher.SetCurrentPosition(campfire.CurrentPosition);
+        campfire.SetCurrentPosition(new Vector3Int(x,y,z));
+
+        _unitsOnTiles[campfire.CurrentPosition] = campfire.GetComponent<PhotonView>().ViewID;
+        _unitsOnTiles[pusher.CurrentPosition] = pusher.GetComponent<PhotonView>().ViewID;
+
+    }
+
+    #endregion
+
+    #region Unit Management
 
     public void RemoveUnit(Vector3Int unitTile)
     {
@@ -84,14 +132,6 @@ public class UnitManager : MonoBehaviour
         }
     }
 
-    // Method to get the unit at a specific tiles
-    public BaseUnit GetUnitAtTile(Vector3Int tilePosition)
-    {
-        _unitsOnTiles.TryGetValue(tilePosition, out BaseUnit unit);
-        return unit;
-
-    }
-
     public void MoveUnit(BaseUnit unit, Vector3Int newPosition)
     {
         if (GetUnitAtTile(newPosition) != null || unit.MovementRange <= 0 || unit.CalculateMoveCost(newPosition) > unit.MovementRange) return;
@@ -102,9 +142,9 @@ public class UnitManager : MonoBehaviour
         }
 
         _unitsOnTiles.Remove(unit.CurrentPosition);
-        _unitsOnTiles[newPosition] = unit;
+        _unitsOnTiles[newPosition] = unit.GetComponent<PhotonView>().ViewID;
 
-        unit.Move(newPosition);
+        unit.GetComponent<PhotonView>().RPC("RPC_MoveUnit", RpcTarget.All, newPosition.x, newPosition.y, newPosition.z);
     }
 
     public void AttackUnit(BaseUnit attacker, BaseUnit hitUnit)
@@ -126,42 +166,49 @@ public class UnitManager : MonoBehaviour
             Debug.Log($"{hitUnit} is out of attack range");
     }
 
+    #endregion
+
+
+    public void UpdateUnitLocation(int viewID, Vector3Int oldPosition, Vector3Int newPosition)
+    {
+        if (GridManager.Instance.GetTileAtPosition(newPosition))
+        {
+            _unitsOnTiles[newPosition] = viewID;
+            _unitsOnTiles.Remove(oldPosition);
+        }
+    }
+
+    public BaseUnit GetUnitAtTile(Vector3Int tilePosition)
+    {
+        return _unitsOnTiles.TryGetValue(tilePosition, out int viewID) //ternary
+            ? GetUnitByViewID(viewID)
+            : null;
+    }
+
     public void PushCampfire(BaseUnit pusher, Campfire campfire, Vector3Int tileToPush)
     {
-        if (pusher.MovementRange <= 0) return; 
+        if (pusher.MovementRange <= 0) return;
+        int pusherViewID = pusher.GetComponent<PhotonView>().ViewID;
+        int campfireViewID = campfire.GetComponent<PhotonView>().ViewID;
 
-        Vector3Int pusherOldPos = pusher.CurrentPosition;
-        Vector3Int fireOldPos = campfire.CurrentPosition;
-
-        _unitsOnTiles.Remove(pusherOldPos);
-        _unitsOnTiles.Remove(fireOldPos);
-
-        pusher.SetCurrentPosition(campfire.CurrentPosition);
-        campfire.SetCurrentPosition(tileToPush);
-
-        _unitsOnTiles[campfire.CurrentPosition] = campfire;
-        _unitsOnTiles[pusher.CurrentPosition] = pusher;
-
+        GetComponent<PhotonView>().RPC("PushCampfireRPC", RpcTarget.AllBuffered, pusherViewID, campfireViewID, tileToPush.x, tileToPush.y, tileToPush.z);
         pusher.DecrementMove();
         pusher.HighlightValidMoves();
     }
 
     public void UpdateUnitsAfterShrink()
     {
-        List<BaseUnit> unitsToRemove = new List<BaseUnit>();
-        foreach (KeyValuePair<Vector3Int, BaseUnit> entry in _unitsOnTiles)
-        {
-            Vector3Int tile = entry.Key;
-            BaseUnit unit = entry.Value;
+        List<int> unitsToRemove = new List<int>();
 
-            if (GridManager.Instance.GetTileAtPosition(tile) == null)
-            {
-                unitsToRemove.Add(unit);
-            }
-        }
+        unitsToRemove = _unitsOnTiles
+        .Where(entry => GridManager.Instance.GetTileAtPosition(entry.Key) == null)
+        .Select(entry => entry.Value)  //Get the unit's viewID
+        .ToList();
 
-        foreach (BaseUnit unit in unitsToRemove)
+        foreach (int viewID in unitsToRemove)
         {
+            BaseUnit unit = GetUnitByViewID(viewID);
+
             unit.OnDeath();
             RemoveUnit(unit.CurrentPosition);
         }
@@ -178,20 +225,26 @@ public class UnitManager : MonoBehaviour
         }
 
         _unitsOnTiles.Remove(unitToPort.CurrentPosition);
-        _unitsOnTiles[newPosition] = unitToPort;
+        _unitsOnTiles[newPosition] = unitToPort.GetComponent<PhotonView>().ViewID;
 
         unitToPort.Teleport(newPosition);
     }
 
     // --------------------------------
 
+    public void ResetTeam(List<BaseUnit> squad) => squad.ForEach(unit => unit.Reset());
+
+    public void UseHeroAbility(List<BaseUnit> squad) => squad.OfType<BaseHero>().FirstOrDefault()?.UseAbility();
+
+    private BaseUnit GetUnitByViewID(int viewID) => Utilities.GetUnitByViewID(viewID);
+
     // Update highlights when grid changes
     public void UpdateUnitHighlights()
     {
-        foreach (var unit in _unitsOnTiles.Values)
+        foreach (var viewID in _unitsOnTiles.Values)
         {
-            if (unit != null)
-                unit.HighlightValidMoves();
+            BaseUnit unit = GetUnitByViewID(viewID);
+            unit?.HighlightValidMoves();
         }
     }
 
@@ -203,25 +256,6 @@ public class UnitManager : MonoBehaviour
         unit.HighlightValidMoves();
     }
 
-    public void ResetTeam(List<BaseUnit> squad)
-    {
-        foreach (var unit in squad)
-        {
-            unit.Reset();
-        }
-    }
-
-    public void UseHeroAbility(List<BaseUnit> squad)
-    {
-        foreach( var unit in squad)
-        {
-            if (unit is BaseHero hero)
-            {
-                hero.UseAbility();
-                break;
-            }
-        }
-    }
 
     public List<Vector3Int> GetTeam(Squads squad)
     {
@@ -229,15 +263,17 @@ public class UnitManager : MonoBehaviour
 
         foreach (var kvp in _unitsOnTiles)
         {
-            if (kvp.Value.GetSquad == squad)
-                teamUnits.Add(kvp.Value.CurrentPosition);
+            BaseUnit unit = GetUnitByViewID(kvp.Value);
+            if (unit.GetSquad == squad)
+                teamUnits.Add(unit.CurrentPosition);
         }
 
         return teamUnits;
     }
 
-
 }
+
+
 
 
 

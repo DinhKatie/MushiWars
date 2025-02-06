@@ -1,3 +1,5 @@
+using Photon.Pun;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -107,8 +109,18 @@ public class BaseUnit : MonoBehaviour
 
             Debug.Log($"Unit Move Cost: {moveCost}");
 
-            HighlightValidMoves();
+            if (TurnManager.Instance.isCurrentPlayer())
+                HighlightValidMoves();
         }
+    }
+
+    [PunRPC]
+    public void RPC_MoveUnit(int x, int y, int z)
+    {
+        Debug.Log("Called RPC_MoveUnit");
+        Vector3Int newPosition = new Vector3Int(x,y, z);
+        UnitManager.Instance.UpdateUnitLocation(GetComponent<PhotonView>().ViewID, CurrentPosition, newPosition);
+        Move(newPosition);
     }
 
     public int CalculateMoveCost(Vector3Int newPosition)
@@ -166,7 +178,8 @@ public class BaseUnit : MonoBehaviour
             Grid.Deselect();
             return;
         }
-        enemy.OnHit();
+
+        enemy.OnHit(1);
         hasAttacked = true;
         HighlightValidMoves();
         Grid.Deselect();
@@ -197,7 +210,7 @@ public class BaseUnit : MonoBehaviour
             Debug.Log("Immune! (Take Damage)");
             return;
         }
-        OnHit();
+        OnHit(1);
     }
 
     public void AutoDie()
@@ -207,7 +220,7 @@ public class BaseUnit : MonoBehaviour
             Debug.Log("Immune! (AutoDie)");
             return;
         }
-        OnDeath();
+        GetComponent<PhotonView>().RPC("OnDeathRPC", RpcTarget.All);
     }
 
     public void Teleport(Vector3Int newPosition)
@@ -223,11 +236,33 @@ public class BaseUnit : MonoBehaviour
 
 
     // ----- ON HIT AND ON DEATH ------
-    protected virtual void OnHit()
+    protected virtual void OnHit(int damage)
     {
-        health -= 1;
+        if (dead) return;
+
+        Debug.Log("Applying Damage");
+        health -= damage;
         Debug.Log($"{name} has been hit! Health: {health}");
-        if (health <= 0) OnDeath();
+        GetComponent<PhotonView>().RPC("OnHitRPC", RpcTarget.OthersBuffered, health);
+
+        if (health <= 0)
+        {
+            GetComponent<PhotonView>().RPC("OnDeathRPC", RpcTarget.All);
+        }
+    }
+
+    [PunRPC]
+    public void OnHitRPC(int newHealth)
+    {
+        Debug.Log($"New Health of {name}: {newHealth}");
+        health = newHealth;
+    }
+
+    [PunRPC]
+    public void OnDeathRPC()
+    {
+        Debug.Log("Calling OnDeath RPC");
+        OnDeath();
     }
 
     public virtual void OnDeath()
@@ -247,7 +282,6 @@ public class BaseUnit : MonoBehaviour
         currPosition = new Vector3Int(-1, -1, -1);
         this.enabled = false;
 
-        //Notify campfire to signify revival
         TurnManager.Instance.GetCampfireOfSquad(squad)?.RegisterDeadUnit(this);
     }
 
@@ -279,5 +313,5 @@ public class BaseUnit : MonoBehaviour
         //Highlight if a campfire is pushable
         Grid.isCampfirePushable(this);
     }
-
 }
+

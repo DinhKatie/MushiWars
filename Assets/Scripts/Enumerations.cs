@@ -6,11 +6,11 @@ public enum Squads
 }
 public enum UnitPrefabs
 {
-    unit,
-    swordUnit,
-    gunUnit,
-    fireHero,
-    campfire,
+    unit = 0,
+    swordUnit = 1,
+    gunUnit = 2,
+    fireHero = 3,
+    campfire = 4,
 }
 
 public enum Obstacle

@@ -43,6 +43,32 @@ MonoBehaviour:
   - RPC_StartTurn
   - EndTurnRPC
   - SetSquadOwnerRPC
+  - SyncUnitsOnTiles
+  - RPC_UpdateBoardState
+  - RPC_MoveUnit
+  - StartTurnRPC
+  - PushCampfireRPC
+  - AttackRPC
+  - OnDeathRPC
+  - OnHitRPC
+  - DrawCardRPC
+  - ShuffleRPC
+  - DiscardCardRPC
+  - UpdateDeckState
+  - SetUpDeckRPC
+  - SetUpCardRPC
+  - UpdateHandCountRPC
+  - UpdateUI
+  - DisplayCardToPlayersRPC
+  - HealthOrbRPC
+  - HovercraftRPC
+  - ForcefieldRPC
+  - NavigationRPC
+  - PartyTimeRPC
+  - TeleportRPC
+  - ChillingWindRPC
+  - HeroCurseRPC
+  - MushiCurseRPC
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

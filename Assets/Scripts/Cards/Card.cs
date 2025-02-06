@@ -17,6 +17,8 @@ public class Card : MonoBehaviour
     {
         cardData = data;
         _cardImage.sprite = cardData.Image; //Set image
+        name = cardData.CardName;
+
     }
 
     public void PlayEffect()

@@ -19,7 +19,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
     private Dictionary<Squads, Player> squadOwners = new Dictionary<Squads, Player>(); //Connect players to their squads
     public bool _playerControlsEnabled;
     public bool _playerControlsOn => _playerControlsEnabled;
-    private int expectedPlayerCount = 2;
 
     private Squads currentSquad; // The squad whose turn it is
 
@@ -30,10 +29,16 @@ public class TurnManager : MonoBehaviourPunCallbacks
     private int currentRound = 0;
     private int roundsPerShrink = 2;
 
+
+    #region Initialization
+
     private void Awake()
     {
         if (Instance == null)
+        {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
         else
             Destroy(gameObject);
 
@@ -52,61 +57,31 @@ public class TurnManager : MonoBehaviourPunCallbacks
             EndTurn();
     }
 
-    public override void OnPlayerEnteredRoom(Player newPlayer)
-    {
-        Debug.Log($"Player {newPlayer.NickName} joined. Total players: {PhotonNetwork.PlayerList.Length}/{expectedPlayerCount}");
-
-        if (PhotonNetwork.PlayerList.Length == expectedPlayerCount && PhotonNetwork.IsMasterClient)
+    public void StartGame()
+    { 
+        if (PhotonNetwork.IsMasterClient)
         {
-            Debug.Log("All players have joined. Starting the game...");
-
             InitializeSquadOwners();
-            StartTurn(); // Start the first turn
-
-
+            StartTurn(); 
         }
     }
 
-    // Start the turn of the current unit
     public void StartTurn()
     {
         currentSquad = (Squads)(currentSquadIndex + 1);
+        PhotonView.Get(this).RPC("StartTurnRPC", RpcTarget.All, (int)currentSquad);
         Debug.Log($"Switching Teams. Team {currentSquad}'s turn");
 
-
-        /*// Check which Photon player owns the current squad
-        if (squadOwners.TryGetValue(currentSquad, out Player owner))
+        if (isCurrentPlayer())
         {
-            Debug.Log(owner);
-            Debug.Log("Trying");
-            if (owner == PhotonNetwork.LocalPlayer)
-                EnablePlayerControls();
-            else
-                DisablePlayerControls();
-        }*/
+            HandManager.Instance.DrawACard();
+            SetPlayerControls(true);
+        }
     }
-
-    public void EnablePlayerControls()
-    {
-        _playerControlsEnabled = true;
-        Debug.Log("Player controls enabled for local player.");
-    }
-
-    public void DisablePlayerControls()
-    {
-        _playerControlsEnabled = false;
-        Debug.Log("Player controls disabled for local player.");
-    }
-
-    // End the current squad's turn and move to the next
 
     public void EndTurn()
     {
-        currentSquadIndex = (currentSquadIndex + 1) % squadsList.Count;
-        UnitManager.Instance.ResetTeam(squadsList[currentSquadIndex]);
-        GridManager.Instance.Deselect();
-
-        if (currentSquadIndex == 0) //after the last player finishes their turn and we're back to player one
+        /*if (currentSquadIndex == 0) //after the last player finishes their turn and we're back to player one
         {
             currentRound++;
             Debug.Log($"Current Round: {currentRound}");
@@ -116,114 +91,99 @@ public class TurnManager : MonoBehaviourPunCallbacks
                 UnitManager.Instance.UpdateUnitsAfterShrink();
                 currentRound = 0;
             }
-        }
-
-        StartTurn();
-
-        /*if (PhotonNetwork.LocalPlayer == squadOwners[currentSquad])
+        }*/
+        if (isCurrentPlayer())
         {
             Debug.Log("End Turn RPC Sent.");
-            PhotonView photonView = PhotonView.Get(this);
-            photonView.RPC("EndTurnRPC", RpcTarget.All);
-        }*/
-    }
-
-    [PunRPC]
-    public void EndTurnRPC()
-    {
-        currentSquadIndex = (currentSquadIndex + 1) % squadsList.Count;
-        UnitManager.Instance.ResetTeam(squadsList[currentSquadIndex]);
-        GridManager.Instance.Deselect();
-        StartTurn();
+            PhotonView.Get(this).RPC("EndTurnRPC", RpcTarget.All);
+        }
     }
 
     private void InitializeSquadOwners()
     {
         if (!PhotonNetwork.IsMasterClient) return;
 
-        // Assign the first two players to the two squads
         var players = PhotonNetwork.PlayerList;
-        if (players.Length >= 2)
+        for (int i = 0; i < players.Length && i < squadsDict.Count; i++)
         {
-            squadOwners[Squads.one] = players[0];
-            squadOwners[Squads.two] = players[1];
-        }
-
-        // Copy squadOwners to a list to avoid modifying the dictionary during iteration
-        var squadOwnersList = new List<KeyValuePair<Squads, Player>>(squadOwners);
-
-        // Send the squadOwners to all clients
-        PhotonView photonView = PhotonView.Get(this);
-        foreach (var kvp in squadOwnersList)
-        {
-            photonView.RPC("SetSquadOwnerRPC", RpcTarget.AllBuffered, kvp.Key, kvp.Value.ActorNumber);
+            squadOwners[(Squads)(i + 1)] = players[i];
+            PhotonView.Get(this).RPC("SetSquadOwnerRPC", RpcTarget.AllBuffered, (int)(Squads)(i + 1), players[i].ActorNumber);
         }
         Debug.Log("Squad Owners Initialized and Sent.");
     }
 
+    public void SetPlayerControls(bool enabled)
+    {
+        _playerControlsEnabled = enabled;
+        Debug.Log($"Player controls {(enabled ? "enabled" : "disabled")} for local player.");
+    }
+
+    #endregion //--------------------------------------------------------------
+
+    #region Remote Procedure Calls (RPCs)
+
+    [PunRPC]
+    public void StartTurnRPC(int currSquad)
+    {
+        currentSquad = (Squads)currSquad;
+        if (isCurrentPlayer())
+            Tooltips.Instance.ShowPlayerTurn("Your");
+        else
+            Tooltips.Instance.ShowPlayerTurn(squadOwners[currentSquad].NickName + "'s");
+    }
+
+    [PunRPC]
+    public void EndTurnRPC()
+    {
+        currentSquadIndex = (currentSquadIndex + 1) % squadsList.Count;
+
+        UnitManager.Instance.ResetTeam(squadsList[currentSquadIndex]);
+        GridManager.Instance.Deselect();
+        Tooltips.Instance.HideRevivalTooltip();
+        StartTurn();
+    }
+
+
     [PunRPC]
     public void SetSquadOwnerRPC(Squads squad, int ownerActorNumber)
     {
-        Debug.Log("Owner Actor Number: " + ownerActorNumber);
         Player owner = PhotonNetwork.CurrentRoom.GetPlayer(ownerActorNumber);
         if (owner != null)
-        {
             squadOwners[squad] = owner;
-        }
         else
-        {
             Debug.LogError("Player not found with actor number: " + ownerActorNumber);
-        }
 
     }
 
-    public bool isUnitInCurrentSquad(BaseUnit unit)
-    {
-        if (unit.GetSquad == currentSquad) return true;
-        return false;
-    }
+    #endregion // ---------------------------------------------------------
+
+    public void RemoveUnitFromTurnSystem(BaseUnit unit) => squadsDict[unit.GetSquad]?.Remove(unit);
+
+    public bool isCurrentPlayer() => PhotonNetwork.LocalPlayer == squadOwners[currentSquad];
+
+    public bool isUnitInCurrentSquad(BaseUnit unit) => unit.GetSquad == currentSquad;
 
     public void AddUnitToSquad(BaseUnit unit, Squads team)
     {
-        List<BaseUnit> squad = squadsDict[team];
         unit.SetSquad(team);
-        squad.Add(unit);
+        squadsDict[team].Add(unit);
     }
 
-    public void RemoveUnitFromTurnSystem(BaseUnit unit)
-    {
-        List<BaseUnit> l = squadsDict[unit.GetSquad];
-        if (l.Contains(unit))
-            l.Remove(unit);
-    }
 
-    public Campfire GetCampfireOfSquad(Squads squad)
-    {
-        foreach (var u in squadsDict[squad])
-        {
-            if (u is Campfire camp) return camp;
-        }
-        return null;
-    }
-
-    public BaseHero GetHeroOfSquad(Squads squad)
-    {
-        foreach (var u in squadsDict[squad])
-        {
-            if (u is BaseHero hero) return hero;
-        }
-        return null;
-    }
-
-    public HeroTypes GetHeroType(Squads squad)
+    public T GetUnitOfType<T>(Squads squad) where T : BaseUnit
     {
         foreach (var unit in squadsDict[squad])
         {
-            if (unit is BaseHero hero)
-                return hero.heroType;
+            if (unit is T typeUnit) return typeUnit;
         }
-        return HeroTypes.None;
+        return null;
     }
+
+    public Campfire GetCampfireOfSquad(Squads squad) => GetUnitOfType<Campfire>(squad);
+
+    public BaseHero GetHeroOfSquad(Squads squad) => GetUnitOfType<BaseHero>(squad);
+
+    public HeroTypes GetHeroType(Squads squad) => GetHeroOfSquad(squad)?.heroType ?? HeroTypes.None;
 
     public List<BaseUnit> GetAllUnitsExcept(Squads squad)
     {
@@ -231,10 +191,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
         foreach(var s in squadsDict)
         {
-            if (s.Key != squad)
-            {
+            if (s.Key != squad) //If the squad number is not equal to the given squad, add all its units to the list
                 otherSquads.AddRange(s.Value);
-            }
         }
 
         return otherSquads;

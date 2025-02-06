@@ -1,3 +1,4 @@
+using Photon.Pun;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,6 +25,9 @@ public class CardEffectInitializer : MonoBehaviour
     [SerializeField] private ScriptableCard chillingWind;
     [SerializeField] private ScriptableCard curse;
 
+    private CardEffectRPCs cardRPCs;
+    private PhotonView photonView;
+
     private void Awake()
     {
         // Assign specific effects to ScriptableCards
@@ -38,6 +42,9 @@ public class CardEffectInitializer : MonoBehaviour
         chillingWind.OnPlayEffect= () => ChillingWind();
         curse.OnPlayEffect = () => Curse();
         navigation.OnPlayEffect = () => Navigation();
+
+        cardRPCs = GetComponent<CardEffectRPCs>();
+        photonView = GetComponent<PhotonView>();
     }
 
     private bool CantPlayCard() => HandManager.Instance.DisableCardEffects();
@@ -54,6 +61,7 @@ public class CardEffectInitializer : MonoBehaviour
             {
                 unit.IncrementMove();
                 Debug.Log($"{unit} received 1 additional move range.");
+                photonView.RPC("HovercraftRPC", RpcTarget.Others, unit.GetComponent<PhotonView>().ViewID);
             }
             GridManager.Instance.Deselect();
             GridManager.Instance.ClearValidMoves();
@@ -134,6 +142,7 @@ public class CardEffectInitializer : MonoBehaviour
         StartCoroutine(Select(CurrentSquadUnits(), tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
         {
             unit?.SetImmune(true);
+            photonView.RPC("ForcefieldRPC", RpcTarget.Others, unit.GetComponent<PhotonView>().ViewID);
             Debug.Log($"Applied Forcefield");
             AvoidSelection(false);
         }));
@@ -158,6 +167,7 @@ public class CardEffectInitializer : MonoBehaviour
             StartCoroutine(Select(validMoveTiles, tile => tile, tile =>
             {
                 UnitManager.Instance.TeleportUnit(unit, tile);
+                photonView.RPC("TeleportRPC", RpcTarget.Others, unit.GetComponent<PhotonView>().ViewID, tile.x, tile.y, tile.z);
                 unit.DisableMovementAndAttack();
                 AvoidSelection(false);
             }));
@@ -170,13 +180,14 @@ public class CardEffectInitializer : MonoBehaviour
 
         AvoidSelection(true);
         //Discard another card. Party Time cannot be played if no other cards are available to discard.
-        if (HandManager.Instance.numCards() > 0)
+        if (HandManager.Instance.numCards > 0)
         {
             StartCoroutine(WaitForDiscard(() =>
             {
                 StartCoroutine(Select(CurrentSquadUnits(), tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
                 {
                     unit.Reset();
+                    photonView.RPC("PartyTimeRPC", RpcTarget.Others, unit.GetComponent<PhotonView>().ViewID);
                     AvoidSelection(false);
                 }));
             }));
@@ -211,6 +222,7 @@ public class CardEffectInitializer : MonoBehaviour
             {
                 Debug.Log($"{unit2} selected by Navigation. Incrementing move by 3.");
                 unit2.IncrementMove(3); //Up to 3? or exactly 3
+                photonView.RPC("NavigationRPC", RpcTarget.Others, unit2.GetComponent<PhotonView>().ViewID);
 
                 AvoidSelection(false);
             }));
@@ -225,6 +237,7 @@ public class CardEffectInitializer : MonoBehaviour
         BaseHero hero = TurnManager.Instance.GetHeroOfSquad(TurnManager.Instance.GetCurrentSquad());
         hero?.IncrementHealth();
         Debug.Log($"Health of {hero} incremented by 1. New health: {hero.Health}");
+        photonView.RPC("HealthOrbRPC", RpcTarget.Others, hero.GetComponent<PhotonView>().ViewID);
     }
 
     private void Educate()
@@ -234,7 +247,7 @@ public class CardEffectInitializer : MonoBehaviour
         int counter = 0;
         while (!HandManager.Instance.hasMaxHandSize() && counter < 2)
         {
-            GetComponent<Deck>().DrawHand(1);
+            HandManager.Instance.DrawACard();
             counter++;
         }
     }
@@ -251,6 +264,7 @@ public class CardEffectInitializer : MonoBehaviour
         StartCoroutine(Select(unitsWithinRange, tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
         {
             unit.SetChilled(true);
+            photonView.RPC("ChillingWindRPC", RpcTarget.Others, unit.GetComponent<PhotonView>().ViewID);
             Debug.Log($"Chilled {unit}");
             AvoidSelection(false);
         }));
@@ -262,28 +276,35 @@ public class CardEffectInitializer : MonoBehaviour
 
         BaseHero currHero = TurnManager.Instance.GetHeroOfSquad(TurnManager.Instance.GetCurrentSquad());
         List<Vector3Int> unitsWithinRange = GetUnitsInHexRange(currHero, 4);
+        if (unitsWithinRange.Count <= 0) return;
 
         AvoidSelection(true);
 
         StartCoroutine(Select(unitsWithinRange, tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
         {
-            //Disable selecting his unit for skills. If hero, disable support/hexes
+            //Disable selecting this unit for skills. If hero, disable support/hexes
             unit.DisableSkills(true);
+            photonView.RPC("MushiCurseRPC", RpcTarget.Others, unit.GetComponent<PhotonView>().ViewID);
             if (EnemyHeroUnits().Contains(unit))
             {
                 BaseHero hero = EnemyHeroUnits().FirstOrDefault(hero => hero == unit);
                 hero.SetCursed(true);
+                photonView.RPC("HeroCurseRPC", RpcTarget.Others, hero.GetComponent<PhotonView>().ViewID);
             }
 
-            StartCoroutine(Select(unitsWithinRange.Where(u => u != unit.CurrentPosition).ToList(), tile => UnitManager.Instance.GetUnitAtTile(tile), unit2 =>
+            List<Vector3Int> remainingUnitsInRange = unitsWithinRange.Where(u => u != unit.CurrentPosition).ToList();
+            if (remainingUnitsInRange.Count <= 0) return;
+
+            StartCoroutine(Select(remainingUnitsInRange, tile => UnitManager.Instance.GetUnitAtTile(tile), unit2 =>
             {
                 //Disable selecting this second unit for skills. If hero, disable support/hexes
                 unit2.DisableSkills(true);
-
+                photonView.RPC("MushiCurseRPC", RpcTarget.Others, unit2.GetComponent<PhotonView>().ViewID);
                 if (EnemyHeroUnits().Contains(unit))
                 {
-                    BaseHero hero = EnemyHeroUnits().FirstOrDefault(hero => hero == unit);
+                    BaseHero hero = EnemyHeroUnits().FirstOrDefault(hero => hero == unit2); //Possible error here
                     hero.SetCursed(true);
+                    photonView.RPC("HeroCurseRPC", RpcTarget.Others, hero.GetComponent<PhotonView>().ViewID);
                 }
                 AvoidSelection(false);
             }));

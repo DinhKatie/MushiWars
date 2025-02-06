@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragHandler
 {
-
+    private Deck deck;
     public bool _isBeingDragged;
     private Canvas _cardCanvas;
     private RectTransform _rectTransform;
@@ -23,6 +23,7 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
         _rectTransform = GetComponent<RectTransform>();
         _card = GetComponent<Card>();
         _cardSelectionHandler = GetComponent<CardSelectionHandler>();
+        deck = GameObject.Find("Deck").GetComponent<Deck>();
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -55,16 +56,23 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
         // Check if the card is outside the hand canvas
         if (!RectTransformUtility.RectangleContainsScreenPoint(handRect, Input.mousePosition, eventData.pressEventCamera))
         {
-            Deck.Instance.DiscardCard(_card);
-            _card.PlayEffect(); //Apply its effect
+            if (!TurnManager.Instance.isCurrentPlayer())
+            {
+                ResetCardPosition();
+                Debug.Log("Not the current player!");
+            }
+            else
+                deck.DiscardCard(_card);
         }
         else
-        {
-            _rectTransform.position = _originalPos;
-            _rectTransform.transform.SetSiblingIndex(_cardSelectionHandler._originalIndex);
-        }
-            
+            ResetCardPosition();
 
         HandManager.Instance.ArrangeCardsInHand();
+    }
+
+    private void ResetCardPosition()
+    {
+        _rectTransform.position = _originalPos;
+        _rectTransform.transform.SetSiblingIndex(_cardSelectionHandler._originalIndex);
     }
 }
