@@ -39,7 +39,7 @@ public class TestDeck : MonoBehaviour
             card.gameObject.SetActive(false);
         }
         UpdateDeckText();
-        //GetComponent<PhotonView>().RPC("ShuffleRPC", RpcTarget.All);
+        GetComponent<PhotonView>().RPC("ShuffleRPC", RpcTarget.All);
 
     }
 
@@ -52,12 +52,182 @@ public class TestDeck : MonoBehaviour
 
     public void UpdateDeckText()
     {
-        deckText.text = "";
+        string deckInfo = "";
         for (int i = 0; i < _deckPile.Count; i++)
         {
             var card = _deckPile[i];
-            deckText.text += $"Card {i + 1}: ID = {card.GetComponent<PhotonView>().ViewID}, Name = {card.name}\n";
+            deckInfo += $"Card {i + 1}: ID = {card.GetComponent<PhotonView>().ViewID}, Name = {card.name}\n";
+        }
+        deckInfo += "\n";
+        for (int i = 0; i < _discardPile.Count; i++)
+        {
+            var card = _discardPile[i];
+            deckInfo += $"Discarded Card {i + 1}: ID = {card.GetComponent<PhotonView>().ViewID}, Name = {card.name}\n";
+        }
+        GetComponent<PhotonView>().RPC("RPC_UpdateDeckText", RpcTarget.All, deckInfo);
+    }
+
+    [PunRPC]
+    public void RPC_UpdateDeckText(string deckInfo)
+    {
+        deckText.text = deckInfo;
+    }
+
+    public IEnumerator DrawHand(int amount = 5)
+    {
+        Debug.Log("Drawing a Card.");
+        for (int i = 0; i < amount; i++)
+        {
+            if (_deckPile.Count <= 0)
+            {
+                GetComponent<PhotonView>().RPC("ShuffleRPC", RpcTarget.MasterClient);
+
+                //Wait for reshuffle to complete
+                yield return new WaitUntil(() => _deckPile.Count > 0);
+            }
+
+            if (_deckPile.Count > 0)
+            {
+                HandCards.Add(_deckPile[0]);
+                _deckPile[0].gameObject.SetActive(true);
+                GetComponent<PhotonView>().RPC("DrawCardRPC", RpcTarget.All);
+            }
+
+            if (_deckPile.Count <= 0)
+            {
+                GetComponent<PhotonView>().RPC("ShuffleRPC", RpcTarget.MasterClient);
+                yield return new WaitUntil(() => _deckPile.Count > 0);
+            }
+
+        }
+        TestHandManager.Instance.ArrangeCardsInHand();
+        yield return null;
+    }
+
+    [PunRPC]
+    public void DrawCardRPC()
+    {
+        Debug.Log($"[DrawCardRPC] Removing {_deckPile[0]} from deck. Cards remaining: {_deckPile.Count}");
+        _deckPile.RemoveAt(0);
+        if (PhotonNetwork.IsMasterClient)
+        {
+            UpdateDeckText();
+        }
+        Debug.Log($"[DrawCardRPC] Card drawn. Cards remaining: {_deckPile.Count}");
+    }
+
+    private void Shuffle()
+    {
+        for (int i = _deckPile.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            var temp = _deckPile[i];
+            _deckPile[i] = _deckPile[j];
+            _deckPile[j] = temp;
+        }
+        UpdateDeckText();
+    }
+
+    [PunRPC]
+    public void ShuffleRPC()
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            //Debug.Log("[ShuffleRPC] Master client shuffling the deck...");
+            Debug.Log($"[ShuffleRPC] Deck size before shuffle: {_deckPile.Count}. Discard pile size: {_discardPile.Count}");
+
+            _deckPile.AddRange(_discardPile);
+            _discardPile.Clear();
+            Shuffle();
+            SendCardIDs();
+        }
+    }
+
+    private void SendCardIDs()
+    {
+        List<int> cardIds = new List<int>();
+        foreach (var card in _deckPile)
+        {
+            cardIds.Add(card.GetComponent<PhotonView>().ViewID);
         }
 
+        GetComponent<PhotonView>().RPC("UpdateDeckState", RpcTarget.All, cardIds.ToArray());
+    }
+
+    [PunRPC]
+    public void UpdateDeckState(int[] cardIds)
+    {
+        Debug.Log("[UpdateDeckState] Updating deck state on all clients...");
+        Debug.Log($"[UpdateDeckState] Received card IDs. Count: {cardIds.Length}");
+        _deckPile.Clear();
+        foreach (int id in cardIds)
+        {
+            var card = PhotonView.Find(id)?.gameObject.GetComponent<Card>();
+            if (card != null)
+                _deckPile.Add(card);
+            else
+                Debug.LogWarning($"[UpdateDeckState] Card with PhotonView ID {id} not found.");
+        }
+
+        Debug.Log($"[UpdateDeckState] Deck updated. New deck size: {_deckPile.Count}");
+    }
+
+    [PunRPC]
+    public void DiscardCardRPC(int viewID)
+    {
+        Debug.Log($"[DiscardCardRPC] Discarding card with PhotonView ID {viewID}");
+
+        Card card = PhotonView.Find(viewID)?.gameObject.GetComponent<Card>();
+        if (card != null)
+        {
+            _discardPile.Add(card);
+            Debug.Log($"[DiscardCardRPC] Card discarded. Discard pile size: {_discardPile.Count}");
+        }
+        else
+            Debug.LogWarning("[DiscardCardRPC] Card is null!");
+    }
+
+    [PunRPC]
+    public void DisplayCardToPlayersRPC(int viewID)
+    {
+        PhotonView cardView = PhotonView.Find(viewID);
+        if (cardView != null)
+        {
+            Card card = cardView.GetComponent<Card>();
+            ShowPlayedCard(card);
+        }
+    }
+
+    void ShowPlayedCard(Card card)
+    {
+        GetComponent<PlayedCardDisplay>().DisplayCard(card);
+    }
+
+    //No cards can be discarded from deck to discard
+    //Only from hand to discard
+    public void DiscardCard(Card card)
+    {
+        if (HandCards.Contains(card))
+        {
+            HandCards.Remove(card);
+            GetComponent<PhotonView>().RPC("DiscardCardRPC", RpcTarget.MasterClient, card.GetComponent<PhotonView>().ViewID);
+            GetComponent<PhotonView>().RPC("DisplayCardToPlayersRPC", RpcTarget.All, card.GetComponent<PhotonView>().ViewID);
+
+            card.gameObject.SetActive(false);
+            //TestHandManager.Instance.UpdateCardCount();
+
+            if (TestHandManager.Instance.discardingForCardEffect)
+            {
+                StartCoroutine(ResetDiscardFlag());
+            }
+
+            //card.PlayEffect(); //Apply its effect
+        }
+    }
+
+    private IEnumerator ResetDiscardFlag()
+    {
+        yield return null; //Wait a frame to allow event to process
+        TestHandManager.Instance.discardingForCardEffect = false;
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragHandler
 {
-    private Deck deck;
+    private TestDeck deck;
     public bool _isBeingDragged;
     private Canvas _cardCanvas;
     private RectTransform _rectTransform;
@@ -23,7 +23,7 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
         _rectTransform = GetComponent<RectTransform>();
         _card = GetComponent<Card>();
         _cardSelectionHandler = GetComponent<CardSelectionHandler>();
-        deck = GameObject.Find("Deck").GetComponent<Deck>();
+        deck = GameObject.Find("Deck").GetComponent<TestDeck>();
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -67,7 +67,7 @@ public class CardMovement : MonoBehaviour, IDragHandler, IEndDragHandler, IBegin
         else
             ResetCardPosition();
 
-        HandManager.Instance.ArrangeCardsInHand();
+        TestHandManager.Instance.ArrangeCardsInHand();
     }
 
     private void ResetCardPosition()

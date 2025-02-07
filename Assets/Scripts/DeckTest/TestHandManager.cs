@@ -40,8 +40,8 @@ public class TestHandManager : MonoBehaviour
     {
         if (numCards < MAX_HAND_SIZE)
         {
-            /*StartCoroutine(deck.DrawHand(1));
-            UpdateCardCount();*/
+            StartCoroutine(deck.DrawHand(1));
+            //UpdateCardCount();
         }
     }
 
