@@ -41,14 +41,14 @@ public class TestHandManager : MonoBehaviour
         if (numCards < MAX_HAND_SIZE)
         {
             StartCoroutine(deck.DrawHand(1));
-            //UpdateCardCount();
+            UpdateCardCount();
         }
     }
 
-    /*public void UpdateCardCount()
+    public void UpdateCardCount()
     {
-        GetComponent<OpponentHand>().UpdateHandCount(PhotonNetwork.LocalPlayer.ActorNumber, numCards);
-    }*/
+        GetComponent<TestOpponentHand>().UpdateHandCount(PhotonNetwork.LocalPlayer.ActorNumber, numCards);
+    }
 
 
     // Call this whenever the hand changes (e.g., after drawing, discarding, or end of a turn)

@@ -812,6 +812,7 @@ GameObject:
   - component: {fileID: 813928474}
   - component: {fileID: 813928471}
   - component: {fileID: 813928475}
+  - component: {fileID: 813928476}
   m_Layer: 0
   m_Name: HandManager
   m_TagString: Untagged
@@ -872,6 +873,20 @@ MonoBehaviour:
   cardParent: {fileID: 1918290270}
   cardOffset: {x: 100, y: 0}
   discardingForCardEffect: 0
+--- !u!114 &813928476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 813928470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b913757552c58164499827cf79d40e49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  faceDownCardPrefab: {fileID: 7878511744623353370, guid: 62c3aca27e53d0b42a7958d5b2d7e6a2, type: 3}
+  opponentHandArea: {fileID: 1094593718}
 --- !u!1 &987711332
 GameObject:
   m_ObjectHideFlags: 0

@@ -214,7 +214,7 @@ public class TestDeck : MonoBehaviour
             GetComponent<PhotonView>().RPC("DisplayCardToPlayersRPC", RpcTarget.All, card.GetComponent<PhotonView>().ViewID);
 
             card.gameObject.SetActive(false);
-            //TestHandManager.Instance.UpdateCardCount();
+            TestHandManager.Instance.UpdateCardCount();
 
             if (TestHandManager.Instance.discardingForCardEffect)
             {
