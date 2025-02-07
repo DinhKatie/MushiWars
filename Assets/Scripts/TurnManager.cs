@@ -74,7 +74,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
         if (isCurrentPlayer())
         {
-            HandManager.Instance.DrawACard();
+            TestHandManager.Instance.DrawACard();
             SetPlayerControls(true);
         }
     }
@@ -137,8 +137,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
     {
         currentSquadIndex = (currentSquadIndex + 1) % squadsList.Count;
 
-        UnitManager.Instance.ResetTeam(squadsList[currentSquadIndex]);
-        GridManager.Instance.Deselect();
+        /*UnitManager.Instance.ResetTeam(squadsList[currentSquadIndex]);
+        GridManager.Instance.Deselect();*/
         Tooltips.Instance.HideRevivalTooltip();
         StartTurn();
     }

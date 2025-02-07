@@ -90,7 +90,7 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
         {
             if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers)
             {
-                PhotonNetwork.LoadLevel("SampleScene");
+                PhotonNetwork.LoadLevel("DeckTest");
                 SceneManager.sceneLoaded += OnSceneLoaded; //wait until the scene is fully loaded, then run OnSceneLoaded
             }
             else
@@ -100,9 +100,10 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
             Debug.LogError("Only the host can start the game.");
     }
 
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name == "SampleScene")
+        if (scene.name == "DeckTest")
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
 

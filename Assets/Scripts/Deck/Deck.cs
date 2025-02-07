@@ -2,8 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
-using Photon.Realtime;
-using System;
 
 public class Deck : MonoBehaviour
 {
@@ -48,7 +46,6 @@ public class Deck : MonoBehaviour
     }
 
     //Call at Start and whenever Deck is empty
-    //Fisher Yates from internet
     private void Shuffle()
     {
         for (int i = _deckPile.Count - 1; i > 0; i--)
@@ -66,6 +63,7 @@ public class Deck : MonoBehaviour
 
     public IEnumerator DrawHand(int amount = 5)
     {
+        Debug.Log("Drawing a Card.");
         for (int i = 0; i < amount; i++)
         {
             if (_deckPile.Count <= 0)
@@ -97,9 +95,9 @@ public class Deck : MonoBehaviour
     [PunRPC]
     public void DrawCardRPC()
     {
-        //Debug.Log($"[DrawCardRPC] Removing {_deckPile[0]} from deck. Cards remaining: {_deckPile.Count}");
+        Debug.Log($"[DrawCardRPC] Removing {_deckPile[0]} from deck. Cards remaining: {_deckPile.Count}");
         _deckPile.RemoveAt(0);
-        //Debug.Log($"[DrawCardRPC] Card drawn. Cards remaining: {_deckPile.Count}");
+        Debug.Log($"[DrawCardRPC] Card drawn. Cards remaining: {_deckPile.Count}");
     }
 
     [PunRPC]
@@ -108,14 +106,14 @@ public class Deck : MonoBehaviour
         if (PhotonNetwork.IsMasterClient)
         {
             //Debug.Log("[ShuffleRPC] Master client shuffling the deck...");
-            //Debug.Log($"[ShuffleRPC] Deck size before shuffle: {_deckPile.Count}. Discard pile size: {_discardPile.Count}");
+            Debug.Log($"[ShuffleRPC] Deck size before shuffle: {_deckPile.Count}. Discard pile size: {_discardPile.Count}");
 
             _deckPile.AddRange(_discardPile);
             _discardPile.Clear();
             Shuffle();
             SendCardIDs();
 
-            //Debug.Log($"[ShuffleRPC] Deck shuffled. New deck size: {_deckPile.Count}. Discard pile is now empty.");
+            Debug.Log($"[ShuffleRPC] Deck shuffled. New deck size: {_deckPile.Count}. Discard pile is now empty.");
 
             Debug.Log("[ShuffleRPC] New deck order:");
             for (int i = 0; i < _deckPile.Count; i++)
