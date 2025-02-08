@@ -73,7 +73,7 @@ public class Deck : MonoBehaviour
                 GetComponent<PhotonView>().RPC("ShuffleRPC", RpcTarget.MasterClient);
 
                 //Wait for reshuffle to complete
-                yield return new WaitUntil(() => _deckPile.Count > 0);
+                yield return new WaitForSeconds(0.5f);
             }
 
             if (_deckPile.Count > 0)
@@ -87,7 +87,7 @@ public class Deck : MonoBehaviour
             if (_deckPile.Count <= 0)
             {
                 GetComponent<PhotonView>().RPC("ShuffleRPC", RpcTarget.MasterClient);
-                yield return new WaitUntil(() => _deckPile.Count > 0);
+                yield return new WaitForSeconds(0.5f);
             }
 
         }

@@ -40,9 +40,15 @@ public class HandManager : MonoBehaviour
     {
         if (numCards < MAX_HAND_SIZE)
         {
-            StartCoroutine(deck.DrawHand(1));
-            UpdateCardCount();
+            StartCoroutine(DrawCardAndUpdateHand());
         }
+    }
+
+    private IEnumerator DrawCardAndUpdateHand()
+    {
+        yield return StartCoroutine(deck.DrawHand(1));
+        ArrangeCardsInHand();
+        UpdateCardCount();
     }
 
     public void UpdateCardCount()
