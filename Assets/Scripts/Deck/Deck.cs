@@ -2,15 +2,24 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
-using Photon.Realtime;
-using System;
 
 public class Deck : MonoBehaviour
 {
+    [Header("Deck To Play From")]
     [SerializeField] private CardCollection _playerDeck;
+
+    [Header("Card Prefab")]
     [SerializeField] private Card _cardPrefab;
 
+    [Header("Canvas")]
     [SerializeField] private Canvas _cardCanvas;
+
+    private AudioSource audioSource;
+
+    [Header("Sound Effects")]
+    public AudioClip drawCardSE;
+    public AudioClip shuffleSE;
+    public AudioClip playCardSE;
 
     //Instantiate cards once into the object pool, then setActive(false) to change their status
     [field: SerializeField] public List<Card> _deckPile = new();
@@ -20,6 +29,7 @@ public class Deck : MonoBehaviour
 
     private void Awake()
     {
+        if (audioSource == null) audioSource = GetComponent<AudioSource>();
         HandCards = new List<Card>();
         if (PhotonNetwork.IsMasterClient)
             InstantiateDeck();
@@ -53,7 +63,7 @@ public class Deck : MonoBehaviour
     {
         for (int i = _deckPile.Count - 1; i > 0; i--)
         {
-            int j = UnityEngine.Random.Range(0, i+1);
+            int j = Random.Range(0, i+1);
             var temp = _deckPile[i];
             _deckPile[i] = _deckPile[j];
             _deckPile[j] = temp;
@@ -99,6 +109,7 @@ public class Deck : MonoBehaviour
     {
         //Debug.Log($"[DrawCardRPC] Removing {_deckPile[0]} from deck. Cards remaining: {_deckPile.Count}");
         _deckPile.RemoveAt(0);
+        Utilities.PlaySound(audioSource, drawCardSE);
         //Debug.Log($"[DrawCardRPC] Card drawn. Cards remaining: {_deckPile.Count}");
     }
 
@@ -129,10 +140,9 @@ public class Deck : MonoBehaviour
     private void SendCardIDs()
     {
         List<int> cardIds = new List<int>();
+
         foreach (var card in _deckPile)
-        {
             cardIds.Add(card.GetComponent<PhotonView>().ViewID);
-        }
 
         GetComponent<PhotonView>().RPC("UpdateDeckState", RpcTarget.All, cardIds.ToArray());
     }
@@ -153,6 +163,7 @@ public class Deck : MonoBehaviour
         }
 
         Debug.Log($"[UpdateDeckState] Deck updated. New deck size: {_deckPile.Count}");
+        Utilities.PlaySound(audioSource, shuffleSE);
     }
 
     [PunRPC]
@@ -179,6 +190,7 @@ public class Deck : MonoBehaviour
             Card card = cardView.GetComponent<Card>();
             ShowPlayedCard(card);
         }
+        Utilities.PlaySound(audioSource, playCardSE);
     }
 
     void ShowPlayedCard(Card card)

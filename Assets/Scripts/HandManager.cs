@@ -39,9 +39,7 @@ public class HandManager : MonoBehaviour
     public void DrawACard()
     {
         if (numCards < MAX_HAND_SIZE)
-        {
             StartCoroutine(DrawCardAndUpdateHand());
-        }
     }
 
     private IEnumerator DrawCardAndUpdateHand()
