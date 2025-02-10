@@ -20,6 +20,12 @@ public class ShrinkBoard : MonoBehaviour
     public Tile leftRidge;
     public Tile middleRidge;
     public Tile rightRidge;
+    public Tile secondLayerLeftRidge;
+    public Tile secondLayerRightRidge;
+    public Tile secondLayerMiddleRidge;
+    public Tile thirdLayerLeftRidge;
+    public Tile thirdLayerRightRidge;
+    public Tile thirdLayerMiddleRidge;
 
     private int boardSize = 10;
     private int minX;
@@ -52,14 +58,7 @@ public class ShrinkBoard : MonoBehaviour
             tilemap.SetTile(new Vector3Int(maxX, y, 0), null);
         }
 
-        //Remove the ridges at the bottom of the island
-        unselectableIsland.SetTile(new Vector3Int(minX, minY - 1, 0), null);
-        unselectableIsland.SetTile(new Vector3Int(maxX, minY - 1, 0), null);
-
-        for (int x = minX + 1; x < maxX; x++)
-        {
-            unselectableIsland.SetTile(new Vector3Int(x, minY - 1, 0), null);
-        }
+        RemoveLayerOfRidge();
 
         //Adjust the bounds for the new size
         minX++;
@@ -87,16 +86,39 @@ public class ShrinkBoard : MonoBehaviour
             tilemap.SetTile(new Vector3Int(maxX, y, 0), rightEdgeTile);
         }
 
-        //Add new ridges on bottom of the island
-        unselectableIsland.SetTile(new Vector3Int(minX, minY - 1, 0), leftRidge);
-        unselectableIsland.SetTile(new Vector3Int(maxX, minY - 1, 0), rightRidge);
-
-        for (int x = minX + 1; x < maxX; x++)
-        {
-            unselectableIsland.SetTile(new Vector3Int(x, minY - 1, 0), middleRidge);
-        }
+        AddLayerOfRidge(leftRidge, rightRidge, middleRidge, 1);
+        AddLayerOfRidge(secondLayerLeftRidge, secondLayerRightRidge, secondLayerMiddleRidge, 2);
+        AddLayerOfRidge(thirdLayerLeftRidge, thirdLayerRightRidge, thirdLayerMiddleRidge, 3);
 
         boardSize -= 2;
         Debug.Log($"The board size after the shrink is {boardSize}x{boardSize}");
+    }
+
+    private void AddLayerOfRidge(Tile leftTile, Tile rightTile, Tile middleTile, int depth)
+    {
+        //Add new ridges on bottom of the island
+        unselectableIsland.SetTile(new Vector3Int(minX, minY - depth, 0), leftTile);
+        unselectableIsland.SetTile(new Vector3Int(maxX, minY - depth, 0), rightTile);
+
+        for (int x = minX + 1; x < maxX; x++)
+        {
+            unselectableIsland.SetTile(new Vector3Int(x, minY - depth, 0), middleTile);
+        }
+    }
+
+    private void RemoveLayerOfRidge()
+    {
+        for (int i = 1; i <= 3; i++)
+        {
+            //Remove the ridges at the bottom of the island
+            unselectableIsland.SetTile(new Vector3Int(minX, minY - i, 0), null);
+            unselectableIsland.SetTile(new Vector3Int(maxX, minY - i, 0), null);
+
+            for (int x = minX + 1; x < maxX; x++)
+            {
+                unselectableIsland.SetTile(new Vector3Int(x, minY - i, 0), null);
+            }
+        }
+        
     }
 }

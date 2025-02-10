@@ -297,7 +297,7 @@ public class GridManager : MonoBehaviour
         if (prefab is LogObstacle)
         {
             if (rotationState == RotationState.Horizontal)
-                obstacle = Instantiate(_logObstaclePrefab, worldPosition, Quaternion.Euler(0, 0, 90));
+                obstacle = Instantiate(_logObstaclePrefab, worldPosition, Quaternion.Euler(0, 180, 90));
             else
                 obstacle = Instantiate(_logObstaclePrefab, worldPosition, Quaternion.Euler(0, 0, 0));
             obstacle.SetRotation(rotationState.Value);
