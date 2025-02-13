@@ -175,6 +175,7 @@ public class Deck : MonoBehaviour
         if (card != null)
         {
             _discardPile.Add(card);
+            Utilities.PlaySound(audioSource, drawCardSE);
             Debug.Log($"[DiscardCardRPC] Card discarded. Discard pile size: {_discardPile.Count}");
         }
         else
