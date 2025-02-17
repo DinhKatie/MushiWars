@@ -14,8 +14,6 @@ public class Deck : MonoBehaviour
     [Header("Canvas")]
     [SerializeField] private Canvas _cardCanvas;
 
-    private AudioSource audioSource;
-
     [Header("Sound Effects")]
     public AudioClip drawCardSE;
     public AudioClip shuffleSE;
@@ -29,7 +27,6 @@ public class Deck : MonoBehaviour
 
     private void Awake()
     {
-        if (audioSource == null) audioSource = GetComponent<AudioSource>();
         HandCards = new List<Card>();
         if (PhotonNetwork.IsMasterClient)
             InstantiateDeck();

@@ -23,6 +23,7 @@ public class BaseUnit : MonoBehaviour
     public Squads squad;
     protected UnitPrefabs prefab = UnitPrefabs.unit;
     protected Animator unitAnim;
+    [SerializeField] public AudioClip smite;
 
     // Getters
     public Vector3Int CurrentPosition => currPosition;
@@ -327,8 +328,9 @@ public class BaseUnit : MonoBehaviour
             return;
         }
 
-        animator.ResetTrigger(effect);
-        animator.SetTrigger(effect);
+        childEffect.SetActive(true);
+        childAnimator.Play(animationName, -1, 0f);
+        Utilities.PlaySound(smite, 0.3f);
 
         Utilities.PlaySound($"{effect.ToLower()}", 0.3f);
     }
