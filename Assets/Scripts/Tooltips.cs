@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 
 public class Tooltips : MonoBehaviour
@@ -16,7 +15,6 @@ public class Tooltips : MonoBehaviour
     public GameObject heroHealth;
     public TMP_Text heroHealthText;
 
-
     [Header("Unit Revivals")]
     public Transform revivalPanel;
     public GameObject unitRevivalPrefab;
@@ -24,6 +22,12 @@ public class Tooltips : MonoBehaviour
     [Header("Turn Text")]
     public TMP_Text playerTurnText;
 
+    [Header("Floating Text")]
+    public GameObject textContainer;
+    public GameObject textPrefab;
+
+    //Pooling multiple objects to be reused
+    private List<FloatingText> floatingTexts = new List<FloatingText>();
 
 
     private void Awake()
@@ -37,16 +41,21 @@ public class Tooltips : MonoBehaviour
             Destroy(gameObject);
     }
 
+    private void Update()
+    {
+        foreach (FloatingText text in floatingTexts)
+            text.UpdateFloatingText();
+    }
+
+    #region General Tooltips
+
     public void ShowHeroHealthTooltip(BaseHero hero)
     {
         heroHealthText.text = "Health: " + hero.Health.ToString();
-
-        Vector3 mousePosition = Input.mousePosition;
-        heroHealth.transform.position = mousePosition + new Vector3(10, 30, 0);
-
+        heroHealth.transform.position = Input.mousePosition + new Vector3(10, 30, 0);
         heroHealth.SetActive(true);
-
     }
+
     public void HideHeroHealthTooltip() => heroHealth.SetActive(false);
 
     public void ShowRevivalTooltip(List<BaseUnit> unitsToRevive)
@@ -59,29 +68,80 @@ public class Tooltips : MonoBehaviour
 
         for (int i = 0; i < unitsToRevive.Count; i++)
         {
-            GameObject square = Instantiate(unitRevivalPrefab, revivalPanel);
-            Transform unitImage = square.GetComponent<RectTransform>();
-            TextMeshProUGUI numberText = square.GetComponentInChildren<TextMeshProUGUI>();
-
-            GameObject unitPrefab;
-            if (unitsToRevive[i] is SwordUnit)
-                unitPrefab = swordUnitImage;
-            else if (unitsToRevive[i] is GunUnit)
-                unitPrefab = gunUnitImage;
-            else
-                unitPrefab = baseUnitImage;
-
-            GameObject unitInstance = Instantiate(unitPrefab, unitImage);
-            unitInstance.transform.localPosition = new Vector3(-7.5f, -4.8f,0);
-
-            numberText.text = i.ToString();
-            numberText.transform.SetAsLastSibling();
+            CreateRevivalItem(unitsToRevive[i], i);
         }
     }
+
     public void HideRevivalTooltip() => revivalPanel.gameObject.SetActive(false);
 
     public void ShowPlayerTurn(string nickname)
     {
         playerTurnText.text = nickname + " Turn!";
     }
+
+    #endregion
+
+    #region Floating Text Methods
+
+    private FloatingText GetFloatingText()
+    {
+        FloatingText txt = floatingTexts.Find(t => !t.active);
+
+        if (txt == null)
+        {
+            txt = new FloatingText();
+            txt.go = Instantiate(textPrefab);
+            txt.go.transform.SetParent(textContainer.transform);
+            txt.text = txt.go.GetComponent<TextMeshProUGUI>();
+
+            floatingTexts.Add(txt);
+        }
+
+        return txt;
+    }
+
+    public void Show(string msg, int fontSize, Color color, Vector3 position, Vector3 motion, float duration)
+    {
+        FloatingText floatingText = GetFloatingText();
+
+        floatingText.text.text = msg;
+        floatingText.text.fontSize = fontSize;
+        floatingText.text.color = color;
+
+        floatingText.go.transform.position = Camera.main.WorldToScreenPoint(position);
+        floatingText.motion = motion;
+        floatingText.duration = duration;
+
+        floatingText.Show();
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    private void CreateRevivalItem(BaseUnit unit, int index)
+    {
+        GameObject square = Instantiate(unitRevivalPrefab, revivalPanel);
+        Transform unitImage = square.GetComponent<RectTransform>();
+        TextMeshProUGUI numberText = square.GetComponentInChildren<TextMeshProUGUI>();
+
+        GameObject unitPrefab = GetUnitPrefab(unit);
+        GameObject unitInstance = Instantiate(unitPrefab, unitImage);
+        unitInstance.transform.localPosition = new Vector3(-7.5f, -4.8f, 0);
+
+        numberText.text = index.ToString();
+        numberText.transform.SetAsLastSibling();
+    }
+
+    private GameObject GetUnitPrefab(BaseUnit unit)
+    {
+        if (unit is SwordUnit)
+            return swordUnitImage;
+        else if (unit is GunUnit)
+            return gunUnitImage;
+        else
+            return baseUnitImage;
+    }
+
+    #endregion
 }

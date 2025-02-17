@@ -101,6 +101,7 @@ MonoBehaviour:
   movementRange: 0
   justRevived: 0
   squad: 0
+  smite: {fileID: 0}
   heroType: 0
   CanUseHexAndSupports: 1
   Cursed: 0

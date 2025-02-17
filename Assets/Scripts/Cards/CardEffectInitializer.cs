@@ -25,7 +25,6 @@ public class CardEffectInitializer : MonoBehaviour
     [SerializeField] private ScriptableCard chillingWind;
     [SerializeField] private ScriptableCard curse;
 
-    private CardEffectRPCs cardRPCs;
     private PhotonView photonView;
 
     private void Awake()
@@ -43,7 +42,6 @@ public class CardEffectInitializer : MonoBehaviour
         curse.OnPlayEffect = () => Curse();
         navigation.OnPlayEffect = () => Navigation();
 
-        cardRPCs = GetComponent<CardEffectRPCs>();
         photonView = GetComponent<PhotonView>();
     }
 
