@@ -100,7 +100,7 @@ public class Tooltips : MonoBehaviour
         return txt;
     }
 
-    public void Show(string msg, int fontSize, Color color, Vector3 position, Vector3 motion, float duration)
+    public void Show(string msg, Color color, Vector3Int position, Vector3 motion, int fontSize = 36, float duration = 1)
     {
         FloatingText floatingText = GetFloatingText();
 
@@ -108,7 +108,7 @@ public class Tooltips : MonoBehaviour
         floatingText.text.fontSize = fontSize;
         floatingText.text.color = color;
 
-        floatingText.go.transform.position = Camera.main.WorldToScreenPoint(position);
+        floatingText.go.transform.position = GridManager.Instance.TilemapToCanvas(position) + new Vector3(0, 60, 0);
         floatingText.motion = motion;
         floatingText.duration = duration;
 

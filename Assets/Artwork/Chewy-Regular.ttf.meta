@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 8d17a1922cdd0824bbc2eb6808a0b27d
+guid: 7aa24ca43ecd05d4685a2bf14d4172dc
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Shifty Notes
+  - Chewy
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0

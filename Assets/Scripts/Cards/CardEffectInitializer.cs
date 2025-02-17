@@ -57,9 +57,7 @@ public class CardEffectInitializer : MonoBehaviour
         {
             if (unit != null)
             {
-                unit.IncrementMove();
-                Debug.Log($"{unit} received 1 additional move range.");
-                photonView.RPC("HovercraftRPC", RpcTarget.Others, unit.GetComponent<PhotonView>().ViewID);
+                photonView.RPC("HovercraftRPC", RpcTarget.All, unit.GetComponent<PhotonView>().ViewID);
             }
             GridManager.Instance.Deselect();
             GridManager.Instance.ClearValidMoves();

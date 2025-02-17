@@ -80,8 +80,6 @@ public class BaseUnit : MonoBehaviour
         }
         else
             ResetStats();
-
-        PlayEffectAnimation("Smite");
     }
 
     protected virtual void ResetStats()

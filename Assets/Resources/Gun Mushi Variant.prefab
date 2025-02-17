@@ -177,3 +177,4 @@ MonoBehaviour:
   movementRange: 0
   justRevived: 0
   squad: 0
+  smite: {fileID: 0}

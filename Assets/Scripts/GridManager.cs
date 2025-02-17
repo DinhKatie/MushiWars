@@ -345,6 +345,11 @@ public class GridManager : MonoBehaviour
         return _tilemap.WorldToCell(mouseWorldPosition);
     }
 
+    public Vector3 TilemapToCanvas(Vector3Int position)
+    {
+        return Camera.main.WorldToScreenPoint(_tilemap.GetCellCenterWorld(position));
+    }
+
     public bool IsOccupied(Vector3Int tile)
     {
         return (IsObstacleTile(tile) || UnitManager.Instance.GetUnitAtTile(tile) != null || GetTileAtPosition(tile) == null);

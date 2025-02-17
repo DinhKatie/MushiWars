@@ -10,6 +10,9 @@ public class CardEffectRPCs : MonoBehaviour
     {
         BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
         unit?.IncrementMove();
+
+        Tooltips.Instance.Show("+1 Move", Color.white, unit.CurrentPosition, Vector2.up * 100);
+        Utilities.PlaySound("buff1");
     }
 
     [PunRPC]
