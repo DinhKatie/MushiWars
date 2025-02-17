@@ -11,8 +11,11 @@ public class GameManager : MonoBehaviour
     public GameState GameState;
     public Squads winningTeam;
 
+    public AudioSource audioSource;
+
     private void Awake()
     {
+        audioSource = GetComponent<AudioSource>();
         if (Instance == null)
         {
             Instance = this;

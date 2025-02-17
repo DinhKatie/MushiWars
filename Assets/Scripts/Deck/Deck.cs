@@ -109,7 +109,7 @@ public class Deck : MonoBehaviour
     {
         //Debug.Log($"[DrawCardRPC] Removing {_deckPile[0]} from deck. Cards remaining: {_deckPile.Count}");
         _deckPile.RemoveAt(0);
-        Utilities.PlaySound(audioSource, drawCardSE);
+        Utilities.PlaySound("draw");
         //Debug.Log($"[DrawCardRPC] Card drawn. Cards remaining: {_deckPile.Count}");
     }
 
@@ -163,7 +163,7 @@ public class Deck : MonoBehaviour
         }
 
         Debug.Log($"[UpdateDeckState] Deck updated. New deck size: {_deckPile.Count}");
-        Utilities.PlaySound(audioSource, shuffleSE);
+        Utilities.PlaySound("shuffle");
     }
 
     [PunRPC]
@@ -175,7 +175,7 @@ public class Deck : MonoBehaviour
         if (card != null)
         {
             _discardPile.Add(card);
-            Utilities.PlaySound(audioSource, drawCardSE);
+            Utilities.PlaySound("draw");
             Debug.Log($"[DiscardCardRPC] Card discarded. Discard pile size: {_discardPile.Count}");
         }
         else
@@ -191,7 +191,7 @@ public class Deck : MonoBehaviour
             Card card = cardView.GetComponent<Card>();
             ShowPlayedCard(card);
         }
-        Utilities.PlaySound(audioSource, playCardSE);
+        Utilities.PlaySound("playCard");
     }
 
     void ShowPlayedCard(Card card)

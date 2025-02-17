@@ -36,9 +36,19 @@ public class Utilities : MonoBehaviour
 
     public static BaseUnit GetUnitByViewID(int viewID) => PhotonView.Find(viewID).gameObject.GetComponent<BaseUnit>();
 
-    public static void PlaySound(AudioSource src, AudioClip play)
+    public static void PlaySound(string play, float volume = 1f)
     {
-        src.clip = play;
-        src.Play();
+        AudioSource audioSource = GameManager.Instance.audioSource;
+        AudioClip soundClip = Resources.Load<AudioClip>("SoundEffects/" + play);
+
+        if (soundClip == null)
+        {
+            Debug.LogWarning("Sound clip not found: " + play);
+            return;
+        }
+
+        audioSource.clip = soundClip;
+        audioSource.volume = volume;
+        audioSource.Play();
     }
 }

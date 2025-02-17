@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Animations;
 using UnityEngine;
 
 public class BaseUnit : MonoBehaviour
@@ -39,11 +38,6 @@ public class BaseUnit : MonoBehaviour
     public Animator UnitAnimator => unitAnim;
 
     public UnitPrefabs GetPrefab => prefab;
-
-    public Dictionary<string, string> effectAnimations = new Dictionary<string, string>
-    {
-        { "Smite", "lightning_0" },
-    };
 
     //Setters
     public void SetCurrentPosition(Vector3Int pos)
@@ -86,7 +80,6 @@ public class BaseUnit : MonoBehaviour
         else
             ResetStats();
 
-        PlayEffect("Smite");
     }
 
     protected virtual void ResetStats()
@@ -325,40 +318,19 @@ public class BaseUnit : MonoBehaviour
 
     public void PlayEffect(string effect)
     {
-        //Get the effect gameObject
-        Transform child = transform.Find($"{effect}");
         Debug.Log($"{effect.ToUpper()} Effect");
-        GameObject childEffect = null;
-        if (child != null)
-            childEffect = child.gameObject;
 
-        Animator childAnimator = childEffect?.GetComponent<Animator>();
-
-        if (!effectAnimations.TryGetValue(effect, out string animationName))
+        Animator animator = GetComponent<Animator>();
+        if (animator == null)
         {
-            Debug.LogWarning("Effect '" + effect + "' not found in dictionary!");
+            Debug.LogWarning("No Animator found on this GameObject!");
             return;
         }
 
-        childEffect.SetActive(true);
-        childAnimator.Play(animationName, -1, 0f);
+        animator.ResetTrigger(effect);
+        animator.SetTrigger(effect);
 
-        StartCoroutine(DisableAfterAnimation(childEffect, childAnimator, animationName));
-    }
-
-    private IEnumerator DisableAfterAnimation(GameObject childEffect, Animator childAnimator, string animationName)
-    {
-        yield return null;  //Ensure the state updates before getting length
-
-        float animLength = childAnimator.GetCurrentAnimatorStateInfo(0).length;
-        if (animLength <= 0)
-        {
-            Debug.LogWarning($"Animation {animationName} has zero length or failed to play.");
-            animLength = 0.5f; //Default if no animation
-        }
-
-        yield return new WaitForSeconds(animLength);
-        childEffect.SetActive(false);
+        Utilities.PlaySound($"{effect.ToLower()}", 0.3f);
     }
 }
 
