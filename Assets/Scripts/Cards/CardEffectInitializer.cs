@@ -96,13 +96,15 @@ public class CardEffectInitializer : MonoBehaviour
 
         AvoidSelection(true);
 
-        StartCoroutine(Select(CurrentSquadUnits(), tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
+        List<BaseUnit> currentSquadUnits = CurrentSquadUnits()
+            .Select(position => UnitManager.Instance.GetUnitAtTile(position)) //Get units at each tile position
+            .Where(unit => unit != null) //Filter out null units
+            .ToList();
+        List<Vector3Int> validEnemyUnits = new List<Vector3Int>();
+
+        foreach (BaseUnit unit in currentSquadUnits)
         {
-            if (unit == null) return; //Invalid unit selection
-
             List<Vector3Int> validTiles = Utilities.GetValidTiles(unit, "square", 2);
-            List<Vector3Int> validEnemyUnits = new List<Vector3Int>();
-
             foreach (Vector3Int tile in validTiles) //Loop through each tile and check if an enemy unit exists on it
             {
                 BaseUnit unitInRange = UnitManager.Instance.GetUnitAtTile(tile);
@@ -111,24 +113,25 @@ public class CardEffectInitializer : MonoBehaviour
                     !(unitInRange is BaseHero || unitInRange is Campfire))
                     validEnemyUnits.Add(unitInRange.CurrentPosition);
             }
+        }
 
-            if (validEnemyUnits.Count == 0)
-            {
-                AvoidSelection(false);
-                Debug.Log("No valid enemies to smite."); //CARD RETURN
-                return;
-            }
+        if (validEnemyUnits.Count == 0)
+        {
+            AvoidSelection(false);
+            Debug.Log("No valid enemies to smite."); //CARD RETURN
+            return;
+        }
 
-            StartCoroutine(Select(validEnemyUnits, tile => UnitManager.Instance.GetUnitAtTile(tile), enemy =>
-            {
-                if (enemy == null) return;
+        StartCoroutine(Select(validEnemyUnits, tile => UnitManager.Instance.GetUnitAtTile(tile), enemy =>
+        {
+            if (enemy == null) return;
 
-                photonView.RPC("SmiteRPC", RpcTarget.All, enemy.GetComponent<PhotonView>().ViewID);
-                Debug.Log($"Smited {enemy}");
-                
-                AvoidSelection(false);
-            }));
+            photonView.RPC("SmiteRPC", RpcTarget.All, enemy.GetComponent<PhotonView>().ViewID);
+            Debug.Log($"Smited {enemy}");
+
+            AvoidSelection(false);
         }));
+        
     }
 
     private void Forcefield()
