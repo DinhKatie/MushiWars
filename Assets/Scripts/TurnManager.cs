@@ -130,14 +130,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
             Tooltips.Instance.ShowPlayerTurn("Your");
         else
             Tooltips.Instance.ShowPlayerTurn(squadOwners[currentSquad].NickName + "'s");
-        if (PhotonNetwork.IsMasterClient)
-        {
-            BaseUnit unit = UnitManager.Instance.GetUnitAtTile(new Vector3Int(4, 5, 0));
-            if (unit == null)
-                Debug.LogError("Unit is null!");
-            else
-                unit.PlayEffect("smite");
-        }
         
     }
 

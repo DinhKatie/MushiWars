@@ -81,6 +81,7 @@ public class BaseUnit : MonoBehaviour
         else
             ResetStats();
 
+        PlayEffectAnimation("Smite");
     }
 
     protected virtual void ResetStats()
@@ -295,14 +296,6 @@ public class BaseUnit : MonoBehaviour
         attackRange = 0;
     }
 
-    private void LogMoves(List<Vector3Int> validMoves)
-    {
-        foreach (var move in validMoves)
-        {
-            Debug.Log(move);
-        }
-    }
-
     public virtual void HighlightValidMoves()
     {
         Grid.ClearValidMoves();
@@ -317,7 +310,7 @@ public class BaseUnit : MonoBehaviour
         Grid.isCampfirePushable(this);
     }
 
-    public void PlayEffect(string effect)
+    public void TriggerEffect(string effect)
     {
         Debug.Log($"{effect.ToUpper()} Effect");
 
@@ -328,11 +321,33 @@ public class BaseUnit : MonoBehaviour
             return;
         }
 
-        childEffect.SetActive(true);
-        childAnimator.Play(animationName, -1, 0f);
-        Utilities.PlaySound(smite, 0.3f);
-
         Utilities.PlaySound($"{effect.ToLower()}", 0.3f);
+    }
+
+    public void PlayEffectAnimation(string effect)
+    {
+        //Get the effect gameObject
+        Transform child = transform.Find($"{effect}");
+        Debug.Log($"{effect} Effect");
+
+        GameObject childEffect = null;
+        if (child != null)
+            childEffect = child.gameObject;
+
+        Animator childAnimator = childEffect?.GetComponent<Animator>();
+
+        childEffect.SetActive(true);
+        childAnimator.Play(effect, -1, 0f);
+
+        Utilities.PlaySound(effect.ToLower(), 0.3f);
+
+        StartCoroutine(DisableAfterAnimation(childEffect, childAnimator));
+    }
+
+    private IEnumerator DisableAfterAnimation(GameObject effectObject, Animator animator)
+    {
+        yield return new WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length);
+        effectObject.SetActive(false);
     }
 }
 

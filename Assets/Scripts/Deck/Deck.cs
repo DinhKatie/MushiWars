@@ -14,11 +14,6 @@ public class Deck : MonoBehaviour
     [Header("Canvas")]
     [SerializeField] private Canvas _cardCanvas;
 
-    [Header("Sound Effects")]
-    public AudioClip drawCardSE;
-    public AudioClip shuffleSE;
-    public AudioClip playCardSE;
-
     //Instantiate cards once into the object pool, then setActive(false) to change their status
     [field: SerializeField] public List<Card> _deckPile = new();
     public List<Card> _discardPile = new();
