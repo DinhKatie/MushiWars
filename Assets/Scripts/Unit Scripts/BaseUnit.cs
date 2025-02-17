@@ -222,7 +222,17 @@ public class BaseUnit : MonoBehaviour
             Debug.Log("Immune! (AutoDie)");
             return;
         }
-        GetComponent<PhotonView>().RPC("OnDeathRPC", RpcTarget.All);
+        OnDeath();
+    }
+
+    [PunRPC]
+    public void SmiteEndRPC(int unitViewID)
+    {
+        BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
+        if (unit != null)
+        {
+            unit.AutoDie();
+        }
     }
 
     public void Teleport(Vector3Int newPosition)
@@ -242,9 +252,9 @@ public class BaseUnit : MonoBehaviour
     {
         if (dead) return;
 
-        Debug.Log("Applying Damage");
         health -= damage;
         Debug.Log($"{name} has been hit! Health: {health}");
+
         GetComponent<PhotonView>().RPC("OnHitRPC", RpcTarget.OthersBuffered, health);
 
         if (health <= 0)
@@ -331,6 +341,8 @@ public class BaseUnit : MonoBehaviour
         GameObject childEffect = null;
         if (child != null)
             childEffect = child.gameObject;
+        else
+            Debug.Log("child is null!");
 
         Animator childAnimator = childEffect?.GetComponent<Animator>();
 

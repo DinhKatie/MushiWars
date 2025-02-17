@@ -16,6 +16,20 @@ public class CardEffectRPCs : MonoBehaviour
     }
 
     [PunRPC]
+    public void BlastStompRPC()
+    {
+        Utilities.PlaySound("blaststomp");
+    }
+
+    [PunRPC]
+    public void SmiteRPC(int unitViewID)
+    {
+        BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
+        unit.PlayEffectAnimation("Smite");
+        Utilities.PlaySound("smite");
+    }
+
+    [PunRPC]
     public void HealthOrbRPC(int heroViewID)
     {
         BaseHero hero = (BaseHero) Utilities.GetUnitByViewID(heroViewID);

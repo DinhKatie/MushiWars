@@ -83,8 +83,9 @@ public class CardEffectInitializer : MonoBehaviour
                     unitInRange.TakeDamage();
                 }
             }
+            photonView.RPC("BlastStompRPC", RpcTarget.All);
             AvoidSelection(false);
-            Debug.Log("Used Blast Stomp.");
+            //Debug.Log("Used Blast Stomp.");
         }));
        
     }
@@ -122,9 +123,9 @@ public class CardEffectInitializer : MonoBehaviour
             {
                 if (enemy == null) return;
 
-                enemy.AutoDie();
+                photonView.RPC("SmiteRPC", RpcTarget.All, enemy.GetComponent<PhotonView>().ViewID);
                 Debug.Log($"Smited {enemy}");
-
+                
                 AvoidSelection(false);
             }));
         }));

@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Test Deck
   m_EditorClassIdentifier: 
   <CardsInCollection>k__BackingField:
-  - {fileID: 11400000, guid: 81199b01f0a4b314f9aae6a64536579b, type: 2}
-  - {fileID: 11400000, guid: 81199b01f0a4b314f9aae6a64536579b, type: 2}
-  - {fileID: 11400000, guid: 81199b01f0a4b314f9aae6a64536579b, type: 2}
-  - {fileID: 11400000, guid: 81199b01f0a4b314f9aae6a64536579b, type: 2}
-  - {fileID: 11400000, guid: 81199b01f0a4b314f9aae6a64536579b, type: 2}
+  - {fileID: 11400000, guid: 62cef4e6c7dfb3444bb66dda91897021, type: 2}
+  - {fileID: 11400000, guid: 62cef4e6c7dfb3444bb66dda91897021, type: 2}
+  - {fileID: 11400000, guid: 62cef4e6c7dfb3444bb66dda91897021, type: 2}
+  - {fileID: 11400000, guid: 62cef4e6c7dfb3444bb66dda91897021, type: 2}
+  - {fileID: 11400000, guid: 62cef4e6c7dfb3444bb66dda91897021, type: 2}

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7857981367827572765}
   - component: {fileID: 2042795506571764048}
   - component: {fileID: 4186960558602412315}
+  - component: {fileID: 7864148803685896457}
   m_Layer: 6
   m_Name: Smite
   m_TagString: Untagged
@@ -27,8 +28,8 @@ Transform:
   m_GameObject: {fileID: 3684202878943512784}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.62, y: 1.93, z: 0}
-  m_LocalScale: {x: 21.197454, y: 28.240543, z: 21.21179}
+  m_LocalPosition: {x: 0.62, y: 5.766, z: 0}
+  m_LocalScale: {x: 21.197454, y: 52.218933, z: 21.21179}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1084468247821877186}
@@ -106,6 +107,18 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7864148803685896457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3684202878943512784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad0b0041ec123674e9f438b8229ec005, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8063396146840682836
 GameObject:
   m_ObjectHideFlags: 0
