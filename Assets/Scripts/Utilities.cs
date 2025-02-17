@@ -36,8 +36,10 @@ public class Utilities : MonoBehaviour
 
     public static BaseUnit GetUnitByViewID(int viewID) => PhotonView.Find(viewID).gameObject.GetComponent<BaseUnit>();
 
-    public static void PlaySound(AudioSource src, AudioClip play)
+    public static void PlaySound(AudioClip play, float volume = 1f)
     {
+        AudioSource src = GameManager.Instance.audioSource;
+        src.volume = volume;
         src.clip = play;
         src.Play();
     }

@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
     public GameState GameState;
     public Squads winningTeam;
+    public AudioSource audioSource;
 
     private void Awake()
     {
@@ -22,7 +23,7 @@ public class GameManager : MonoBehaviour
         else
             Destroy(gameObject);
 
-        
+        audioSource = GetComponent<AudioSource>();
     }
     // Start is called before the first frame update
     void Start()

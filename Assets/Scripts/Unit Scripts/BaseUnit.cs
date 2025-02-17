@@ -24,6 +24,7 @@ public class BaseUnit : MonoBehaviour
     public Squads squad;
     protected UnitPrefabs prefab = UnitPrefabs.unit;
     protected Animator unitAnim;
+    [SerializeField] public AudioClip smite;
 
     // Getters
     public Vector3Int CurrentPosition => currPosition;
@@ -342,6 +343,7 @@ public class BaseUnit : MonoBehaviour
 
         childEffect.SetActive(true);
         childAnimator.Play(animationName, -1, 0f);
+        Utilities.PlaySound(smite, 0.3f);
 
         StartCoroutine(DisableAfterAnimation(childEffect, childAnimator, animationName));
     }
