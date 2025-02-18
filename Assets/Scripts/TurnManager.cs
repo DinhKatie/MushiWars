@@ -114,31 +114,37 @@ public class TurnManager : MonoBehaviourPunCallbacks
     [PunRPC]
     public void StartTurnRPC(int currSquad)
     {
-        currentSquad = (Squads)currSquad;
         if (isCurrentPlayer())
             Tooltips.Instance.ShowPlayerTurn("Your");
         else
-            Tooltips.Instance.ShowPlayerTurn(squadOwners[currentSquad].NickName + "'s");
-        
+            Tooltips.Instance.ShowPlayerTurn(squadOwners[(Squads)currSquad].NickName + "'s");
     }
 
     [PunRPC]
     public void EndTurnRPC()
     {
+        currentSquadIndex = (currentSquadIndex + 1) % squadsList.Count;
+        //Shrink Board
         if (currentSquadIndex == 0) //after the last player finishes their turn and we're back to player one
         {
             currentRound++;
             Debug.Log($"Current Round: {currentRound}");
+
+            if (currentRound == roundsPerShrink - 1)
+            {
+                List<Vector3Int> edgeTiles = FindObjectOfType<ShrinkBoard>().GetIslandEdgeTiles();
+                GridManager.Instance.HighlightShrinkTiles(edgeTiles);
+            }
+
             if (currentRound >= roundsPerShrink)
             {
                 FindObjectOfType<ShrinkBoard>().BoardShrink();
                 UnitManager.Instance.UpdateUnitsAfterShrink();
                 GridManager.Instance.UpdateObstaclesAfterShrink();
+                GridManager.Instance.ClearShrinkMap();
                 currentRound = 0;
             }
         }
-
-        currentSquadIndex = (currentSquadIndex + 1) % squadsList.Count;
 
         UnitManager.Instance.ResetTeam(squadsList[currentSquadIndex]);
         GridManager.Instance.Deselect();

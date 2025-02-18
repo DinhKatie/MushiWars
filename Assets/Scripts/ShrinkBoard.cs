@@ -94,6 +94,24 @@ public class ShrinkBoard : MonoBehaviour
         Debug.Log($"The board size after the shrink is {boardSize}x{boardSize}");
     }
 
+    public List<Vector3Int> GetIslandEdgeTiles()
+    {
+        List<Vector3Int> edges = new List<Vector3Int>();
+        //Outer layer of tiles
+        for (int x = minX; x <= maxX; x++)
+        {
+            edges.Add(new Vector3Int(x, minY, 0));
+            edges.Add(new Vector3Int(x, maxY, 0));
+        }
+        for (int y = minY; y <= maxY; y++)
+        {
+            edges.Add(new Vector3Int(minX, y, 0));
+            edges.Add(new Vector3Int(maxX, y, 0));
+        }
+
+        return edges;
+    }
+
     private void AddLayerOfRidge(Tile leftTile, Tile rightTile, Tile middleTile, int depth)
     {
         //Add new ridges on bottom of the island
