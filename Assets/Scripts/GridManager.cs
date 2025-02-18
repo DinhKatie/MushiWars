@@ -28,6 +28,7 @@ public class GridManager : MonoBehaviour
 
 
     public List<Vector3Int> _obstacles = new List<Vector3Int>();
+    public List<BaseObstacle> _obstacleObjects = new List<BaseObstacle>();
     private Dictionary<Obstacle, BaseObstacle> obstaclesPrefabsDict;
 
     private Vector3Int _previousHoverTilePosition;
@@ -315,6 +316,8 @@ public class GridManager : MonoBehaviour
         {
             _obstacles.Add(tile);
         }
+
+        _obstacleObjects.Add(obstacle);
     }
 
     public void UpdateObstacleList(List<Vector3Int> oldTiles, List<Vector3Int> newTiles)
@@ -323,6 +326,20 @@ public class GridManager : MonoBehaviour
             .Except(oldTiles)  //remove old obstacles
             .Union(newTiles)   //add new obstacles
             .ToList();
+    }
+
+    public void UpdateObstaclesAfterShrink()
+    {
+        List<BaseObstacle> obstaclesToRemove = _obstacleObjects.Where(obstacle =>
+        obstacle.GetOccupiedTiles.Any(tile => GetTileAtPosition(tile) == null)
+            ).ToList();
+
+        foreach (var obstacle in obstaclesToRemove)
+        {
+            _obstacles.RemoveAll(tile => obstacle.occupiedTiles.Contains(tile));
+            _obstacleObjects.Remove(obstacle);
+            Destroy(obstacle.gameObject);
+        }
     }
 
     public bool IsObstacleTile(Vector3Int tile)

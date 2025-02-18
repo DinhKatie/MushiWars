@@ -81,17 +81,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
     public void EndTurn()
     {
-        /*if (currentSquadIndex == 0) //after the last player finishes their turn and we're back to player one
-        {
-            currentRound++;
-            Debug.Log($"Current Round: {currentRound}");
-            if (currentRound >= roundsPerShrink)
-            {
-                FindObjectOfType<ShrinkBoard>().BoardShrink();
-                UnitManager.Instance.UpdateUnitsAfterShrink();
-                currentRound = 0;
-            }
-        }*/
         if (isCurrentPlayer())
         {
             Debug.Log("End Turn RPC Sent.");
@@ -136,6 +125,19 @@ public class TurnManager : MonoBehaviourPunCallbacks
     [PunRPC]
     public void EndTurnRPC()
     {
+        if (currentSquadIndex == 0) //after the last player finishes their turn and we're back to player one
+        {
+            currentRound++;
+            Debug.Log($"Current Round: {currentRound}");
+            if (currentRound >= roundsPerShrink)
+            {
+                FindObjectOfType<ShrinkBoard>().BoardShrink();
+                UnitManager.Instance.UpdateUnitsAfterShrink();
+                GridManager.Instance.UpdateObstaclesAfterShrink();
+                currentRound = 0;
+            }
+        }
+
         currentSquadIndex = (currentSquadIndex + 1) % squadsList.Count;
 
         UnitManager.Instance.ResetTeam(squadsList[currentSquadIndex]);
