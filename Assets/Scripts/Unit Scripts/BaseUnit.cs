@@ -66,7 +66,7 @@ public class BaseUnit : MonoBehaviour
         isImmune = immune;
         UpdateEffectAnimation();
     }
-    public void SetChilled(bool chilled) {  isChilled = chilled; }
+    public void SetChilled(bool chilled) {  isChilled = chilled; UpdateEffectAnimation(); }
     public void DisableSkills(bool disable) { disabledSkills = disable; }
     public void SetCursed(bool cursed)
     {
@@ -97,10 +97,11 @@ public class BaseUnit : MonoBehaviour
 
     protected virtual void ResetStats()
     {
+        UpdateEffectAnimation();
         if (isChilled)
         {
             DisableMovementAndAttack();
-            SetChilled(false);
+            isChilled = false;
             return;
         }
 
@@ -108,8 +109,6 @@ public class BaseUnit : MonoBehaviour
         attackRange = maxAttackRange;
         hasAttacked = false;
         SetImmune(false);
-
-        UpdateEffectAnimation();
 
         //keep the curse for one extra turn, then remove it
         if (isCursedNextTurn)
@@ -361,6 +360,10 @@ public class BaseUnit : MonoBehaviour
         else if (isCursedNextTurn)
         {
             TriggerEffect(CardAnimations.Curse);
+        }
+        else if (isChilled)
+        {
+            TriggerEffect(CardAnimations.ChillingWind);
         }
         else
         {

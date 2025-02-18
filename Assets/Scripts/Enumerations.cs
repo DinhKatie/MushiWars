@@ -47,7 +47,8 @@ public enum CardAnimations
 { 
     None,
     Forcefield,
-    Curse
+    Curse,
+    ChillingWind
 }
 
 

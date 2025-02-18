@@ -99,6 +99,8 @@ public class CardEffectRPCs : MonoBehaviour
     {
         BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
         unit.SetCursed(true);
+
+        Utilities.PlaySound("curse");
     }
 
     [PunRPC]
@@ -107,5 +109,7 @@ public class CardEffectRPCs : MonoBehaviour
         BaseHero hero = (BaseHero)Utilities.GetUnitByViewID(heroViewID);
         hero.SetCursed(true);
         hero.DisableSkills(true);
+
+        Utilities.PlaySound("curse");
     }
 }
