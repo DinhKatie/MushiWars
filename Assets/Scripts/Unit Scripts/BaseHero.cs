@@ -12,7 +12,7 @@ public abstract class BaseHero : BaseUnit
     public bool UsesHexAndSupports => CanUseHexAndSupports;
 
     public bool IsCursed => Cursed;
-    public void SetCursed(bool curse) {  Cursed = curse; }
+    new public void SetCursed(bool curse) {  Cursed = curse; }
 
     protected override void Start()
     {

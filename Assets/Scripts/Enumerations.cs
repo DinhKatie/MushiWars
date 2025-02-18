@@ -43,5 +43,13 @@ public enum HeroTypes
     None,
 }
 
+public enum CardAnimations
+{ 
+    None,
+    Forcefield,
+    Curse
+}
+
+
 
 

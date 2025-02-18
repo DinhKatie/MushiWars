@@ -172,7 +172,6 @@ MonoBehaviour:
   movementRange: 0
   justRevived: 0
   squad: 0
-  smite: {fileID: 0}
 --- !u!4 &8779090264208549895 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1084468247821877186, guid: dc58ec744b6720740b85706631cb263b, type: 3}

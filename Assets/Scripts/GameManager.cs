@@ -73,7 +73,7 @@ public class GameManager : MonoBehaviour
     private void SpawnSquad1()
     {
         Vector3Int campfireTile = new Vector3Int(1, 1, 0);
-        Vector3Int heroSpawnTile = new Vector3Int(0, 0, 0);
+        Vector3Int heroSpawnTile = new Vector3Int(6, 6, 0);
         Vector3Int swordTile = new Vector3Int(4, 5, 0);
         Vector3Int gunTile = new Vector3Int(1, 2, 0);
         List<Vector3Int> normalUnits = new List<Vector3Int>

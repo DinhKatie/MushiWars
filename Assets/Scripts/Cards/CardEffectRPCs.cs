@@ -34,6 +34,9 @@ public class CardEffectRPCs : MonoBehaviour
     {
         BaseHero hero = (BaseHero) Utilities.GetUnitByViewID(heroViewID);
         hero?.IncrementHealth();
+
+        Utilities.PlaySound("healthorb");
+        Tooltips.Instance.Show("+1 Health!", Color.white, hero.CurrentPosition, Vector3.up * 100);
     }
 
     [PunRPC]
@@ -41,12 +44,16 @@ public class CardEffectRPCs : MonoBehaviour
     {
         BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
         unit?.SetImmune(true);
+
+        Utilities.PlaySound("forcefield");
     }
 
     [PunRPC]
     public void TeleportRPC(int unitViewID, int newX, int newY, int newZ)
     {
         UnitManager.Instance.TeleportUnit(Utilities.GetUnitByViewID(unitViewID), new Vector3Int(newX, newY, newZ));
+
+        Utilities.PlaySound("teleportation");
     }
 
     [PunRPC]
@@ -54,6 +61,18 @@ public class CardEffectRPCs : MonoBehaviour
     {
         BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
         unit.Reset();
+
+        Utilities.PlaySound("partytime");
+        Tooltips.Instance.Show("Turn Refreshed!", Color.blue, unit.CurrentPosition, Vector2.up * 100);
+    }
+
+    [PunRPC]
+    public void Navigation1RPC(int unitViewID)
+    {
+        BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
+
+        Utilities.PlaySound("navigation1");
+        Tooltips.Instance.Show("Turn Cancelled.", Color.blue, unit.CurrentPosition, Vector3.up * 100);
     }
 
     [PunRPC]
@@ -61,6 +80,9 @@ public class CardEffectRPCs : MonoBehaviour
     {
         BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
         unit?.IncrementMove(3);
+
+        Utilities.PlaySound("navigation2");
+        Tooltips.Instance.Show("+3 Move", Color.white, unit.CurrentPosition, Vector3.up * 100);
     }
 
     [PunRPC]
@@ -68,14 +90,15 @@ public class CardEffectRPCs : MonoBehaviour
     {
         BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
         unit.SetChilled(true);
+
+        Utilities.PlaySound("chillingwind");
     }
 
     [PunRPC]
     public void MushiCurseRPC(int unitViewID)
     {
         BaseUnit unit = Utilities.GetUnitByViewID(unitViewID);
-        unit.DisableSkills(true);
-        AnimationController.PlayCurseAnim(unit.UnitAnimator);
+        unit.SetCursed(true);
     }
 
     [PunRPC]
@@ -84,6 +107,5 @@ public class CardEffectRPCs : MonoBehaviour
         BaseHero hero = (BaseHero)Utilities.GetUnitByViewID(heroViewID);
         hero.SetCursed(true);
         hero.DisableSkills(true);
-        AnimationController.PlayCurseAnim(hero.UnitAnimator);
     }
 }

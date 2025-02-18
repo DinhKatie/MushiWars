@@ -268,7 +268,6 @@ MonoBehaviour:
   movementRange: 0
   justRevived: 0
   squad: 0
-  smite: {fileID: 8300000, guid: 31b40f8dc6f6898438e8139133a0c3a3, type: 3}
 --- !u!114 &-3900958482579500802
 MonoBehaviour:
   m_ObjectHideFlags: 0

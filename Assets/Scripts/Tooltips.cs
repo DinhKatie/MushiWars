@@ -25,6 +25,7 @@ public class Tooltips : MonoBehaviour
     [Header("Floating Text")]
     public GameObject textContainer;
     public GameObject textPrefab;
+    public GameObject textAlert;
 
     //Pooling multiple objects to be reused
     private List<FloatingText> floatingTexts = new List<FloatingText>();
@@ -114,6 +115,19 @@ public class Tooltips : MonoBehaviour
 
         floatingText.Show();
     }
+
+    public void ShowAlert(string msg, Color color, int fontSize = 70)
+    {
+        TextMeshProUGUI tmp = textAlert.GetComponent<TextMeshProUGUI>();
+        
+        tmp.text = msg;
+        tmp.fontSize = fontSize;
+        tmp.color = color;
+
+        textAlert.SetActive(true);
+    }
+
+    public void HideAlert() => textAlert.SetActive(false);
 
     #endregion
 

@@ -72,6 +72,7 @@ MonoBehaviour:
   - BlastStompRPC
   - SmiteRPC
   - SmiteEndRPC
+  - Navigation1RPC
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

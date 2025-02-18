@@ -102,7 +102,6 @@ MonoBehaviour:
   movementRange: 0
   justRevived: 0
   squad: 0
-  smite: {fileID: 0}
   canRevive: 0
   graveyard: []
 --- !u!114 &-3593127474228351437

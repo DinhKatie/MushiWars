@@ -10,6 +10,7 @@ public class BaseUnit : MonoBehaviour
 
     // Unit stats
     protected Vector3Int currPosition;
+
     public int movementRange;
     protected int attackRange;
     protected bool hasAttacked;
@@ -23,7 +24,6 @@ public class BaseUnit : MonoBehaviour
     public Squads squad;
     protected UnitPrefabs prefab = UnitPrefabs.unit;
     protected Animator unitAnim;
-    [SerializeField] public AudioClip smite;
 
     // Getters
     public Vector3Int CurrentPosition => currPosition;
@@ -60,9 +60,21 @@ public class BaseUnit : MonoBehaviour
     public void SetImmune(bool immune)
     {
         isImmune = immune;
+        if (immune)
+            TriggerEffect(CardAnimations.Forcefield);
+        else
+            TriggerEffect(CardAnimations.None);
     }
     public void SetChilled(bool chilled) {  isChilled = chilled; }
     public void DisableSkills(bool disable) { disabledSkills = disable; }
+    public void SetCursed(bool cursed)
+    {
+        DisableSkills(cursed);
+        if (cursed)
+            TriggerEffect(CardAnimations.Curse);
+        else
+            TriggerEffect(CardAnimations.None);
+    }
 
     //Managers for easy calling
     private GridManager Grid => GridManager.Instance;
@@ -87,13 +99,14 @@ public class BaseUnit : MonoBehaviour
         if (isChilled)
         {
             DisableMovementAndAttack();
-            isChilled = false;
+            SetChilled(false);
             return;
         }
         movementRange = 2;
         attackRange = 1;
         hasAttacked = false;
-        isImmune = false;
+        SetImmune(false);
+        SetCursed(false);
     }
 
     public virtual void Reset() => ResetStats();
@@ -318,10 +331,8 @@ public class BaseUnit : MonoBehaviour
         Grid.isCampfirePushable(this);
     }
 
-    public void TriggerEffect(string effect)
+    public void TriggerEffect(CardAnimations effect)
     {
-        Debug.Log($"{effect.ToUpper()} Effect");
-
         Animator animator = GetComponent<Animator>();
         if (animator == null)
         {
@@ -329,7 +340,7 @@ public class BaseUnit : MonoBehaviour
             return;
         }
 
-        Utilities.PlaySound($"{effect.ToLower()}", 0.3f);
+        animator.SetInteger("effect", (int) effect);
     }
 
     public void PlayEffectAnimation(string effect)

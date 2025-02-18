@@ -141,9 +141,12 @@ public class CardEffectInitializer : MonoBehaviour
         AvoidSelection(true);
         StartCoroutine(Select(CurrentSquadUnits(), tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
         {
-            unit?.SetImmune(true);
-            photonView.RPC("ForcefieldRPC", RpcTarget.Others, unit.GetComponent<PhotonView>().ViewID);
-            Debug.Log($"Applied Forcefield");
+            if (unit != null)
+            {
+                photonView.RPC("ForcefieldRPC", RpcTarget.All, unit.GetComponent<PhotonView>().ViewID);
+                Debug.Log($"Applied Forcefield");
+            }
+            
             AvoidSelection(false);
         }));
     }
@@ -166,8 +169,7 @@ public class CardEffectInitializer : MonoBehaviour
 
             StartCoroutine(Select(validMoveTiles, tile => tile, tile =>
             {
-                UnitManager.Instance.TeleportUnit(unit, tile);
-                photonView.RPC("TeleportRPC", RpcTarget.Others, unit.GetComponent<PhotonView>().ViewID, tile.x, tile.y, tile.z);
+                photonView.RPC("TeleportRPC", RpcTarget.All, unit.GetComponent<PhotonView>().ViewID, tile.x, tile.y, tile.z);
                 unit.DisableMovementAndAttack();
                 AvoidSelection(false);
             }));
@@ -186,8 +188,7 @@ public class CardEffectInitializer : MonoBehaviour
             {
                 StartCoroutine(Select(CurrentSquadUnits(), tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
                 {
-                    unit.Reset();
-                    photonView.RPC("PartyTimeRPC", RpcTarget.Others, unit.GetComponent<PhotonView>().ViewID);
+                    photonView.RPC("PartyTimeRPC", RpcTarget.All, unit.GetComponent<PhotonView>().ViewID);
                     AvoidSelection(false);
                 }));
             }));
@@ -215,14 +216,13 @@ public class CardEffectInitializer : MonoBehaviour
         StartCoroutine(Select(currentSquadNotActed, tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
         {
             Debug.Log($"{unit} selected as Navigator.");
+            photonView.RPC("Navigation1RPC", RpcTarget.All, unit.GetComponent<PhotonView>().ViewID);
             unit.DisableMovementAndAttack();
 
             //Select a Mushi that has already acted
             StartCoroutine(Select(actedUnits, tile => UnitManager.Instance.GetUnitAtTile(tile), unit2 =>
             {
-                Debug.Log($"{unit2} selected by Navigation. Incrementing move by 3.");
-                unit2.IncrementMove(3); //Up to 3? or exactly 3
-                photonView.RPC("NavigationRPC", RpcTarget.Others, unit2.GetComponent<PhotonView>().ViewID);
+                photonView.RPC("NavigationRPC", RpcTarget.All, unit2.GetComponent<PhotonView>().ViewID);
 
                 AvoidSelection(false);
             }));
@@ -235,9 +235,8 @@ public class CardEffectInitializer : MonoBehaviour
         if (!CardPlayable()) return;
 
         BaseHero hero = TurnManager.Instance.GetHeroOfSquad(TurnManager.Instance.GetCurrentSquad());
-        hero?.IncrementHealth();
         Debug.Log($"Health of {hero} incremented by 1. New health: {hero.Health}");
-        photonView.RPC("HealthOrbRPC", RpcTarget.Others, hero.GetComponent<PhotonView>().ViewID);
+        photonView.RPC("HealthOrbRPC", RpcTarget.All, hero.GetComponent<PhotonView>().ViewID);
     }
 
     private void Educate()
@@ -263,9 +262,7 @@ public class CardEffectInitializer : MonoBehaviour
         AvoidSelection(true);
         StartCoroutine(Select(unitsWithinRange, tile => UnitManager.Instance.GetUnitAtTile(tile), unit =>
         {
-            unit.SetChilled(true);
-            photonView.RPC("ChillingWindRPC", RpcTarget.Others, unit.GetComponent<PhotonView>().ViewID);
-            Debug.Log($"Chilled {unit}");
+            photonView.RPC("ChillingWindRPC", RpcTarget.All, unit.GetComponent<PhotonView>().ViewID);
             AvoidSelection(false);
         }));
     }
@@ -343,8 +340,7 @@ public class CardEffectInitializer : MonoBehaviour
 
     private IEnumerator WaitForDiscard(Action action)
     {
-        //Inform the user to discard a card (update UI)
-        Debug.Log("Please discard a card.");
+        Tooltips.Instance.ShowAlert("Discard a card.", Color.red);
 
         bool cardDiscarded = false;
         Action discardListener = null;
@@ -354,6 +350,7 @@ public class CardEffectInitializer : MonoBehaviour
         {
             Debug.Log("Card discarded. Continuing effect...");
             cardDiscarded = true;
+            Tooltips.Instance.HideAlert();
 
             action?.Invoke();
 
