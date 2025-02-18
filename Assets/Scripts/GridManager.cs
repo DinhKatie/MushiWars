@@ -12,6 +12,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private Tilemap _highlightTilemap;
     [SerializeField] private Tilemap _outlineTilemap;
     [SerializeField] private Tilemap _validMovesMap;
+    [SerializeField] private Tilemap _shrinkHighlightMap;
 
     [Header("Tiles")]
     [SerializeField] private TileBase _highlightTile;
@@ -19,6 +20,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private TileBase _validMoveTile;
     [SerializeField] private TileBase _validAttackTile;
     [SerializeField] private TileBase _campfirePushTile;
+    [SerializeField] private TileBase _shrinkHighlightTile;
 
     [Header("Obstacles")]
     [SerializeField] private BaseObstacle _treeObstaclePrefab;
@@ -280,7 +282,11 @@ public class GridManager : MonoBehaviour
 
     public void HighlightOutlineTiles(List<Vector3Int> outlines) => HighlightValidTiles(outlines, _outlineTile);
 
+    public void HighlightShrinkTiles(List<Vector3Int> shrinks) => shrinks.ForEach(tile => _shrinkHighlightMap.SetTile(tile, _shrinkHighlightTile));
+
     public void ClearValidMoves() => _validMovesMap.ClearAllTiles();
+
+    public void ClearShrinkMap() => _shrinkHighlightMap.ClearAllTiles();
 
     #endregion
 
