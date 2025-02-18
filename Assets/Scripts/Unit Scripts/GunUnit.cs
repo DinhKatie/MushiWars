@@ -7,16 +7,10 @@ public class GunUnit : BaseUnit
     protected override void Start()
     {
         base.Start();
+        maxMoveRange = 1;
+        maxAttackRange = 2;
         ResetStats();
         prefab = UnitPrefabs.gunUnit;
-    }
-
-    protected override void ResetStats()
-    {
-        movementRange = 1;
-        attackRange = 2; //Except not point blank
-        hasAttacked = false;
-        isImmune = false;
     }
 
     protected override List<Vector3Int> GetAttackRange()

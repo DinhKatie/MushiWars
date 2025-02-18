@@ -10,6 +10,9 @@ public class BaseUnit : MonoBehaviour
 
     // Unit stats
     protected Vector3Int currPosition;
+    protected int maxHealth;
+    protected int maxMoveRange;
+    protected int maxAttackRange;
 
     public int movementRange;
     protected int attackRange;
@@ -20,6 +23,7 @@ public class BaseUnit : MonoBehaviour
     protected bool isImmune = false;
     protected bool isChilled = false;
     protected bool disabledSkills = false;
+    protected bool isCursedNextTurn = false;
 
     public Squads squad;
     protected UnitPrefabs prefab = UnitPrefabs.unit;
@@ -60,20 +64,15 @@ public class BaseUnit : MonoBehaviour
     public void SetImmune(bool immune)
     {
         isImmune = immune;
-        if (immune)
-            TriggerEffect(CardAnimations.Forcefield);
-        else
-            TriggerEffect(CardAnimations.None);
+        UpdateEffectAnimation();
     }
     public void SetChilled(bool chilled) {  isChilled = chilled; }
     public void DisableSkills(bool disable) { disabledSkills = disable; }
     public void SetCursed(bool cursed)
     {
+        isCursedNextTurn = cursed;
         DisableSkills(cursed);
-        if (cursed)
-            TriggerEffect(CardAnimations.Curse);
-        else
-            TriggerEffect(CardAnimations.None);
+        UpdateEffectAnimation();
     }
 
     //Managers for easy calling
@@ -84,7 +83,9 @@ public class BaseUnit : MonoBehaviour
     protected virtual void Start()
     {
         unitAnim = GetComponent<Animator>();
-        health = 1;
+        maxHealth = 1;
+        maxMoveRange = 2;
+        maxAttackRange = 1;
         if (justRevived)
         {
             DisableMovementAndAttack();
@@ -102,11 +103,19 @@ public class BaseUnit : MonoBehaviour
             SetChilled(false);
             return;
         }
-        movementRange = 2;
-        attackRange = 1;
+
+        movementRange = maxMoveRange;
+        attackRange = maxAttackRange;
         hasAttacked = false;
         SetImmune(false);
-        SetCursed(false);
+
+        UpdateEffectAnimation();
+
+        //keep the curse for one extra turn, then remove it
+        if (isCursedNextTurn)
+            isCursedNextTurn = false;
+        else
+            SetCursed(false);
     }
 
     public virtual void Reset() => ResetStats();
@@ -341,6 +350,22 @@ public class BaseUnit : MonoBehaviour
         }
 
         animator.SetInteger("effect", (int) effect);
+    }
+
+    private void UpdateEffectAnimation()
+    {
+        if (isImmune)
+        {
+            TriggerEffect(CardAnimations.Forcefield);
+        }
+        else if (isCursedNextTurn)
+        {
+            TriggerEffect(CardAnimations.Curse);
+        }
+        else
+        {
+            TriggerEffect(CardAnimations.None);
+        }
     }
 
     public void PlayEffectAnimation(string effect)

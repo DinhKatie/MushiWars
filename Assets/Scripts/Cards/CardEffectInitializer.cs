@@ -51,6 +51,7 @@ public class CardEffectInitializer : MonoBehaviour
     private void Hovercraft()
     {
         if (CantPlayCard()) return;
+        AvoidSelection(true);
         Debug.Log("Adding +1 move range to unit.");
 
         StartCoroutine(Select(CurrentSquadUnits(), tile => UnitManager.Instance.GetUnitAtTile(tile), unit => //Select a unit, then execute the following function with its return value
@@ -61,6 +62,7 @@ public class CardEffectInitializer : MonoBehaviour
             }
             GridManager.Instance.Deselect();
             GridManager.Instance.ClearValidMoves();
+            AvoidSelection(false);
         }));
     }
 
@@ -284,7 +286,6 @@ public class CardEffectInitializer : MonoBehaviour
             if (EnemyHeroUnits().Contains(unit))
             {
                 BaseHero hero = EnemyHeroUnits().FirstOrDefault(hero => hero == unit);
-                hero.SetCursed(true);
                 photonView.RPC("HeroCurseRPC", RpcTarget.All, hero.GetComponent<PhotonView>().ViewID);
             }
 
@@ -298,7 +299,6 @@ public class CardEffectInitializer : MonoBehaviour
                 if (EnemyHeroUnits().Contains(unit))
                 {
                     BaseHero hero = EnemyHeroUnits().FirstOrDefault(hero => hero == unit2); //Possible error here
-                    hero.SetCursed(true);
                     photonView.RPC("HeroCurseRPC", RpcTarget.All, hero.GetComponent<PhotonView>().ViewID);
                 }
                 AvoidSelection(false);
