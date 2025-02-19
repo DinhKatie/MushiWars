@@ -351,7 +351,7 @@ public class BaseUnit : MonoBehaviour
         animator.SetInteger("effect", (int) effect);
     }
 
-    private void UpdateEffectAnimation()
+    protected void UpdateEffectAnimation()
     {
         if (isImmune)
         {
@@ -393,7 +393,7 @@ public class BaseUnit : MonoBehaviour
         StartCoroutine(DisableAfterAnimation(childEffect, childAnimator));
     }
 
-    private IEnumerator DisableAfterAnimation(GameObject effectObject, Animator animator)
+    protected IEnumerator DisableAfterAnimation(GameObject effectObject, Animator animator)
     {
         yield return new WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length);
         effectObject.SetActive(false);
