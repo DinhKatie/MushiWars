@@ -10,9 +10,9 @@ using UnityEngine.SceneManagement;
 public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
 {
     [Header("UI Panels")]
-    public InputField createInput;
-    public InputField joinInput;
-    public InputField nameInput;
+    public TMP_InputField createInput;
+    public TMP_InputField joinInput;
+    public TMP_InputField nameInput;
     public GameObject createPanel;
     public GameObject roomPanel;
 
@@ -20,31 +20,77 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
     public TMP_Text roomName;
     public Transform playerList;
     public GameObject playerNamePrefab;
+    public GameObject warningText;
 
+    private Coroutine warningCoroutine;
+
+    public void SetWarningText(string msg)
+    {
+        //Stop the currently running warning coroutine if any
+        if (warningCoroutine != null)
+        {
+            StopCoroutine(warningCoroutine);
+        }
+        //Only the most recent warning is shown.
+        warningCoroutine = StartCoroutine(DisplayWarningText(msg));
+    }
+
+    public IEnumerator DisplayWarningText(string msg)
+    {
+        warningText.GetComponent<TextMeshProUGUI>().text = msg;
+        warningText.SetActive(true);
+
+        yield return new WaitForSeconds(4f);
+
+        warningText.SetActive(false);
+
+        yield return null;
+    }
     //set player nickname before joining/creating a room
     public void SetPlayerName()
     {
         if (nameInput.text.Length >= 1)
         {
             PhotonNetwork.NickName = nameInput.text;
-            Debug.Log("Player Name Set: " + PhotonNetwork.NickName);
+            SetWarningText("Player Name Set: " + PhotonNetwork.NickName);
         }
         else
         {
-            Debug.LogWarning("Player name cannot be empty!");
+            SetWarningText("Player name cannot be empty!");
         }
     }
 
     public void CreateRoom()
     {
-        if (createInput.text.Length >= 1)
+        if (string.IsNullOrWhiteSpace(PhotonNetwork.NickName))
         {
-            PhotonNetwork.CreateRoom(createInput.text, new RoomOptions() { MaxPlayers = 2 });
+            SetWarningText("Player name cannot be empty!");
+            return;
         }
+
+        if (string.IsNullOrWhiteSpace(createInput.text))
+        {
+            SetWarningText("Room name cannot be empty!");
+            return;
+        }
+        
+        PhotonNetwork.CreateRoom(createInput.text, new RoomOptions() { MaxPlayers = 2 });
     }
 
     public void JoinRoom()
     {
+        if (string.IsNullOrWhiteSpace(PhotonNetwork.NickName))
+        {
+            SetWarningText("Player name cannot be empty!");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(joinInput.text))
+        {
+            SetWarningText("Room name cannot be empty!");
+            return;
+        }
+
         PhotonNetwork.JoinRoom(joinInput.text);
     }
 
@@ -94,10 +140,10 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
                 SceneManager.sceneLoaded += OnSceneLoaded; //wait until the scene is fully loaded, then run OnSceneLoaded
             }
             else
-                Debug.LogError("Not enough players to start the game.");
+                SetWarningText("Not enough players to start the game.");
         }
         else
-            Debug.LogError("Only the host can start the game.");
+            SetWarningText("Only the host can start the game.");
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
