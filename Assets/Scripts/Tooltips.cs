@@ -140,8 +140,7 @@ public class Tooltips : MonoBehaviour
         TextMeshProUGUI numberText = square.GetComponentInChildren<TextMeshProUGUI>();
 
         GameObject unitPrefab = GetUnitPrefab(unit);
-        GameObject unitInstance = Instantiate(unitPrefab, unitImage);
-        unitInstance.transform.localPosition = new Vector3(-7.5f, -4.8f, 0);
+        Instantiate(unitPrefab, unitImage);
 
         numberText.text = index.ToString();
         numberText.transform.SetAsLastSibling();
