@@ -26,12 +26,11 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
 
     public void SetWarningText(string msg)
     {
-        //Stop the currently running warning coroutine if any
+        //stop the currently running warning coroutine if any
         if (warningCoroutine != null)
         {
             StopCoroutine(warningCoroutine);
         }
-        //Only the most recent warning is shown.
         warningCoroutine = StartCoroutine(DisplayWarningText(msg));
     }
 

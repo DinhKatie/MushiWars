@@ -27,7 +27,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
     public Squads GetCurrentSquad() => currentSquad;
 
     private int currentRound = 0;
-    private int roundsPerShrink = 2;
+    private int roundsPerShrink = 5;
 
 
     #region Initialization
