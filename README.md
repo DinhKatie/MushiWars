@@ -9,4 +9,5 @@ It is still buggy and missing features, but the general gist of the game can be 
 
 
 Characters Drawn By: Christine Chu
+
 Card Art & Concept: Kevin Nguyen
